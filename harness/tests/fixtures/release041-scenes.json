@@ -1,0 +1,541 @@
+{
+  "schema": 1,
+  "version": "navigation-additions-001",
+  "seeds": [
+    130626853
+  ],
+  "placements": {
+    "natural_origin": [
+      18959.5,
+      10800.5,
+      600
+    ],
+    "flat_origin": [
+      18700,
+      10800,
+      500
+    ]
+  },
+  "player_equipment": {
+    "active_mainhand": "common.items.weapons.sword.starter",
+    "chest": "common.items.armor.misc.chest.worker_purple_brown",
+    "feet": "common.items.armor.misc.foot.sandals",
+    "glider": "common.items.glider.basic_white",
+    "lantern": "common.items.lantern.black_0",
+    "legs": "common.items.armor.misc.pants.worker_brown"
+  },
+  "scenes": [
+    {
+      "id": "T01",
+      "kind": "navigation_tasks",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "fixture_version": "t01-native-workshop-v1",
+      "mechanism_mode": "setup-only",
+      "task": "In Liron, ask an actual resident for directions to a workshop, receive the resident's workshop information, then find and enter that real workshop. Settle alive in its CraftingBench area: within one metre horizontally and half a metre vertically of the floor point two metres north of the bench centre. Be on the ground at speed at most 0.1 m/s for two observations at least 0.25 seconds apart. The normal resident dialogue and received map marker provide the missing location information; the initial goal does not supply workshop coordinates. Choose your own resident, route and ordinary tools.",
+      "qualification": "Native resident dialogue and actual selected workshop root marker must join the same actor/session, actual offered response and separate private server recipient evidence. Arrival is a small physically qualified region inside the real facility, not town arrival. No image dialogue addressing."
+    },
+    {
+      "id": "T02",
+      "kind": "navigation_tasks",
+      "terrains": [
+        "flat"
+      ],
+      "gameplay_mode": "work-state",
+      "fixture_version": "t02-pickup-route-event-v1",
+      "mechanism_mode": "setup-only",
+      "task": "Collect the designated loose apple supply and carry at least one apple to the public destination alive. This private benchmark world includes an authored route-change event: after your actual apple pickup is confirmed, the central stair passage closes with real stone collision blocks. This is a benchmark-authored event, not a natural Veloren collapse. A legal north-side stair alternative remains. Choose any legal route, including choosing an alternative early; neither hitting the closure nor subjective replanning is required. Settle on the ground within one metre horizontally and half a metre vertically of the destination, at speed at most 0.1 m/s for two observations at least 0.25 seconds apart, retaining the apple.",
+      "qualification": "One actor-correlated native Collected milestone triggers one actual private-owner terrain change. Event application, exact normal-geometry visibility and exposure are separate from pickup/retention/alive arrival. Failed/unknown application or invalid alternative is environmental invalidity, never a clean ability negative."
+    },
+    {
+      "id": "T03",
+      "kind": "crafting_recovery",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "economy",
+      "task": "Learn the supplied food recipe collection and acquire mushrooms from the nearby loose mushroom supply. Make and keep one mushroom stick (common.items.food.mushroom_stick), while keeping at least one uncooked mushroom, one twig and one apple in your bag as backup ingredients. You start with partial ingredients; the food recipes include alternatives sharing these ingredients. Choose your own approach using normal game information. Stay alive.",
+      "fixture_version": "t03-food-reserve-v1",
+      "initial_items": {
+        "common.items.recipes.food": 1,
+        "common.items.food.mushroom": 1,
+        "common.items.crafting_ing.twigs": 2,
+        "common.items.food.apple": 1
+      },
+      "reserves": {
+        "common.items.food.mushroom": 1,
+        "common.items.crafting_ing.twigs": 1,
+        "common.items.food.apple": 1
+      },
+      "supply": {
+        "item": "common.items.food.mushroom",
+        "amount": 2,
+        "offset": [
+          12,
+          4
+        ]
+      },
+      "qualification": "New additive definition: true unlearned food knowledge, missing-resource acquisition, shared-ingredient alternatives and simultaneous product/ingredient retention. Public provenance requires the nearby loose mushroom supply, not an undisclosed source."
+    },
+    {
+      "id": "T04",
+      "kind": "crafting_recovery",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "economy",
+      "task": "From your raw animal hides, make a rawhide chest armor (common.items.armor.hide.rawhide.chest) and actually wear it in your chest slot. Keep your replaced worker shirt (common.items.armor.misc.chest.worker_purple_brown) in your bag as backup clothing. Useful lawful workstations are nearby. You have no premade leather or chest armor. Choose your own stages and approach from normal recipe and game information; stay alive.",
+      "fixture_version": "t04-chest-replacement-v1",
+      "initial_items": {
+        "common.items.crafting_ing.hide.animal_hide": 5
+      },
+      "old_shirt": "common.items.armor.misc.chest.worker_purple_brown",
+      "qualification": "New additive definition. Original C4 still requires its product in inventory; this task instead joins both native craft transactions, actual chest-slot equip and replaced-shirt bag retention. No defense/damage benefit claim."
+    },
+    {
+      "id": "T05",
+      "kind": "crafting_recovery",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "economy",
+      "task": "You start injured in a safe area at 35/100 health, without residual buffs. Use actual recovery consumables to recover to at least 80/100 health (80 percent), while keeping at least two minor potions (common.items.consumable.potion_minor) in your bag as backup stock. You start with three minor potions. Effects may be delayed and containers may be returned; observe your health and supplies and choose your own recovery approach. Stay alive.",
+      "fixture_version": "t05-safe-consumable-v1",
+      "initial_items": {
+        "common.items.consumable.potion_minor": 3
+      },
+      "recovery": {
+        "initial_hp": 35,
+        "maximum_hp": 100,
+        "threshold_hp": 80,
+        "consumable": "common.items.consumable.potion_minor",
+        "backup_count": 2
+      },
+      "qualification": "Engineering-selected numerical fixture, not researcher-required example values. Actual correlated consumption, later health gain/threshold, retained stock and survival are separate predicates; no exclusive attribution of all net HP to one item."
+    },
+    {
+      "id": "C1",
+      "kind": "crafting",
+      "terrains": [
+        "flat",
+        "natural"
+      ],
+      "gameplay_mode": "economy",
+      "task": "Make and keep one mushroom stick for food (common.items.food.mushroom_stick). Your character knows the recipe and has sufficient materials. Choose your own tools and approach using the game's current observations. Keep the product."
+    },
+    {
+      "id": "C2",
+      "kind": "crafting",
+      "terrains": [
+        "flat",
+        "natural"
+      ],
+      "gameplay_mode": "economy",
+      "task": "Make and keep one mushroom stick for food (common.items.food.mushroom_stick). You know the food recipes, but have only partial supplies. Find what you need in the environment using normal observation and keep the product."
+    },
+    {
+      "id": "C3",
+      "kind": "crafting",
+      "terrains": [
+        "flat",
+        "natural"
+      ],
+      "gameplay_mode": "economy",
+      "task": "Make and keep one mushroom stick for food (common.items.food.mushroom_stick). Choose your own tools and approach using current game information."
+    },
+    {
+      "id": "C3U",
+      "kind": "crafting",
+      "terrains": [
+        "flat",
+        "natural"
+      ],
+      "gameplay_mode": "economy",
+      "task": "Make and keep one mushroom stick for food (common.items.food.mushroom_stick). Your supplies include a food recipe collection, but your character has not learned it. Choose your own tools and approach using normal game information.",
+      "qualification": "Distinct unlock extension, not a relabeling of historical C3. Native future-option query must report character_known=false and not satisfied=true at opening; actual recipe-group use precedes craft. Query use is optional for the model and does not establish model ignorance."
+    },
+    {
+      "id": "C4",
+      "kind": "crafting",
+      "terrains": [
+        "flat",
+        "natural"
+      ],
+      "gameplay_mode": "economy",
+      "task": "Make and keep a rawhide chest armor (common.items.armor.hide.rawhide.chest) from your raw supplies. Useful crafting stations are in the surrounding environment. Choose your own approach."
+    },
+    {
+      "id": "B1",
+      "kind": "combat",
+      "terrains": [
+        "flat",
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "asset": "common.entity.benchmark.male_green_legoom",
+      "body": {
+        "BipedSmall": {
+          "species": "GreenLegoom",
+          "body_type": "Male"
+        }
+      },
+      "consumables": {
+        "common.items.consumable.potion_minor": 2
+      },
+      "loadout_provenance": "exact-body derivative of common.entity.wild.aggressive.green_legoom; unchanged common.loadout.world.legoom.green_legoom",
+      "task": "Defeat the hostile Green Legoom in this encounter and survive. Choose your own combat tools, positioning and recovery."
+    },
+    {
+      "id": "B2",
+      "kind": "combat",
+      "terrains": [
+        "flat",
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "asset": "common.entity.benchmark.male_wolf",
+      "body": {
+        "QuadrupedMedium": {
+          "species": "Wolf",
+          "body_type": "Male"
+        }
+      },
+      "consumables": {
+        "common.items.consumable.potion_minor": 2
+      },
+      "loadout_provenance": "exact-body derivative of common.entity.wild.aggressive.wolf; unchanged native FromBody Wolf loadout",
+      "task": "Defeat the hostile Wolf in this encounter and survive. Choose your own combat tools, positioning and recovery."
+    },
+    {
+      "id": "B3",
+      "kind": "combat",
+      "terrains": [
+        "flat",
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "asset": "common.entity.benchmark.male_ogre",
+      "body": {
+        "BipedLarge": {
+          "species": "Ogre",
+          "body_type": "Male"
+        }
+      },
+      "consumables": {
+        "common.items.consumable.potion_minor": 2
+      },
+      "loadout_provenance": "exact-body derivative of common.entity.wild.aggressive.ogre; native FromBody Male Ogre selects common.items.npc_weapons.hammer.ogre_hammer before NPC construction",
+      "task": "Defeat the hostile male Ogre in this encounter and survive. Choose your own combat tools, positioning and recovery."
+    },
+    {
+      "id": "N1",
+      "kind": "navigation",
+      "layout": "wall_side_detour",
+      "terrains": [
+        "flat"
+      ],
+      "gameplay_mode": "work-state"
+    },
+    {
+      "id": "N2",
+      "kind": "navigation",
+      "layout": "staggered_s_turn",
+      "terrains": [
+        "flat"
+      ],
+      "gameplay_mode": "work-state"
+    },
+    {
+      "id": "N3",
+      "kind": "navigation",
+      "layout": "elevation_side_steps",
+      "terrains": [
+        "flat"
+      ],
+      "gameplay_mode": "work-state"
+    },
+    {
+      "id": "N4",
+      "kind": "navigation",
+      "layout": "long_distance_windows",
+      "terrains": [
+        "flat"
+      ],
+      "gameplay_mode": "work-state"
+    },
+    {
+      "id": "N5",
+      "kind": "navigation",
+      "layout": "natural_long",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "origin": [
+        18959.5,
+        10800.5,
+        600
+      ],
+      "destination_xy": [
+        19471.5,
+        10800.5
+      ],
+      "goal_source": "explicit player-visible location target, not named-site localization",
+      "interaction": "pickup exact native apple at destination",
+      "timed_interaction_policy": "persistent-arrival",
+      "timed_resource_condition": {
+        "version": "native-drop-300s-unannounced-v2",
+        "native_lifetime_game_seconds": 300,
+        "announced_in_task": false,
+        "clock_expiry": "possible only, not observed deletion",
+        "arrival_scoring": "independent of pickup availability"
+      },
+      "qualification": "Full private native admin walking reachability verified; measured native calibrator can stall in Climb and rejects walk-only continuous control. Arrival is recorded independently of native 300-game-second timed pickup availability; estimated lifetime alone does not stop measurement or censor navigation failure. No full success without actual retained pickup."
+    },
+    {
+      "id": "N6",
+      "kind": "navigation",
+      "layout": "recovery",
+      "terrains": [
+        "flat"
+      ],
+      "gameplay_mode": "work-state",
+      "goal_source": "explicit location target after a pre-measurement native displacement; macro goal retained"
+    },
+    {
+      "id": "N7",
+      "kind": "navigation",
+      "layout": "named_site_long",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "destination_name": "Spausalm",
+      "destination_kind": "Town",
+      "origin": [
+        19088,
+        10768,
+        600
+      ],
+      "minimum_distance_m": 320,
+      "setup_road_entry_radius_m": 160,
+      "arrival_region": {
+        "approach_horizontal_m": 64,
+        "horizontal_m": 32,
+        "vertical_m": 6
+      },
+      "mechanism_mode": "setup-only",
+      "goal_source": "real native town label from normal known_sites/InspectMap; no coordinates or route in task",
+      "qualification": "Native setup walking, named arrival and normal-player destination visibility must qualify each private episode; model capability pending."
+    },
+    {
+      "id": "X1",
+      "kind": "mixed",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "held_out": true,
+      "task": "Prepare and keep a mushroom stick, reach the marked rendezvous and collect its apple, while surviving and resolving the hostile Green Legoom encounter. Decide how to combine the work yourself.",
+      "qualification": "Historical composition, development setup evidence exists; not a pristine held-out condition."
+    },
+    {
+      "id": "X2",
+      "kind": "mixed",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "held_out": true,
+      "rendezvous_offset": [
+        64,
+        -16
+      ],
+      "craft_overrides": {
+        "recipe_spec": {
+          "key": "apples_stick",
+          "output": "common.items.food.apple_stick",
+          "inputs": {
+            "common.items.crafting_ing.twigs": 1,
+            "common.items.food.apple": 1
+          },
+          "missing_item": "common.items.food.apple"
+        },
+        "supply_offset": [
+          12,
+          8
+        ]
+      },
+      "held_out_condition": {
+        "seed": 130626853,
+        "seed_difference": false,
+        "development_recipe": "mushroom_stick",
+        "recipe": "apples_stick",
+        "layout_difference": "supply offset [12,8], rendezvous [64,-16] instead of [14,5]/[80,32]",
+        "frozen_before_model_evaluation": true,
+        "claim_scope": "held-out composition/layout/recipe, not unseen seed or unknown recipe"
+      },
+      "task": "Establish food readiness at the rendezvous: keep an apple stick (common.items.food.apple_stick), keep the rendezvous apple, and survive after defeating the hostile Green Legoom. Decide your own stages, resource choices, route and recovery while retaining this overall goal."
+    },
+    {
+      "id": "T06",
+      "kind": "combat_support",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "fixture_version": "t06-four-weapons-v1",
+      "default_variant": "sword",
+      "variants": [
+        "sword",
+        "bow",
+        "staff",
+        "sceptre"
+      ],
+      "initial_items": {
+        "common.items.consumable.potion_minor": 2
+      },
+      "enemies": [
+        {
+          "role": "encounter enemy",
+          "asset": "common.entity.benchmark.male_green_legoom",
+          "offset": [
+            16,
+            0
+          ],
+          "stock_loadout": "unchanged common.loadout.world.legoom.green_legoom; exact Male GreenLegoom body"
+        }
+      ],
+      "task": "Resolve the authored encounter using your current weapon/build: the designated hostile Green Legoom must actually die, you must make a real damaging contribution to that enemy, and you must remain alive. Choose your own tactics, actions and recovery; no particular attack, order or last blow is required. Sword, bow, staff and sceptre are four configured conditions of this one task, not four professions or presumed equal difficulty."
+    },
+    {
+      "id": "T07",
+      "kind": "combat_support",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "fixture_version": "t07-finite-active-build-v1",
+      "default_variant": "sword",
+      "initial_items": {
+        "common.items.consumable.potion_minor": 2
+      },
+      "skill_points": {
+        "general": 0,
+        "sword": 4
+      },
+      "enemies": [
+        {
+          "role": "build encounter enemy",
+          "asset": "common.entity.benchmark.male_green_legoom",
+          "offset": [
+            18,
+            0
+          ],
+          "stock_loadout": "unchanged common.loadout.world.legoom.green_legoom; exact Male GreenLegoom body"
+        }
+      ],
+      "task": "Use your finite native skill points to learn an active sword build, configure at least one ability you learned into an auxiliary slot, and use a configured learned active ability to cause an actual damaging effect on the designated hostile Green Legoom. Resolve the encounter by its actual death with your own damaging contribution, and survive. The Sword group is already unlocked; you have four Sword points and no unspent General points, actual native prerequisites and multiple legal active choices. Normal skill information explains the available choices and costs. No single build or tactic is prescribed, and basic attacks may also contribute to victory."
+    },
+    {
+      "id": "T08",
+      "kind": "combat_support",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "fixture_version": "t08-melee-ranged-cover-v2",
+      "default_variant": "sword",
+      "initial_items": {
+        "common.items.consumable.potion_minor": 2,
+        "common.items.weapons.staff.starter_staff": 1
+      },
+      "enemies": [
+        {
+          "role": "melee threat",
+          "asset": "common.entity.benchmark.male_green_legoom",
+          "offset": [
+            13,
+            -6
+          ],
+          "stock_loadout": "unchanged common.loadout.world.legoom.green_legoom; exact Male GreenLegoom body"
+        },
+        {
+          "role": "ranged threat",
+          "asset": "common.entity.dungeon.haniwa.archer",
+          "offset": [
+            18,
+            0
+          ],
+          "initial_hp": 25,
+          "stock_loadout": "common.loadout.dungeon.haniwa.archer; native haniwa archer weapon, armor and rank3 fullskill enemy preset; disclosed private finite 25 HP opening injury"
+        }
+      ],
+      "task": "Resolve both simultaneous hostile threats in this encounter: the designated melee Green Legoom and the designated ranged Haniwa Archer must actually die, you must make a real damaging contribution to each, and you must remain alive. The archer has its stock native weapon/armor/skills with a disclosed finite setup injury to 25 HP. The native terrain includes solid rock cover, a raised block and open flanks, with real collision and projectiles. Your inventory also contains one stock starter staff; equipping or using it is optional. Choose your own target order, spacing, recovery and tactics. Cover use is optional; suppression and luring are legal, and success alone is not evidence that you used spatial tactics."
+    },
+    {
+      "id": "T09",
+      "kind": "combat_support",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "fixture_version": "t09-native-group-healing-v1",
+      "default_variant": "sceptre",
+      "initial_items": {
+        "common.items.consumable.potion_minor": 2
+      },
+      "ally_initial_hp": 60,
+      "ally_threshold_hp": 61,
+      "enemies": [
+        {
+          "role": "support encounter threat",
+          "asset": "common.entity.benchmark.male_green_legoom",
+          "offset": [
+            20,
+            0
+          ],
+          "stock_loadout": "unchanged common.loadout.world.legoom.green_legoom; exact Male GreenLegoom body"
+        }
+      ],
+      "task": "Support your genuinely native-Group companion with your sceptre: you must cause actual healing to that other Group member, the companion must reach at least 61/100 health from its 60/100 injured start, the designated hostile Green Legoom must actually die, and both you and the companion must remain alive. You begin with four finite combo from a disclosed expired setup resource buff; setup does not count as healing. You may gain further resources normally. Healing yourself or using self potions is not companion healing; no last blow by you is required. Choose your own support/combat approach."
+    },
+    {
+      "id": "T10",
+      "kind": "npc_contracts",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "economy",
+      "fixture_version": "t10-native-merchant-v1",
+      "task": "Sell some surplus materials to the named local merchant, buy the specified stocked equipment from that merchant, and actually wear it in its appropriate equipment slot. Keep the stated coin and material reserves in your bag and stay alive. The exact merchant, equipment and reserves are stated in your opening goal; normal merchant stock, native prices and bilateral offers are available through ordinary trade. Choose any legal payment combination satisfying these conditions.",
+      "qualification": "Real stocked RTSim merchant, native site valuation and two-sided phase commit; no free purchase, price override or arbitrary stock assumption. Exact stock and feasible funding must qualify before entry."
+    },
+    {
+      "id": "T11",
+      "kind": "npc_contracts",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "economy",
+      "native_world_seed": 1337,
+      "fixture_version": "t11-native-message-v1",
+      "task": "Accept the offered message-courier contract through normal dialogue. Remember its identity and place clues, find the correct recipient among the local people, deliver the message and receive the actual native reward in your bag. Stay alive. This is a Message contract, not an item-delivery alternative; choose your own conversations and route.",
+      "qualification": "Fresh unaccepted distinct-recipient native Courier::Message offer; ordinary NPC identity/place clues and distinguishable candidates required. Resolution and exact causal player insertion are separate predicates. Fixed native world seed1337/small-world fixture is distinct from the preserved benchmark seed key130626853 and recorded explicitly."
+    },
+    {
+      "id": "T12",
+      "kind": "npc_contracts",
+      "terrains": [
+        "natural"
+      ],
+      "gameplay_mode": "work-state",
+      "native_world_seed": 1337,
+      "fixture_version": "t12-native-slay-v2",
+      "task": "Accept the offered native Slay contract through normal dialogue. Use its normal clues or marker to find the contracted monster, defeat that actual target with your own valid combat contribution, and return alive to the quest giver to report and receive the actual reward in your bag. Choose your own route, equipment, abilities and tactics; no particular build or last blow is required.",
+      "qualification": "Fresh native Slay offer and actual RTSim Monster. Before acceptance the real giver is placed on qualified natural ground near, but outside ordinary contact range of, the untouched moving target; actual loaded identity and a 32-to-96m approach are checked at opening. No Slay safezone or measured positioning. Native resolution, true DestroyEvent/RTSim death, player contribution, survival and actual causal payout are separately reported; unload is not death. Fixed native world seed1337/small-world fixture is distinct from the preserved benchmark seed key130626853 and recorded explicitly."
+    }
+  ]
+}

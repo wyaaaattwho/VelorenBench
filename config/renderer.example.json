@@ -1,0 +1,28 @@
+{
+  "content_renderer": {
+    "schema": "rpg-renderer-dependency/1",
+    "kind": "ordinary-voxygen",
+    "timing_profile": "voxygen-variable-dt-client-update-v1",
+    "native_tick": null,
+    "headless_timing_equivalent": false,
+    "architecture": "aarch64",
+    "executable_sha256": "9bbbedd22cf6b903b666100d0571c4abb0fa6f66f10ccd18075cb630f1f3e657",
+    "server_sha256": "317aaec578253a1277be16b017b4eca3a3c0f539cd12d37509ccce29ba173fce",
+    "interface_contract_sha256": "0e9e7bc362511491c2cea6810a2bca8c978341d13b5e3d059c5b79537cc415f4",
+    "build_receipt_sha256": "dd88b4a62164eb1a9cd6a46c627e55b2edfdf4e3446b9de64daccfc7fecac170",
+    "source_manifest_sha256": "c60d5ba0e8442ef93f649874b6e4445c35973cac7c19f99c15cf2feb5b5b7c1d",
+    "assets_manifest_sha256": "774379bf845954fca171cfbdda2a80e96d11aef58070870a9c6d82c47237c803",
+    "source_tree_sha256": "b2baa7a8f3710a8ea00ea1ebe6b3798fafff6d4a7a00ce87043340adefe8f429",
+    "assets_tree_sha256": "cec450b9d592af4c1ef60db1a9a77112957a15c7449aa3cfcea842a4a562e8a8"
+  },
+  "runtime_renderer": {
+    "executable": "inputs/renderer-source/target/debug/veloren-voxygen",
+    "server": "inputs/renderer-source/target/debug/veloren-server-cli",
+    "interface_contract": "inputs/renderer-provenance/interface-contract.json",
+    "build_receipt": "inputs/renderer-provenance/build-runtime.json",
+    "source_manifest": "inputs/renderer-provenance/source-successor.json",
+    "assets_manifest": "inputs/renderer-provenance/assets-manifest.json",
+    "source_root": "inputs/renderer-source",
+    "assets": "inputs/assets"
+  }
+}

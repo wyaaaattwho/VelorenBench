@@ -1,0 +1,37 @@
+{
+  "capabilities": {
+    "action_profiles": [
+      "raw-native-v2"
+    ],
+    "asynchronous_receipts": true,
+    "integer_transport": "strict",
+    "model_profiles": [
+      {
+        "model": "gpt-6-luna",
+        "reasoning_efforts": [
+          "none"
+        ]
+      }
+    ],
+    "native_protocol": "0.2",
+    "observation_modes": [
+      "structured"
+    ]
+  },
+  "default_configuration": {
+    "action_profile": "raw-native-v2",
+    "model": "gpt-6-luna",
+    "observation_mode": "structured",
+    "reasoning_effort": "none"
+  },
+  "freeze": {
+    "path": "freeze.json",
+    "sha256": "771b377abb39d5a5f5bc49de6d6da9236ea003b8ab078eca86188ca3c528b0f4"
+  },
+  "id": "deepseek-harness",
+  "implementation": "adapter.py",
+  "implementation_sha256": "8e4d7d515eff29e8840eca4f2ccedd9098e1ace9cf50af99f5fe6dc5cf58b37d",
+  "player_interface": "rpg-sdk-native-contract/2",
+  "schema": "rpg-external-adapter/2",
+  "tool_track": "dsh-adapter"
+}

@@ -1,0 +1,16 @@
+{
+  "schema": "rpg-runtime/1",
+  "content": {"path": "content.json", "sha256": "REPLACE_WITH_VERIFIED_CONTENT_SHA256"},
+  "output_root": "runs",
+  "native": {
+    "server": "inputs/veloren-server-cli",
+    "bridge": "inputs/agent_bridge",
+    "build_receipt": "inputs/bridge-build-receipt.json",
+    "assets": "inputs/assets",
+    "engine_root": "inputs/engine-source",
+    "native_source": "inputs/bridge-source"
+  },
+  "sources": {},
+  "external_adapters": {},
+  "protected_processes": []
+}

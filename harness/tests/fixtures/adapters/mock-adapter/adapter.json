@@ -1,0 +1,37 @@
+{
+  "capabilities": {
+    "action_profiles": [
+      "raw-native-v2"
+    ],
+    "asynchronous_receipts": true,
+    "integer_transport": "strict",
+    "model_profiles": [
+      {
+        "model": "mock-model",
+        "reasoning_efforts": [
+          "none"
+        ]
+      }
+    ],
+    "native_protocol": "0.2",
+    "observation_modes": [
+      "structured"
+    ]
+  },
+  "default_configuration": {
+    "action_profile": "raw-native-v2",
+    "model": "mock-model",
+    "observation_mode": "structured",
+    "reasoning_effort": "none"
+  },
+  "freeze": {
+    "path": "freeze.json",
+    "sha256": "495c3c95e94c0385359e47af77f6a229f61c8ce7cd4fb3050a455c825d384b22"
+  },
+  "id": "lightweight-mock",
+  "implementation": "adapter.py",
+  "implementation_sha256": "c748c8697e49c5ca4c89ef1c3c9f75e2c9ece4e5b1b1079fae299fcf74e63b49",
+  "player_interface": "rpg-sdk-native-contract/2",
+  "schema": "rpg-external-adapter/2",
+  "tool_track": "mock-adapter"
+}

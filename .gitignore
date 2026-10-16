@@ -1,0 +1,26 @@
+# Python and local development
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+build/
+dist/
+.coverage
+htmlcov/
+# Native/compiler and local runtime artifacts
+target/
+native-dist/
+outputs/
+runs/
+recordings/
+*.log
+# Local credentials/configuration, never source inputs
+.env
+.env.*
+!.env.example
+credentials*.json
+runtime.local.json
+content.local.json
+.DS_Store

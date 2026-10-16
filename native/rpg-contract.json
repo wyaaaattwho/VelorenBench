@@ -1,0 +1,44 @@
+{
+  "schema": "rpg-native-interactions",
+  "version": "1.0",
+  "status": "implemented and matching hosts built; bounded engineering checks, not task qualification",
+  "native_protocol_version": "0.2",
+  "public_visibility": "ordinary-player structured/hybrid only; image allowlist unchanged",
+  "public_observe_fields": {
+    "dialogue": "sender UID/lifecycle, dialogue_id, kind, tag, content and native English text, exact offered response IDs/content/text/given_item; original typed dialogue retained",
+    "dialogue_markers": "persistent validated server marker receipts independent of next prompt; also inspect_map",
+    "social_and_trade.pending_trade": "trade_id, parties, phase, accept flags, offers, both synced inventories and native SitePrices valuations",
+    "last_trade_result": "actual Event::TradeComplete; Completed means server commit; absent TradeId explicitly null",
+    "skill_tree": "learned level, available/earned points, cost, prerequisite and unlockable readback",
+    "auxiliary_abilities": "active_set, eligible native abilities, slot limit",
+    "nearby_entities": "ordinary synced name and native English name_text, native Group, same_native_group and health; Friendly/Owned is not Group",
+    "quest_state": "not replicated to ordinary player; only native dialogue/marker content is public"
+  },
+  "normal_actions": {
+    "context_interact": {"operation": "talk or help_downed", "target": {"uid": "strict integer", "lifecycle": "observed token"}},
+    "dialogue_action": {"operation": "ack or respond", "sender_uid": "integer", "dialogue_id": "native ID", "tag": "integer", "response_id": "only for respond; exact offered ID"},
+    "social_action": {"operation": "invite_trade/invite_group/respond_accept/respond_decline", "target": {"uid": "strict integer; NPC invite_trade only", "lifecycle": "observed token"}, "legacy_player_invitation": "invite_trade/invite_group use target_uid and exact target_alias; do not combine with target", "inviter_uid": "respond_* requires observed inviter", "invite_kind": "respond_* requires observed Trade or Group"},
+    "trade_action": {"operation": "add_item/remove_item/accept/decline", "trade_id": "observed ID", "counterparty_uid": "integer", "phase": "observed Mutate/Review/Complete", "slot": "native inventory slot only for item mutations", "quantity": "positive strict u32 only for mutations", "ours": "boolean for mutations only; default true"},
+    "unlock_skill": {"skill": "existing native typed Skill"},
+    "configure_auxiliary_ability": {"slot": "integer", "ability": "existing native typed AuxiliaryAbility"}
+  },
+  "effect_contract": {
+    "unlock_skill": "wait for subsequent synced level increment AND expected point deduction; timeout unknown, not proven no effect",
+    "configure_auxiliary_ability": "wait for subsequent exact active slot readback; no claim of combat use/effect",
+    "trade_action": "dispatch is not settlement; actual trade_complete result and inventory evidence are separate",
+    "dialogue_action": "dispatch does not prove quest acceptance, resolution, or reward",
+    "healing": "server health outcome contributor and current lifecycle joins; absence unknown; no exclusive net HP inference"
+  },
+  "private_oracle": {
+    "schema": "rpg-native-oracle",
+    "version": "1.0",
+    "enable": "server-only VELOREN_PRIVATE_ORACLE_PATH; fresh create_new NDJSON file",
+    "events": ["opened", "loaded_actor_bindings", "quest_states", "validated_dialogue", "dialogue_item_transfer", "dialogue_item_transfer_failed", "private_resident_fixture"],
+    "engineering_fixture": "optional server-only VELOREN_PRIVATE_NATIVE_FIXTURE=resident-smoke-v1; real RTSim residents and nearest existing economy; no quest auto-accept or price override",
+    "quest_states": "real QuestId, typed Message versus Deliver versus Slay, participants/arbiter/timeout, explicit Option<bool> resolution and RTSim existence",
+    "slay_join": "RTSim Actor::Npc -> server UID/entity generation; client lifecycle joined by UID within same run, not equal lifecycle strings",
+    "reward": "successful per-item sender removal/recipient insertion is separate from quest resolution/deposit; quest_id unavailable on transfer and never guessed",
+    "transport": "private file only; not exposed in ready/observe/events/frame/model responses"
+  },
+  "not_in_scope": ["task fixtures/oracles", "T catalog registration", "whole-task scripts", "provider integration", "full visual parity", "admin/server_command model actions"]
+}

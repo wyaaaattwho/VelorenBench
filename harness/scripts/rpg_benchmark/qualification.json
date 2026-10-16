@@ -1,0 +1,188 @@
+{
+  "accepted": false,
+  "capability_claim": false,
+  "fresh_integrated_primitives": {
+    "integrated034-dialogue-image-005": {
+      "marker_persistent": true,
+      "native_choices": true,
+      "native_end": true,
+      "same_actor": true,
+      "workshop_marker": true
+    },
+    "integrated034-equipment-image-002": {
+      "actual_equipment": true,
+      "old_shirt_retained": true,
+      "same_actor": true,
+      "selected_item_left_bag": true
+    },
+    "integrated034-namespace-hybrid-001": {
+      "actual_equipment": true,
+      "old_shirt_retained": true,
+      "same_actor": true,
+      "selected_item_left_bag": true
+    }
+  },
+  "fresh_integrated_tasks": [
+    {
+      "counterfactual_success": {
+        "dead_player": false,
+        "missing_receipts": false,
+        "wrong_session": false
+      },
+      "parts": {
+        "alive_arrival": true,
+        "picked_up": true,
+        "retained": true,
+        "runtime_event_qualified": true
+      },
+      "run": "integrated034-t02-hybrid-001",
+      "scope": "original measured native sequence/count cutoffs, no new success criterion",
+      "task": "T02"
+    },
+    {
+      "counterfactual_success": {
+        "dead_player": false,
+        "missing_receipts": false,
+        "wrong_session": false
+      },
+      "parts": {
+        "backup_retained": true,
+        "consumed": true,
+        "health_increased": true,
+        "health_threshold": true,
+        "injured_opening": true
+      },
+      "run": "integrated034-t05-image-001",
+      "scope": "original measured native sequence/count cutoffs, no new success criterion",
+      "task": "T05"
+    },
+    {
+      "counterfactual_success": {
+        "dead_player": false,
+        "missing_receipts": false,
+        "wrong_session": false
+      },
+      "parts": {
+        "declared_player_contribution": true,
+        "encounter_resolved": true,
+        "player_alive": true,
+        "target_registry_valid": true
+      },
+      "run": "integrated034-t06-sword-structured-002",
+      "scope": "original measured native sequence/count cutoffs, no new success criterion",
+      "task": "T06"
+    },
+    {
+      "counterfactual_success": {
+        "dead_player": false,
+        "missing_receipts": false,
+        "wrong_session": false
+      },
+      "parts": {
+        "actual_group_healing": true,
+        "ally_alive": true,
+        "ally_health_threshold": true,
+        "encounter_resolved": true,
+        "player_alive": true,
+        "spell_submitted": true,
+        "target_registry_valid": true
+      },
+      "run": "integrated034-t09-hybrid-001",
+      "scope": "original measured native sequence/count cutoffs, no new success criterion",
+      "task": "T09"
+    },
+    {
+      "counterfactual_success": {
+        "dead_player": false,
+        "missing_receipts": false,
+        "wrong_session": false
+      },
+      "parts": {
+        "actual_merchant_commit": true,
+        "actual_payment": true,
+        "equipment_worn": true,
+        "purchased_equipment": true,
+        "reserves_retained": true,
+        "surplus_sold": true
+      },
+      "run": "integrated034-t10-hybrid-001",
+      "scope": "original measured native sequence/count cutoffs, no new success criterion",
+      "task": "T10"
+    },
+    {
+      "counterfactual_success": {
+        "dead_player": false,
+        "missing_receipts": false,
+        "wrong_session": false
+      },
+      "parts": {
+        "actual_player_reward": true,
+        "native_resolution_true": true,
+        "ordinary_acceptance": true
+      },
+      "run": "integrated034-t11-structured-001",
+      "scope": "original measured native sequence/count cutoffs, no new success criterion",
+      "task": "T11"
+    }
+  ],
+  "fresh_original_read_drain": "candidate-001/runs/integrated034-original-frame-drain-001/result.json",
+  "historical_correspondence": "visual033 traces retain parent0.4.1/candidate001; inherited T05 visual002/030 not relabelled; new integrated T05 is separately identified",
+  "integrated_runtime_sha256": "e390dc78b59a6594055d4bdc460ea983c21444f0f503faceb1c99b6021e32dc5",
+  "native_tree_sha256": "4c2cc4bb7cb7e6a94f963253866f09c2a0a6fde0df2d23ece9c99f78322944db",
+  "other_task_mode_witnesses": "inherited accepted family evidence, not fresh034 or release038 coverage",
+  "release038": "build/install/relocation/runtime seam only; see delivery report, not a task campaign",
+  "schema": "rpg-release-qualification/1",
+  "selected_source": "final-local-candidate1.0.0/build001; A0054admission; awaits A0selection/freeze",
+  "final045": {
+    "fixture_version": "t12-native-slay-v6",
+    "construction_revision": "town-approach-006",
+    "T12_scored_admission": false,
+    "accepted": false,
+    "capability_claim": false,
+    "fresh_evidence": "External045 integration-notice.yaml and verification artifacts bind exact per-run identities; no inherited run relabelling",
+    "scope": "pre-offer target placement/readback and drift refusal; Enemy UID separation and original living giver reobservation; unchanged scorer/native"
+  },
+  "final043": {
+    "status": "blocked",
+    "T12_scored_admission": false,
+    "native_bundle_sha256": "ee48ee9eb9d6c5e72f25a53a03d424bccaf8a087f1fba6c3e4b8f13e0bf7c2d2",
+    "actual_run_python_build": "0.5.2/build002",
+    "runtime_sha256": "eb813205c9877811d01cd5dd2b874dcd38f3060361a3f8a1dfa3da8e3674ec72",
+    "content_sha256": "32f4188b0ad747f96f10de12766e47b23ff7863ca33d2b235e61d2ddc8566b83",
+    "source_manifest_sha256": "e5407c038f8c6c675b1c61227f680372c219f07e5f8a081afc09f9b9ec7e344e",
+    "fresh_runs": {
+      "final043-structured-001": "failed: actual accepted target Actor idx8 differs from designated idx3; player death; cleanup complete",
+      "final043-hybrid-002": "failed pre-entry: native giver death and dialogue timeout; zero provider requests/frames; cleanup complete"
+    },
+    "inherited042": "040 positives belong to partial0220.3.5/f476 hosts, not integrated043",
+    "scorer": "release041 preserved;042 helper differs but both replay040 positives; not established as043 failure cause",
+    "final_build003": "current failure qualification/docs only; no retroactive run relabelling",
+    "accepted": false,
+    "capability_claim": false
+  },
+  "support_evidence_sha256": "f0d5d7c2e62ad3b8e182762778c6640cfc35cada4452d8d3aff8f0baa27aeeb4",
+  "inherited_support_evidence_sha256": "27d67dd2a2f4ceb7076561487c360c5b0461a8513bc080711757fcec186e1da1",
+  "version": "1.0.0",
+  "integrated_runtime_sha256_scope": "historical034 identity, not a final054 binding identity",
+  "final054": {
+    "admission_authority": "A0 D301-scorer-adjudication-local-candidate-054",
+    "T12_scored_admission": {
+      "structured": true,
+      "hybrid": true,
+      "image": false
+    },
+    "qualification_material_sha256": "f0d5d7c2e62ad3b8e182762778c6640cfc35cada4452d8d3aff8f0baa27aeeb4",
+    "public_candidate_authorized": true,
+    "chronological_transition_index_zero_based": [
+      843,
+      844
+    ],
+    "reward_sequence": 4099,
+    "evidence": "051native +052installedderived +054chronologicalreplay +finalartifactchecks",
+    "original012_result_rewritten": false,
+    "private052_driver_qualified": false,
+    "capability_claim": false,
+    "selected": false,
+    "frozen": false
+  }
+}

@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools==80.9.0", "wheel==0.45.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rpg-benchmark-harness"
+version = "1.0.0"
+description = "VelorenBench: an external-agent harness for reproducible RPG task evaluation in Veloren"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+[project.urls]
+Repository = "https://github.com/wyaaaattwho/VelorenBench"
+Issues = "https://github.com/wyaaaattwho/VelorenBench/issues"
+Documentation = "https://github.com/wyaaaattwho/VelorenBench#readme"
+
+[project.optional-dependencies]
+copilot = ["github-copilot-sdk==1.0.11"]
+test = ["pytest==8.4.2", "pytest-subtests==0.15.0"]
+
+[project.scripts]
+rpg-benchmark = "scripts.rpg_benchmark.cli:main"
+rpg-copilot-adapter = "scripts.rpg_sdk_agent:main"
+
+[tool.setuptools]
+package-dir = {"" = "harness"}
+py-modules = []
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["harness"]
+include = ["scripts", "scripts.rpg_benchmark"]
+namespaces = false
+
+[tool.setuptools.package-data]
+"scripts.rpg_benchmark" = ["scenes.json", "host-protection.json", "qualification.json"]
+
+[tool.setuptools.data-files]
+"share/rpg-benchmark-harness" = ["README.md", "NOTICE.md", "BENCHMARK_CARD.md", "API.md", "TASKS.md", "SUPPORT.md", "BUILD.md", "PROVENANCE.md", "TESTING.md", "requirements-build.lock", "requirements-test.lock", "requirements-test-sdk.lock"]
+"share/rpg-benchmark-harness/config" = ["config/runtime.example.json", "config/content.example.json", "config/renderer.example.json"]

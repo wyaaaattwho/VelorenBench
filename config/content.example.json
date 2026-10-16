@@ -1,0 +1,15 @@
+{
+  "schema": "rpg-content/1",
+  "package_files": {},
+  "seeds": [130626853],
+  "native": {
+    "server": "REPLACE_WITH_VERIFIED_SHA256",
+    "bridge": "REPLACE_WITH_VERIFIED_SHA256",
+    "build_receipt": "REPLACE_WITH_VERIFIED_SHA256",
+    "assets_files": {},
+    "server_source_head_current": "REPLACE_WITH_VERIFIED_GIT_HEAD",
+    "native_source_head_current": "REPLACE_WITH_VERIFIED_GIT_HEAD"
+  },
+  "sources": {},
+  "external_adapters": {}
+}

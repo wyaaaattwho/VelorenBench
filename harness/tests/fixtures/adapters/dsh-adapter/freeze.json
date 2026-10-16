@@ -1,0 +1,17 @@
+{
+  "files": {
+    "adapter.py": "8e4d7d515eff29e8840eca4f2ccedd9098e1ace9cf50af99f5fe6dc5cf58b37d",
+    "build.py": "57937edc066da18007fe9a2817f89ccbd1d990671a353f44256e2258e51e018e",
+    "dsh_external_v1/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dsh_external_v1/dsh_agent.py": "3858cfb6f894b9911f6dde3fc11f967facd64eb71a78ee1256c8bbbe9333f550",
+    "dsh_external_v1/dsh_credentials.py": "ec00f9f63ac8fe2d826ae0abe6c8674a656c1de87a234228515dd6cc5c2fc965",
+    "dsh_external_v1/dsh_native_protocol.py": "c4fa0ed1be7b36c3f13d16df3e7f136790e8004245ab397c25150f7ac7eed6ed",
+    "dsh_external_v1/dsh_provider.py": "21b187acb238ec6cd7dad17294447584722d6b2675908c33f8ba913af65de60f",
+    "dsh_external_v1/dsh_schema.py": "0d3553c65c6e7822f563fd225cacb5569a656b7e54b02bda1d3f452c94d22b3f",
+    "dsh_external_v1/dsh_timing.py": "d05b63864054f5784673e602ff882de0f8f993d803eab5d6fbdcb4c426d57a5a",
+    "dsh_external_v1/dsh_tools.py": "bebb83bfe2e73fe89fa9a8dbb0ae4b3931c763dcc1b5bce3ef1d4a92fea2ae86",
+    "dsh_external_v1/entry.py": "576b976cc011ce0c08a552192fd3f62f66538ef7032f1815dd58b49f4b3f09b2",
+    "dsh_external_v1/mocks.py": "36941c053a0700ee1bedad26caa71e7a7cedcb5e3598014369c13333c7990ee2"
+  },
+  "root": "."
+}

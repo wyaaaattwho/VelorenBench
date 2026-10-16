@@ -1,0 +1,162 @@
+{
+  "contract": "veloren-ordinary-native-frame-action",
+  "frame_id_scope": "session_id plus actor lifecycle plus frame_id; immutable attachment uses create_new",
+  "frame_request": {
+    "args": {
+      "actor": {
+        "lifecycle": "<ready.data.actor.lifecycle>",
+        "uid": "<ready.data.actor.uid integer>"
+      },
+      "expected_session_id": "<ready.session_id>",
+      "schema_version": "1.0"
+    },
+    "cmd": "frame",
+    "id": "before-1",
+    "protocol_version": "0.2"
+  },
+  "frame_response": {
+    "error": null,
+    "id": "before-1",
+    "ok": true,
+    "protocol_version": "0.2",
+    "result": {
+      "actor": {
+        "lifecycle": "<same lifecycle>",
+        "uid": "<same integer>"
+      },
+      "camera": {
+        "mode": "ThirdPerson",
+        "orientation_radians": [
+          0,
+          0,
+          0
+        ],
+        "profile": "ordinary-player"
+      },
+      "capture_host": {
+        "begin_ns": "<string>",
+        "clock": "unix-realtime-nanoseconds-as-decimal-string",
+        "readback_complete_ns": "<string>"
+      },
+      "client_update_counter": "<local client update count; NOT server tick>",
+      "correlation": {
+        "action_effect_ordering": "unconfirmed",
+        "actuator_at_render_submission": {
+          "active_action_id": "<active action ID or null>",
+          "actor": "<same actor>",
+          "control": "<owner/generation/sequence/retired/protection_generation>"
+        },
+        "dispatch_sequence": "<number of validated-envelope dispatches, including rejected actions>",
+        "last_actuator_dispatch": {
+          "acceptance": "consult-native-receipts-not-inferred-from-dispatch",
+          "dispatch_sequence": "<integer>",
+          "request_id": "<last step/control dispatch>",
+          "requested_action_id": "<requested action ID or null>"
+        },
+        "last_dispatched_request_id": "<dispatch ID, may be frame itself>",
+        "synchronization": "same-client-render-loop-not-server-barrier"
+      },
+      "frame_id": "<process-id-frame-sequence>",
+      "frame_schema_version": "1.0",
+      "hud": {
+        "debug_overlay": false,
+        "dialogue": false,
+        "inventory": false,
+        "map": false,
+        "profile": "normal-voxygen",
+        "trade": false,
+        "visible": true
+      },
+      "image": {
+        "byte_length": "<integer>",
+        "height": "<integer>",
+        "mime_type": "image/png",
+        "model_attachment_delivered": false,
+        "path": "<absolute immutable PNG path>",
+        "sha256": "<hash of exact PNG bytes>",
+        "transport": "local-file",
+        "width": "<integer>"
+      },
+      "native_tick": null,
+      "session_id": "<same session>"
+    },
+    "session_id": "<same session>",
+    "type": "response"
+  },
+  "identity_source": "data.actor from native_renderer_ready; same session and lifecycle as native continuous-control actor",
+  "native_protocol_version": "0.2",
+  "public_action_request": {
+    "args": {
+      "action": {
+        "action_id": "sit-1",
+        "type": "sit"
+      }
+    },
+    "cmd": "step",
+    "id": "sit-1",
+    "protocol_version": "0.2"
+  },
+  "python_integration_requirements": [
+    "Wait for native_renderer_ready and retain exact actor/session tokens.",
+    "Read image.path bytes, verify sha256 and dimensions, attach real image contents to provider; a path in a prompt is not image delivery.",
+    "Retain original PNG plus any compressed/cropped model input and transformation hashes.",
+    "Do not infer action-after effects from callback completion, file time, dispatch sequence or local client update counter.",
+    "Native errors and late receipts retain existing unknown-effect/no-blind-resubmit semantics.",
+    "No model inference or benchmark qualification is claimed by this schema."
+  ],
+  "startup_event": "native_renderer_ready",
+  "status": "bounded visual interaction successor; qualification recorded separately",
+  "timing_profile": "voxygen-variable-dt-client-update-v1; not headless fixed-60Hz timing equivalence",
+  "transport": "stdin/stdout NDJSON; diagnostics on stderr; local PNG attachments",
+  "ui_request": {
+    "args": {
+      "actor": "<actor>",
+      "expected_session_id": "<session>",
+      "panel": "inventory",
+      "schema_version": "1.0"
+    },
+    "cmd": "ui",
+    "id": "inventory-1",
+    "protocol_version": "0.2"
+  },
+  "ui_support": {
+    "admin": "no server_command or unfiltered chat through the rendered seam",
+    "image": "restricted image-receipts-v1 projection across all responses/events; no observe/events/health/hidden-target lookup",
+    "structured_and_hybrid": "retain original native protocol observation/step/continuous-control validators",
+    "visible_item_slot_target_dialogue_trade_address_tokens": "native pointer inventory use/equip and dialogue; normal Talk prompt/statement continuation; trade unsupported",
+    "world_inventory_equipment_map": "ordinary HUD panel route implemented"
+  },
+  "version": "1.0",
+  "visual_ui": {
+    "action_profile": "visual-ui-v1",
+    "addressing": "actual stock HUD pixels; no overlay or extracted choices",
+    "arguments": [
+      "action_id",
+      "frame_id",
+      "ui_state_id",
+      "expected_session_id",
+      "actuator",
+      "gesture",
+      "x",
+      "y"
+    ],
+    "freshness": "latest frame, same session/actor/UI contents/actuator; one gesture per frame",
+    "gestures": [
+      "hover",
+      "right_click",
+      "left_click",
+      "interact"
+    ],
+    "pending_unknown": "collect original receipt only; duplicate action ID cannot execute again",
+    "receipts": "existing native trackers; private exact canonical resolution, image-projected public receipt",
+    "schema": "native-visual-ui/1",
+    "unsupported": [
+      "crafting",
+      "trade",
+      "skills",
+      "map targeting",
+      "drag",
+      "unequip"
+    ]
+  }
+}
