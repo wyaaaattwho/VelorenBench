@@ -3,7 +3,27 @@
 Use `rpg-benchmark --help` and `rpg-benchmark run --help` for the exact
 arguments. Python imports remain under `scripts.rpg_benchmark`; the common
 player tool implementation is `scripts.rpg_sdk_agent`. Core imports do not
-require the optional Copilot SDK.
+require the optional Copilot SDK, aiohttp or the reference DSH package.
+
+## Installed Python API quickstart (no native/model execution)
+
+Run this with the interpreter in which you installed core 1.0.1. It loads
+the actual task catalog and support schema, without a game, provider or account:
+
+```sh
+python -I -B -c '
+from pathlib import Path
+from scripts.rpg_benchmark import suite
+from scripts.rpg_benchmark.renderer_support import support_matrix
+tasks = suite.load(Path(suite.__file__).with_name("scenes.json"))
+print(sorted(tasks))
+print(support_matrix()["renderer"]["C1/natural"])
+'
+```
+
+For native episodes use the CLI below: it owns fixture isolation, oracle
+evaluation and cleanup. For an external Harness, use the `player.tools_for`
+seam described below rather than constructing private setup/oracle clients.
 
 ## Installation and native bindings
 
@@ -61,24 +81,19 @@ contain a task-solving action sequence. It negotiates `--model`,
 `--reasoning-effort`, `--observation-mode` and `--action-profile` against an
 explicit provider declaration.
 
-**Current CLI limitation:** the bundled live route is `existing-luna`,
-declaring `gpt-6-luna` / effort `none`. It requires a separately supplied,
-hash-pinned credential-loader module exporting
-`_get_oauth_token(allow_interactive_auth=False)`. No loader, account or
-credential is provided. This route uses the official service endpoints in
-`luna_route.py`; it is not a generic OpenAI-compatible base-URL option.
-The optional `[copilot]` SDK does not provision this loader.
-
-For a user who has separately authorized and configured that route, the
-actual CLI shape is:
+For your own authorized provider, the `standard-responses` route takes an
+explicit HTTPS `/responses` endpoint, environment-variable credential name
+and provider capability/model declaration. Set `ADAPTER_CONFIG` to the JSON
+shown under [Standard provider configuration](#standard-provider-configuration)
+and supply that credential in the process environment. The actual CLI shape is:
 
 ```sh
 rpg-benchmark run --backend renderer --mode capability \
   --config /absolute/binding/runtime.json --config-sha256 RUNTIME_SHA256 \
   --scene T05 --terrain natural --harness responses \
-  --model gpt-6-luna --reasoning-effort none \
+  --model YOUR_MODEL --reasoning-effort none \
   --observation-mode hybrid --action-profile ordinary-renderer-native-v1 \
-  --adapter-config '{"route":"existing-luna","credential_loader":"/absolute/local_loader.py","credential_loader_sha256":"LOADER_SHA256"}' \
+  --adapter-config "$ADAPTER_CONFIG" \
   --out /absolute/binding/runs/agent-001 \
   --recordings /absolute/work/outputs/recordings/agent-001
 ```
@@ -86,6 +101,14 @@ rpg-benchmark run --backend renderer --mode capability \
 This is an interface example, **not an executed result**. Unlike setup, it
 would make live model calls and may incur costs. Do not run it without your
 own service authorization.
+
+The optional `existing-luna` route instead declares `gpt-6-luna` / effort
+`none` and takes
+`--adapter-config '{"route":"existing-luna","credential_loader":"/absolute/local_loader.py","credential_loader_sha256":"LOADER_SHA256"}'`.
+Its separately supplied, hash-pinned module must export
+`_get_oauth_token(allow_interactive_auth=False)`. It uses `luna_route.py`
+service endpoints, not a generic base URL. No loader, account or credential is
+provided; installing the optional `[copilot]` SDK does not provision a loader.
 
 For local engineering without a provider account, the same entry supports
 a **synthetic loopback Responses server** using
@@ -116,17 +139,27 @@ results. Tests use this seam, not a model/provider campaign.
 
 [`external.py`](harness/scripts/rpg_benchmark/external.py) defines
 `Adapter`, `Launch` and `rpg-external-evidence/1`. An adapter declaration uses
-`rpg-external-adapter/2` with:
+`rpg-external-adapter/3` with:
 
 - player interface `rpg-sdk-native-contract/2`, native protocol `0.2`;
 - model/effort profiles, modality/action-profile mappings, strict integer
   transport and asynchronous receipt support;
 - pinned implementation, source freeze, configuration and public-context
   launch/evidence functions.
+- `runtime.python`: an absolute interpreter in the **adapter's own environment**;
+  `runtime.preflight`: its installed `-m PACKAGE.preflight` command arguments;
+- `capabilities.backends` (`headless` and/or `renderer`) and, for renderer,
+  `capabilities.player_tools: "rpg-player-tools/1"`.
 
-The implementation exports `build_launch(context) -> Launch` and
+The implementation exports `validate_config(context)`, `build_launch(context) -> Launch` and
 `collect_evidence(context) -> dict`. It receives the goal, public episode
 socket, configuration and output locations, not fixture/oracle internals.
+Configuration validation and isolated dependency/executable preflight run
+**before native world creation**. A successful preflight prints a JSON
+`rpg-adapter-preflight/1` receipt whose `player_package_files` equals
+`runtime.package_files()` of the evaluator. Install the same benchmark artifact
+in each adapter environment; do not inject a different venv through `PYTHONPATH`
+or `.pth`. Launch uses the declared interpreter with installed modules.
 See the synthetic
 [`mock-adapter`](harness/tests/fixtures/adapters/mock-adapter) and
 [`test_external_harness.py`](harness/tests/test_external_harness.py) for the
@@ -140,19 +173,61 @@ file (`rpg-external-admission/1`; the legacy approver field is literally
 checks. It is a configuration/evidence gate, not a credential or service grant.
 `--external-engineering` explicitly identifies synthetic checks.
 
-**Do not infer renderer support from this generic seam:** renderer episode
-selection currently requires `--harness responses`. Arbitrary external
-adapter episodes use the inherited headless path, whose portable native
-assembly is not delivered here. The Python custom-adapter API and synthetic
-tests are usable independently; extending renderer/provider admission is
-future engineering, not silently enabled by this release.
+Renderer admission now uses backend/task/action-profile and adapter transport
+capabilities, not the Responses Harness identity. Use
+`player.tools_for(native, evidence, configuration, frames=..., episode=...)`
+to obtain the same `Tool`/`Invocation`/`Result` interface for either backend.
+Renderer tools reuse verified frame bytes and fail-closed image projection.
+`player.content_blocks` serializes **broker** image bytes; an independent
+Harness with an attachment store must admit these into its official image
+references before its ordinary model loop consumes them. Declaring support
+alone does not prove this transport works.
+
+Declarations /1 and /2 remain readable for historical evidence. Executing
+external entries must migrate at this single boundary to /3 with preflight.
+Legacy built-in entries are retained for compatibility, not newly qualified
+external integrations. GameAgent is separately supplied, not distributed or
+fully qualified here; its internals are not a benchmark publication gate.
+E246 observed Brain/Jev image delivery but an invalid image episode, not
+absence of image capability or successful full mixed-modality execution.
+Adapters using the bridge must use the installed `rpg-episode-bridge` console
+entrypoint, never a `.py` file requiring source executable bits.
+
+## Standard provider configuration
+
+The bundled Responses transport supports this explicit live route:
+
+```json
+{
+  "route": "standard-responses",
+  "endpoint": "https://YOUR_PROVIDER/v1/responses",
+  "api_key_env": "MY_PROVIDER_API_KEY",
+  "provider": {
+    "schema": "rpg-responses-provider/1",
+    "id": "my-declared-provider",
+    "tool_calls": true,
+    "observation_modes": ["structured", "image", "hybrid"],
+    "image_transport": "image-blocks-v1",
+    "model_profiles": [{"model": "YOUR_MODEL", "reasoning_efforts": ["none"]}],
+    "default_model": "YOUR_MODEL",
+    "default_effort": "none"
+  }
+}
+```
+
+Set the credential only in the process environment. Choose `--model` and
+`--reasoning-effort` from that declaration. No endpoint/account/model discovery,
+redirect or fallback occurs. This is a protocol interface, not a provider
+compatibility/vision claim or authorization to purchase access. The existing
+Luna profile and synthetic loopback route remain separate explicit choices.
 
 ## Observations, effects and artifacts
 
 Structured/hybrid use ordinary public native APIs. Image projection is
 applied to successful, refused, pending and late tool responses; images are
 actual verified PNG bytes transported as Responses `input_image` blocks,
-not filenames. Accounting includes historical image blocks actually resent.
+not filenames. Accounting includes historical image blocks actually resent
+in user content **and function-call outputs**, as used by official pi-ai.
 Unknown effects remain fenced; duplicate no-effect refusal replay is not a
 new mutation. Session, UID and lifecycle references must remain consistent.
 
@@ -168,3 +243,26 @@ the goal score separately from validity/classification, transport errors and
 cleanup. Preserve failed/invalid attempts, native-vs-client clock uncertainty
 and original results when deriving a corrected score. Never publish secrets
 or private oracle data as agent input; audit artifacts before sharing.
+
+`process_cleanup_complete` records native/player/socket retirement separately
+from `harness_evidence_complete` and aggregate `cleanup_complete`. Missing final
+evidence is not evidence that a known-gone PID still runs. A normal Agent stop
+can be a valid non-success when the evaluator actually observed the final state;
+the stopping sample is taken after the entry has exited, not from an observation
+that raced its last action. An unobserved final state or unknown mutation remains unknown. Goal/death
+precedence is independent of later shutdown errors; validity still records
+those errors and does not turn them into successes.
+
+Adapter-provided observed runtime model metadata is preserved separately from
+declared profiles. Missing metadata stays `unknown`; the generic evaluator
+does not infer which models or executive components an adapter uses.
+
+`task_terminal.classification` captures the measurement-time classification.
+The top-level `classification` can refine an ordinary entry exit after collecting
+its evidence, distinguishing a normal model stop from provider or entry errors.
+An exit alone is not evidence of either error.
+
+The separately installed [official-dsh integration](integrations/deepseek/README.md)
+provides a complete reference implementation and standalone binding helper.
+It is not a core dependency, and its provider profile is distinct from the
+standard Responses route above.

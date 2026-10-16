@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import asyncio
 
 from scripts.rpg_benchmark import lifecycle
 from scripts.rpg_benchmark import capabilities, results
@@ -56,7 +57,7 @@ class Adapter:
         self.admission = admission
         self.pins_sha = pins_sha
         self.declaration_sha = declaration["sha256"]
-        if self.manifest.get("schema") not in {CONTRACT, capabilities.SCHEMA}:
+        if self.manifest.get("schema") not in {CONTRACT, capabilities.SCHEMA, capabilities.PROCESS_SCHEMA}:
             raise ValueError("Unsupported external adapter declaration version")
         for key, expected in {"id": identifier, "player_interface": PLAYER}.items():
             if self.manifest.get(key) != expected:
@@ -94,6 +95,49 @@ class Adapter:
             raise ValueError("Adapter must export build_launch and collect_evidence")
         self.module = module
         self.context = None
+        self.runtime = self.manifest.get("runtime")
+        if self.manifest["schema"] == capabilities.PROCESS_SCHEMA:
+            if (not isinstance(self.runtime, dict) or set(self.runtime) != {"python", "preflight"}
+                    or not Path(self.runtime["python"]).is_absolute()
+                    or not isinstance(self.runtime["preflight"], list)
+                    or not self.runtime["preflight"]
+                    or any(not isinstance(arg, str) or not arg for arg in self.runtime["preflight"])):
+                raise ValueError("Process adapters require an independent interpreter and preflight command")
+
+    async def preflight(self, *, backend, frames=None):
+        capabilities.admit_backend(self.configuration, self.capabilities, backend)
+        if self.runtime is None:
+            raise ValueError("Migrate external adapters to /3 with an isolated runtime/preflight before execution")
+        validate = getattr(self.module, "validate_config", None)
+        if not callable(validate):
+            raise ValueError("Process adapter must validate its configuration before native allocation")
+        validate({"config": self.config, "runtime": self.runtime, "engineering": self.engineering,
+                  "configuration": self.configuration, "backend": backend})
+        python = Path(self.runtime["python"])
+        if not python.is_file() or not os.access(python, os.X_OK):
+            raise ValueError(f"Adapter interpreter is not executable: {python}")
+        command = [str(python), "-I", *self.runtime["preflight"]]
+        environment = clean_environment()
+        process = await asyncio.create_subprocess_exec(
+            *command, env=environment, stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT)
+        try:
+            stdout, _ = await asyncio.wait_for(process.communicate(), 60)
+        except BaseException:
+            if process.returncode is None:
+                process.kill()
+            await process.wait()
+            raise
+        if process.returncode:
+            raise ValueError(f"Adapter dependency/executable preflight failed ({process.returncode}): "
+                             + stdout.decode(errors="replace").strip())
+        from . import runtime
+        receipt = json.loads(stdout)
+        if (receipt.get("schema") != "rpg-adapter-preflight/1"
+                or receipt.get("player_package_files") != runtime.package_files()):
+            raise ValueError("Adapter must install the exact evaluator player package; content differs")
+        self.backend, self.frames = backend, frames
+        return {"command": command, "exit_code": process.returncode, "receipt": receipt}
 
     def launch(self, *, task, socket, output, output_root, python, common_interface):
         self.context = {
@@ -103,11 +147,15 @@ class Adapter:
             "configuration": self.configuration, "capabilities": self.capabilities,
             "legacy_contract_compatibility": self.legacy,
             "task": task, "episode_socket": str(socket), "output": str(output),
-            "output_root": str(output_root), "python": python,
+            "output_root": str(output_root),
+            "python": self.runtime["python"] if self.runtime else python,
             "common_interface": common_interface, "config": self.config,
             "engineering": self.engineering,
             "admission": str(self.admission) if self.admission is not None else None,
             "pins_sha256": self.pins_sha, "adapter_sha256": self.declaration_sha,
+            "backend": getattr(self, "backend", "headless"),
+            "frames": str(self.frames) if getattr(self, "frames", None) else None,
+            "episode_id": output.parent.name,
         }
         plan = self.module.build_launch(self.context)
         if (not isinstance(plan, Launch) or not plan.command
@@ -117,6 +165,10 @@ class Adapter:
                 or not isinstance(plan.env, dict)
                 or any(not isinstance(key, str) or not isinstance(value, str) for key, value in plan.env.items())):
             raise ValueError("Invalid external launch contract")
+        if self.runtime and (
+                plan.command[0] != self.runtime["python"]
+                or {"PYTHONPATH", "PYTHONHOME"} & plan.env.keys()):
+            raise ValueError("Process adapter must use its declared interpreter without venv path injection")
         self.plan = plan
         self._inside(plan.entry_stamp)
         return plan
@@ -160,7 +212,7 @@ class Adapter:
                 raise ValueError("External backbone/effort evidence mismatch")
             if request.get("synthetic") is not self.engineering:
                 raise ValueError("External evidence synthetic/live mode mismatch")
-        result["runtime_model_metadata"] = {"brain": "unknown", "jev": "not-used"}
+        result.setdefault("runtime_model_metadata", {"brain": "unknown", "jev": "unknown"})
         return result
 
 
@@ -256,3 +308,12 @@ def retired(facts):
         if current == start:
             return False
     return facts.get("cleanup_complete") is True
+
+
+def clean_environment():
+    """Never borrow site-packages from the evaluator or another adapter venv."""
+    environment = os.environ.copy()
+    for key in ("PYTHONPATH", "PYTHONHOME"):
+        environment.pop(key, None)
+    environment["PYTHONNOUSERSITE"] = "1"
+    return environment

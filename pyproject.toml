@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rpg-benchmark-harness"
-version = "1.0.0"
+version = "1.0.1"
 description = "VelorenBench: an external-agent harness for reproducible RPG task evaluation in Veloren"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -31,6 +31,7 @@ test = ["pytest==8.4.2", "pytest-subtests==0.15.0"]
 [project.scripts]
 rpg-benchmark = "scripts.rpg_benchmark.cli:main"
 rpg-copilot-adapter = "scripts.rpg_sdk_agent:main"
+rpg-episode-bridge = "scripts.rpg_benchmark.bridge_client:main"
 
 [tool.setuptools]
 package-dir = {"" = "harness"}

@@ -2,6 +2,16 @@
 
 ## Python Harness
 
+Source release: **v1.0.1**, with core **1.0.1** and the separate reference
+adapter **0.1.0**. Use the tag-pinned checkout in [README.md](README.md).
+Native Rust source/mechanics and asset identities are unchanged. New adapter environments
+are independent installations: install the same benchmark wheel in each,
+then the adapter's declared dependency lock and installed entry module.
+Run the adapter's no-model preflight before a native episode. Core installation
+must not accidentally supply an external Agent's imports. Process adapters
+using the bridge require `rpg-episode-bridge` in their interpreter's `bin` directory.
+Do not chmod source scripts or join site-packages with `PYTHONPATH`/`.pth`.
+
 Python >=3.13 is required; core runtime dependencies are empty. From the
 repository root:
 
@@ -125,6 +135,8 @@ assets external. `check` and binding launch no game.
 
 Use the setup example in README only after prerequisites pass. This source
 preparation did not run a full Rust build, GPU test, native episode, clean
-machine deployment or model campaign. Dependency/toolchain retrieval,
+machine deployment or model campaign. Retained final008 native/model checks
+reused existing Linux/aarch64 binaries and assets; see [PROVENANCE.md](PROVENANCE.md).
+Dependency/toolchain retrieval,
 actual compilation and external asset/driver availability remain unverified
 here; source assembly and synthetic packaging tests are narrower checks.

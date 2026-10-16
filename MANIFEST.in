@@ -5,6 +5,12 @@ recursive-include config *.json
 recursive-include tools *.py
 recursive-include harness/scripts *.py *.json *.md
 recursive-include harness/tests *.py *.json
+include integrations/deepseek/.gitignore integrations/deepseek/LICENSE
+include integrations/deepseek/MANIFEST.in integrations/deepseek/NOTICE.md
+include integrations/deepseek/README.md integrations/deepseek/PROVENANCE.md
+include integrations/deepseek/pyproject.toml integrations/deepseek/requirements*.lock
+recursive-include integrations/deepseek/dsh_external_v1 *.py *.mjs *.json *.lock
+recursive-include integrations/deepseek/tests *.py *.mjs
 global-exclude __pycache__ *.py[cod]
 prune verification
 prune native-dist
@@ -13,3 +19,7 @@ prune dist
 prune native
 prune materials
 prune outputs
+prune integrations/deepseek/.work
+prune integrations/deepseek/verification
+prune integrations/deepseek/build
+prune integrations/deepseek/dist

@@ -1,5 +1,39 @@
 # Testing and package verification
 
+## Source release v1.0.1
+
+Install the current wheel before process tests so `rpg-episode-bridge` exists
+in the test interpreter's `bin` directory. `test_process_contract.py` covers
+the actual installed console process, capability-based admission, rejection
+before world allocation, real byte serialization/wire accounting, and observed
+non-success versus unknown final state. Existing lifecycle fixtures implement
+the added preflight seam without changing their outcome/error assertions.
+Those process/media peers are synthetic engineering fixtures, not native or
+real-model qualification. Historical-fixture skips already present in this
+export are not qualification passes.
+
+The actual official dsh integration must additionally be checked in its own
+declared environment through its Cordis/plugin/attachment/pi-ai loop; a mock
+Python Agent or a support-matrix row cannot substitute for that check.
+Retained official-DSH native/model evidence and the bounded integrated public
+core/DSH review are described in [PROVENANCE.md](PROVENANCE.md). E246 subsequently
+exercised final008/core1.0.1 in six selected native/model attempts; its four
+valid and two invalid Agent-side measurements are not a suite-wide
+qualification or ability estimate. Publication preparation does not repeat
+native/model runs for documentation/status-only changes.
+GameAgent is an external adapter, not distributed or fully qualified; its internal
+checks are not a benchmark release gate. Synthetic tests alone do not qualify
+any adapter's real model/image transport.
+
+Retained engineering receipts report core007 **882 passes, 120 historical
+skips and 105 passing subtests**, public DSH **34 contracts**, and final008
+fresh wheel/sdist checks **88 passes and one historical skip each**. These
+are prior receipts, not new full-suite runs of the publication payload.
+Executable core/adapter payload, task/native/data and test bytes are unchanged
+from final008; final packaging uses fresh local wheel/sdist paths and isolated
+installation/source/entrypoint checks. Receipt labels and selectors are in
+[PROVENANCE.md](PROVENANCE.md); validation artifacts are not release downloads.
+
 Use Python >=3.13 and keep environments/build outputs outside the checkout.
 The core runtime needs no third-party packages; pytest/build dependencies
 are separate.

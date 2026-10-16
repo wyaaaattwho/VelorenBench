@@ -29,6 +29,7 @@ def manifest(provider: dict, mode: str) -> dict:
     value = {"schema": capabilities.SCHEMA, "tool_track": "ordinary-renderer-public",
              "capabilities": {
                  "native_protocol": "0.2", "integer_transport": "strict", "asynchronous_receipts": True,
+                 "backends": ["renderer"], "player_tools": "rpg-player-tools/1",
                  **{key: provider[key] for key in ("model_profiles", "observation_modes", "image_transport")},
                  "action_profiles": ["visual-motor-v1", "visual-ui-v1", "ordinary-renderer-native-v1"],
                  "action_profiles_by_observation_mode": {

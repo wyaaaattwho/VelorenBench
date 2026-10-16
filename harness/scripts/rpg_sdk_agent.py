@@ -64,8 +64,8 @@ DESCRIPTIONS = {
     "step": (
         "Submit one model-selected native action, not a task script. Returns a LOCAL submission "
         "handle immediately, NOT a native success receipt. Use game_result to collect its "
-        "unchanged response; observe/map remain available while it runs. Consult game_contract "
-        "for this adapter's pin-grounded schema. Native coordinates are Z-up [x,y,z]; no "
+        "unchanged response; admitted observation tools remain available while it runs. "
+        "Consult game_contract for this adapter's pin-grounded schema. Native coordinates are Z-up [x,y,z]; no "
         "GameAgent coordinate conversion. Omitted action_id is generated once and returned; "
         "explicit IDs are preserved. Never resubmit an uncertain/timed-out action with a new ID. "
         "stop cancels the current action and releases inputs, not a selected historical ID. "
@@ -75,9 +75,11 @@ DESCRIPTIONS = {
     "set_control_state": (
         "Replace native fine-grained controls with explicit owner identity. There is no acquire "
         "command: a higher generation takes ownership; same-generation updates require same "
-        "owner and increasing sequence. Copy actor from control_actor and session from observe. "
-        "After protection, supply observed expected_protection_generation. Movement is native "
-        "world [x,y] in the unit disk. Applied is not gameplay success. step is busy while owned."
+        "owner and increasing sequence. Copy actor/session and current ownership from fresh public "
+        "control tokens: structured/hybrid observe or image-only frame actuator metadata. "
+        "After protection, set expected_protection_generation to the observed protection_generation. "
+        "Movement is native world [x,y] in the unit disk. Applied is not gameplay success. "
+        "step is busy while owned."
     ),
     "release_control_state": (
         "Release and retire an owner generation using its identity and a newer sequence; "
@@ -371,7 +373,8 @@ ENTITY_REF = object_schema(
     "Exact observed UID/lifecycle, not a name or position.",
     required=["uid", "lifecycle"], properties={"uid": integer(1), "lifecycle": string()})
 FENCE = object_schema(
-    "Explicit proposal fence from observe. Never automatically refreshed by the adapter.",
+    "Explicit proposal fence from fresh public control tokens: structured/hybrid observe "
+    "or image-only frame actuator metadata. Never automatically refreshed by the adapter.",
     required=["generation", "expected_session_id", "actor"], properties={
         "generation": integer(), "expected_session_id": string(), "actor": ENTITY_REF})
 OWNER_FIELDS = {

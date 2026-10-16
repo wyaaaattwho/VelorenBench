@@ -1,0 +1,9 @@
+include LICENSE NOTICE.md README.md PROVENANCE.md
+include requirements.lock requirements-hashed.lock requirements-build.lock
+recursive-include dsh_external_v1 *.py *.mjs *.json *.lock
+recursive-include tests *.py *.mjs
+global-exclude __pycache__ *.py[cod]
+prune .work
+prune build
+prune dist
+prune verification

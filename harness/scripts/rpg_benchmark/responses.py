@@ -37,7 +37,10 @@ def content(result: Result, call_id: str) -> list[dict]:
 def image_identities(items: list[dict], *, cache: dict | None = None) -> list[dict]:
     identities = []
     for item in items:
-        for block in item.get("content", []) if isinstance(item.get("content"), list) else []:
+        # Responses admits images in user content AND function-call output
+        # blocks. Official pi-ai uses the latter; count history on the real wire.
+        blocks = item.get("output") if item.get("type") == "function_call_output" else item.get("content")
+        for block in blocks if isinstance(blocks, list) else []:
             if block.get("type") == "input_image":
                 url = block["image_url"]
                 identity = cache.get(url) if cache is not None else None

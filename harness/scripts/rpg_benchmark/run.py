@@ -17,7 +17,7 @@ from scripts.rpg_benchmark import evidence, pins, scene, suite, setup, navigatio
 from scripts.rpg_benchmark.oracles import target_validity
 from scripts.rpg_benchmark import output_paths
 from scripts.rpg_benchmark import external
-from scripts.rpg_benchmark import compatibility, results
+from scripts.rpg_benchmark import compatibility, results, launching
 from scripts.rpg_benchmark.timing import AttemptTiming
 from scripts.rpg_benchmark.native import (
     EpisodeBoundary, Journal, NativeActionFailure, NativeBridge, NativeConfig,
@@ -65,7 +65,7 @@ def agent_command(out: Path, actor: str, python: str, source: str, *,
         "--task", task, "--runtime-mode", "async", "--gameplay-mode", gameplay_mode,
         "--model", "gpt-6-luna", "--reasoning-effort", "none", "--no-wall-limit",
         "--veloren-root", str(native.root),
-        "--bridge", str(Path(__file__).with_name("bridge_client.py")),
+        "--bridge", str(Path(python).parent / "rpg-episode-bridge"),
         "--assets", str(native.assets),
     ]
 
@@ -134,7 +134,7 @@ def measurement_stop(record: dict, definition: dict, validity: dict, *,
     elif entry_exited:
         record["stop_reason"] = "normal_entry_exited"
         record["classification"] = ("interface_entry_exited" if record.get("mode") == "interface-smoke"
-                                    else "provider_or_agent_error")
+                                    else "entry_exited_without_goal")
     elif horizon_reached:
         record["stop_reason"] = "evaluation_horizon"
         record["classification"] = "evaluation_horizon_without_success"
@@ -277,11 +277,11 @@ async def episode(args: argparse.Namespace) -> dict:
         raise ValueError("new family headless combinations are unqualified; use the explicit renderer matrix")
     if args.harness == "responses" and getattr(args, "backend", "headless") != "renderer":
         raise ValueError("Responses multimodal entry requires --backend renderer")
-    if args.mode == "interface-smoke" and args.harness != "responses":
-        raise ValueError("interface-smoke requires the explicit engineering Responses entry")
+    if args.mode == "interface-smoke" and args.harness not in {"responses", "external"}:
+        raise ValueError("interface-smoke requires an explicit engineering adapter")
     if args.mode == "task-engineering" and (
-            args.harness != "responses" or getattr(args, "backend", "headless") != "renderer"):
-        raise ValueError("task-engineering requires the declared Responses renderer task runtime")
+            args.harness not in {"responses", "external"} or getattr(args, "backend", "headless") != "renderer"):
+        raise ValueError("task-engineering requires a declared renderer adapter")
     if getattr(args, "backend", "headless") == "renderer":
         from .renderer_support import admit_selection
         admit_selection(args, preflight)
@@ -316,6 +316,8 @@ async def episode(args: argparse.Namespace) -> dict:
             "success": False, "capability_claim": False,
             "mode": args.mode, "scene": args.scene, "terrain": args.terrain, "harness": args.harness,
             "cleanup_complete": record.get("cleanup_complete", "fixture_setup_start" not in timing.points),
+            "process_cleanup_complete": record.get(
+                "process_cleanup_complete", "fixture_setup_start" not in timing.points),
             "pre_entry_failure": "harness_entry" not in timing.points,
         })
         record_failure(record, timing, error, source="entry")
@@ -361,8 +363,8 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
             from .responses_adapter import Adapter
             adapter = Adapter(args)
     elif args.harness == "external":
-        if args.mode != "capability":
-            raise ValueError("External entries use capability mode; setup/mechanism retain legacy paths")
+        if args.mode not in {"capability", "interface-smoke", "task-engineering"}:
+            raise ValueError("External entries use capability or engineering modes")
         if getattr(args, "compatibility", None) == "legacy-e244" and args.evaluation_horizon is None:
             args.evaluation_horizon = compatibility.E244_HORIZONS[args.scene]
         config = json.loads(getattr(args, "adapter_config", "{}"))
@@ -390,14 +392,12 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
         if args.source not in selected["sources"]:
             raise ValueError("BuiltinGameAgent requires an explicitly bound external source profile")
         source = selected["sources"][args.source]["root"]
-    if args.harness == "copilot-sdk" and args.mode == "capability":
-        import importlib.metadata
-        try:
-            version = importlib.metadata.version("github-copilot-sdk")
-        except importlib.metadata.PackageNotFoundError as error:
-            raise ValueError("Copilot adapter requires the declared optional [copilot] dependency") from error
-        if version != "1.0.11":
-            raise ValueError("Copilot adapter requires github-copilot-sdk==1.0.11")
+    preflight_receipt = None
+    if adapter is not None:
+        preflight_receipt = await adapter.preflight(
+            backend=args.backend, frames=getattr(args, "recordings", None))
+    elif args.mode == "capability":
+        preflight_receipt = await launching.preflight_builtin(args, selected, source)
     config = NativeConfig(
         server=Path(selected["dependencies"]["server"]["path"]),
         bridge=Path(selected["dependencies"]["bridge"]["path"]),
@@ -434,6 +434,7 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
         "content_sha256": selected["content_sha256"],
         "shared_before": lifecycle.protection_snapshot(),
         "cleanup": {},
+        "agent_preflight": preflight_receipt,
     }
     if adapter is not None:
         record["external_adapter"] = adapter.id
@@ -563,6 +564,7 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
                     samples.append(final)
                     record["score"] = suite.score(definition, fixture, final, actor.measured_receipts,
                                                    actor.native_events, samples)
+                    record["final_state_observed"] = True
                     measurement_validity(record, fixture, final, actor.measured_receipts, record["score"], journal)
                     if definition["kind"] == "combat":
                         record["mechanism_effect_verified"] = bool(record["score"]["enemy_damage_events"])
@@ -583,41 +585,22 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
                     else:
                         boundary = EpisodeBoundary(actor, socket_path)
                     await boundary.start()
-                    python = selected["dependencies"]["python"]["path"]
-                    if args.harness == "gameagent":
-                        command = agent_command(
-                            out, actor_name, python, source, task=fixture["task"],
-                            task_id=f"m1-{args.scene}", gameplay_mode=definition["gameplay_mode"], config=config)
-                    elif args.harness == "copilot-sdk":
-                        command = sdk_command(python, selected["dependencies"]["sdk"]["path"],
-                                              socket_path, fixture["task"], sdk_out, sdk_root)
+                    plan = launching.plan(
+                        args, selected, adapter, out=out, actor=actor_name, source=source,
+                        task=fixture["task"], definition=definition, native=config,
+                        socket=socket_path, sdk_out=sdk_out, sdk_root=sdk_root)
+                    command = list(plan.command)
+                    if args.harness == "copilot-sdk":
                         record["sdk_output"] = str(sdk_out)
-                    else:
-                        plan = adapter.launch(
-                            task=fixture["task"], socket=socket_path, output=out / "external",
-                            output_root=out, python=python,
-                            common_interface=selected["dependencies"]["sdk"]["path"])
-                        command = list(plan.command)
+                    if adapter is not None:
                         lifecycle.write(out / "external-context.json", adapter.context)
                     lifecycle.write(out / "agent-command.json", command)
-                    environment = os.environ.copy()
-                    environment.pop("PYTHONPATH", None)
-                    environment.pop("PYTHONHOME", None)
-                    environment["PYTHONNOUSERSITE"] = "1"
-                    environment["PATH"] = str(Path(python).parent) + os.pathsep + environment.get("PATH", os.defpath)
-                    environment.update(
-                        GAMEAGENT_VELOREN_ROOT=str(config.root),
-                        GAMEAGENT_VELOREN_BRIDGE=str(Path(__file__).with_name("bridge_client.py")),
-                        GAMEAGENT_VELOREN_ASSETS=str(config.assets),
-                        RPG_EPISODE_SOCKET=str(socket_path),
-                    )
-                    if adapter is not None:
-                        environment.update(plan.env)
+                    environment = external.clean_environment()
+                    environment.update(plan.env)
                     timing.mark("agent_launch_start")
                     player_log = (out / "agent-console.log").open("x")
                     player = await asyncio.create_subprocess_exec(
-                        *command, cwd=(plan.cwd if adapter is not None else
-                                       source if args.harness == "gameagent" else out), env=environment,
+                        *command, cwd=plan.cwd, env=environment,
                         stdout=player_log, stderr=asyncio.subprocess.STDOUT)
                     player_start = lifecycle.process_start_ticks(player.pid)
                     record["agent_pid"] = player.pid
@@ -630,6 +613,8 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
                     while True:
                         if adapter is not None:
                             adapter.observe_entry(timing)
+                        # An entry stop needs a sample taken after its last possible submission.
+                        entry_exited = player.returncode is not None
                         final = await actor.request("observe", origin="judge")
                         if definition["kind"] == "navigation_tasks":
                             await navigation_tasks.update_event(admin, actor, fixture, final)
@@ -638,10 +623,11 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
                             samples.append(final)
                         record["score"] = suite.score(definition, fixture, final, actor.measured_receipts,
                                                        actor.native_events, samples)
+                        record["final_state_observed"] = True
                         validity = measurement_validity(
                             record, fixture, final, actor.measured_receipts, record["score"], journal)
                         if measurement_stop(
-                                record, definition, validity, entry_exited=player.returncode is not None,
+                                record, definition, validity, entry_exited=entry_exited,
                                 horizon_reached=args.evaluation_horizon is not None
                                 and time.monotonic() - start >= args.evaluation_horizon):
                             break
@@ -750,9 +736,8 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
             socket_owner.close()
         record["shared_after"] = lifecycle.protection_snapshot()
         record["shared_preserved"] = record["shared_before"] == record["shared_after"]
-        record["cleanup_complete"] = (
+        record["process_cleanup_complete"] = (
             record.get("server_stopped") is True and record["shared_preserved"]
-            and record.get("harness_cleanup_complete", True)
             and all(record["cleanup"].get(name, {}).get("stopped") is True
                     for name in ("actor", "admin"))
             and all(value.get("stopped") is True for name, value in record["cleanup"].items()
@@ -763,9 +748,14 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
             and (args.mode not in {"capability", "interface-smoke", "task-engineering"} or player is None
                  or (record["cleanup"].get("agent", {}).get("stopped") is True
                      and record["cleanup"].get("boundary", {}).get("socket_removed") is True
-                     and not record["cleanup"].get("boundary", {}).get("errors")
                      and (not boundary.peer or boundary.peer.get("retired") is True)))
         )
+        record["harness_evidence_complete"] = (
+            player is None or record.get("entry_evidence_collection", {}).get("status") == "complete")
+        record["cleanup_complete"] = (
+            record["process_cleanup_complete"]
+            and record.get("harness_cleanup_complete", True)
+            and (boundary is None or not boundary.errors))
         if not record["cleanup_complete"]:
             record.update(success=False, capability_claim=False)
         timing.mark("terminal")

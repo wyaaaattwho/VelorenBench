@@ -17,18 +17,22 @@ def terminal(record, timing):
         return
     score = record.get("score", {})
     reason = record.get("stop_reason", "unobserved")
+    observed_stop = (reason == "normal_entry_exited" and record.get("final_state_observed") is True
+                     and score.get("success") is False and score.get("dead") is False)
     record["task_terminal"] = {
         "outcome": ("success" if score.get("success") else "death" if score.get("dead")
                     else "horizon" if reason == "evaluation_horizon"
+                    else "stopped_without_goal" if observed_stop
                     else reason if reason in NATIVE_REASONS else "unknown"),
         "native_success": score.get("success") is True,
         "native_death": score.get("dead") is True,
         "native_outcome": ("success" if score.get("success") else "death" if score.get("dead")
-                           else "not_terminal" if reason in NATIVE_REASONS else "unknown"),
+                           else "not_terminal" if reason in NATIVE_REASONS or observed_stop else "unknown"),
         "reason": reason, "observed_at": timing.points["terminal"],
         "classification": record.get("classification", "infrastructure_error"),
         "native_terminal_observed": bool(score.get("success") or score.get("dead")),
         "terminal_observed": reason in NATIVE_REASONS,
+        "final_state_observed": record.get("final_state_observed") is True,
     }
 
 

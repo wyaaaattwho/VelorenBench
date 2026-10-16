@@ -38,13 +38,16 @@ async def run(args) -> dict:
     native = common.NativeClient(args.episode_socket, evidence)
     route = None
     try:
-        if args.mock_provider is None:
+        if getattr(args, "endpoint", None) is not None:
+            from .provider_route import StandardResponsesRoute
+            route = StandardResponsesRoute(args.endpoint, args.api_key_env)
+        elif args.mock_provider is None:
             from .luna_route import ExistingLunaRoute
             route = ExistingLunaRoute(args.credential_loader, args.credential_loader_sha256)
         configuration, declaration = json.loads(args.configuration), json.loads(args.provider_declaration)
         if args.observation_mode != configuration["observation_mode"]:
             raise ValueError("entry observation mode differs from negotiated configuration")
-        if route is not None:
+        if getattr(args, "credential_loader", None) is not None:
             from .providers import LUNA
             if declaration != LUNA:
                 raise ValueError("live route requires its explicitly bound provider capabilities")
@@ -107,6 +110,8 @@ def main():
     parser.add_argument("--transport-probe", action="store_true")
     parser.add_argument("--credential-loader", type=Path)
     parser.add_argument("--credential-loader-sha256")
+    parser.add_argument("--endpoint")
+    parser.add_argument("--api-key-env")
     entry = asyncio.run(signals(parser.parse_args()))
     raise SystemExit(0 if entry["status"] == "idle" and not entry["cleanup_errors"] else 1)
 

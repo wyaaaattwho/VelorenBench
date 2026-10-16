@@ -7,7 +7,7 @@ import os
 import sys
 
 
-async def main() -> None:
+async def relay() -> None:
     reader, writer = await asyncio.open_unix_connection(
         os.environ["RPG_EPISODE_SOCKET"], limit=16 * 1024 * 1024)
 
@@ -35,5 +35,9 @@ async def main() -> None:
         await writer.wait_closed()
 
 
+def main() -> None:
+    asyncio.run(relay())
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

@@ -543,6 +543,9 @@ def test_wired_episode_persists_native_terminal_after_mock_teardown(
     monkeypatch.setattr(run, "NativeBridge", Bridge)
     monkeypatch.setattr(run, "EpisodeBoundary", Boundary)
     monkeypatch.setattr(run, "private_server", server)
+    # This lifecycle fixture mocks all processes. Dependency/installed-entry
+    # preflight is exercised separately by test_process_contract, before worlds.
+    monkeypatch.setattr(run.launching, "preflight_builtin", AsyncMock(return_value={"synthetic": True}))
     monkeypatch.setattr(run.setup, "command", AsyncMock())
     monkeypatch.setattr(run.setup, "wait_observation", AsyncMock(return_value=fixture["opening"]))
     monkeypatch.setattr(run.setup, "validate_opening", AsyncMock())

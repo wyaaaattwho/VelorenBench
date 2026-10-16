@@ -7,15 +7,20 @@ effects—not an agent's claim that it succeeded.
 
 ## Status and scope
 
-This is the **1.0.0 initial source release**, derived from the locally frozen
-benchmark **1.0.0/build001**. It contains 29 task definitions (17 original and
+This is **VelorenBench v1.0.1, a source-only release**. Use the `v1.0.1`
+Git tag and its resolved commit to identify release source; `504f3f2` is the
+historical initial-source baseline, not the v1.0.1 release commit.
+Benchmark semantics are preserved from the local **1.0.0/build001** freeze.
+It contains the unchanged 29 task definitions (17 original and
 12 additions) and 37 raw task/terrain combinations. These are **not** 37
 supported combinations in every observation mode.
 
-The local freeze established bounded engineering functionality, not a model
-evaluation campaign. **There are no 1.0 model results or leaderboard.** This
-public export changes packaging, documentation and deployment configuration;
-it is not byte-identical to the frozen local artifacts. See
+The local freeze and subsequent checks establish bounded engineering evidence,
+not a model-performance campaign. **No leaderboard or ability-rate estimate is
+published.** Relative to the initial source, this release stabilizes process
+launch, adapter transport and lifecycle accounting; it is not byte-identical
+to the original frozen local artifacts. This is not a turnkey binary
+distribution. See
 [provenance](PROVENANCE.md) and the [benchmark card](BENCHMARK_CARD.md).
 
 ### Features
@@ -23,7 +28,7 @@ it is not byte-identical to the frozen local artifacts. See
 - **Structured, image and hybrid observations**, with explicit task-specific
   admission and no hidden structured fallback for image-only agents.
 - A **generic external-agent interface** with action/receipt accounting,
-  negotiated model/effort/modality profiles and evaluator-owned termination.
+  negotiated model/effort/modality profiles, isolated preflight and evaluator-owned termination.
   The harness is not a hardcoded task solver; private qualification
   controllers are not distributed.
 - **Native outcomes** for inventory, equipment, damage, healing, trade,
@@ -56,9 +61,15 @@ portable native assembly in this release is **renderer-only**.
 
 ## Quickstart: Python source checkout
 
+Clone and check out the release tag, then verify the source inventory before
+installing. Native binaries, game assets and model access are separate:
+
 ```sh
 git clone https://github.com/wyaaaattwho/VelorenBench.git
 cd VelorenBench
+git checkout --detach v1.0.1
+git rev-parse HEAD
+python3.13 -B tools/package_source.py --check
 python3.13 -m venv --copies .venv
 .venv/bin/python -m pip install .
 .venv/bin/rpg-benchmark identity
@@ -114,10 +125,35 @@ result**. This example was not executed as gameplay for the source export.
 [API.md](API.md) documents the actual CLI/API, configurable agent entry,
 provider declaration and external adapter protocol. Agents receive a public
 goal and ordinary observations, not the private oracle. The bundled renderer
-entry uses the Responses tool loop; its current live provider binding is
-narrow, not an arbitrary provider-URL switch. Custom external adapters and
-their admission/evidence requirements are documented separately. No
+entry uses the Responses tool loop; it accepts an explicit standard HTTPS
+Responses endpoint, declared model capabilities and an environment credential.
+The existing authorized Luna route remains optional, with no fallback or
+account discovery. External /3 process adapters can declare renderer or headless
+transport without a provider/Harness-identity gate. No
 credentials, subscriptions or model calls are supplied or implied.
+
+**Independent-Harness status:** the official dsh Cordis/plugin/pi-ai loop has
+completed local structured, hybrid and image-only native/model integration
+checks with valid measurements and complete owned cleanup. Final008 evidence
+(E246) includes C1/structured craft, T05/hybrid recovery **without any frame**,
+and a valid N1/image normal non-win with real PNG delivery. Earlier
+frame-bearing hybrid evidence is distinct; E246 does not demonstrate a
+successful mixed visual/state-consumption episode. These selected checks
+are not an ability comparison or broad stability estimate. The separate
+[DeepSeek integration](integrations/deepseek/README.md) includes its original
+adapter source, pinned dependency installation and standalone binding helper;
+the official runtime is installed externally, not bundled.
+
+GameAgent is a separately supplied external adapter, not distributed or fully
+qualified here. E246 observed valid structured craft and two invalid Agent-side
+episodes: a hybrid protection-contract exception before inference and an
+image-history size exception after logged Brain/Jev image delivery. It is not
+entirely image-incapable, and these failures do not demonstrate core defects.
+Its implementation work is not a benchmark publication prerequisite.
+Every adapter must still satisfy the same observation, attribution,
+validity and cleanup contract; unsupported modes must be rejected explicitly.
+The bounded integrated review found no remaining public core/reference-DSH
+defect in its reviewed scope, not universal task or provider qualification.
 
 ## Methodology and reporting
 
@@ -167,6 +203,7 @@ native/source/         Selected modified Veloren GPL corresponding source
 native/*.json         Source, interface and external-asset identity metadata
 tools/                Source inventory, build, assembly and installation tools
 config/               Portable schema examples, not ready-to-run bindings
+integrations/deepseek/ Separate official-dsh adapter and installation instructions
 ```
 
 ## Contributing, licensing and citation
@@ -185,6 +222,6 @@ Thanks to the Veloren project and its contributors, and to the GameAgent
 codebase from which parts of the harness were adapted. This is an independent
 benchmark project, not an official Veloren release.
 
-For now, cite the **VelorenBench repository**, version and the exact commit
+For now, cite the **VelorenBench repository**, `v1.0.1` and the exact commit
 used: <https://github.com/wyaaaattwho/VelorenBench>. Include access date and
 configuration in research reports. No associated paper or DOI is claimed.

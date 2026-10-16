@@ -1,5 +1,20 @@
 # Support matrix
 
+**v1.0.1 is a source-only release.** This task matrix
+is unchanged and is not a Harness transport certification. External /3 adapters
+must independently pass isolated package/launch preflight and actual media
+transport checks. Official dsh has local native/model integration evidence for
+C1/natural structured and hybrid, and N1/flat image, with valid measurements and
+complete owned cleanup. E246 additionally measured T05/hybrid recovery with
+zero frames; it does not demonstrate successful mixed visual/state consumption.
+Its headless checks remain synthetic, not new native
+qualification. GameAgent is an external adapter, not distributed or fully qualified;
+its internal implementation is not a benchmark publication prerequisite.
+E246 observed structured craft and two invalid Agent-side episodes, including
+an image-history exception after logged image delivery; this is not proof of
+core defects or complete image incapability. See [PROVENANCE.md](PROVENANCE.md).
+No adapter can claim renderer multimodality merely because the backend admits a cell.
+
 `rpg-benchmark support` is the machine-readable authority. Raw catalog
 membership is not admission. The 29 definitions contain 37 task/terrain
 combinations, not universal 29-by-3 or 37-by-3 modality support.
@@ -43,7 +58,8 @@ The runtime `qualification.json` is retained byte-for-byte as historical
 build metadata, including pre-selection flags. Those flags are not the
 current release status; see [PROVENANCE.md](PROVENANCE.md). Raw witnesses,
 private controllers and historical run data are deliberately not published.
-This source export runs no native qualification or model campaign.
+Raw local integration runs are not included in this source export, and no
+public model-performance campaign or leaderboard is claimed.
 
 Local setup refusals, variable-dt timing, GPU/system dependencies, external
 assets, limited image coverage and lack of clean-machine validation remain.

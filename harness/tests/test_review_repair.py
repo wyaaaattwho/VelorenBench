@@ -170,13 +170,16 @@ def test_invalid_clock_does_not_mask_primary_interruption(tmp_path, monkeypatch)
     assert not result["evaluation_validity"]["accepted"]
 
 
-@pytest.mark.parametrize("stage", ["pre_entry", "measurement", "post_terminal", "normal"])
+@pytest.mark.parametrize("stage", ["pre_entry", "measurement", "post_terminal", "normal", "late_goal"])
 @pytest.mark.parametrize("collection_error", [False, True, "partial"])
 @pytest.mark.parametrize("unknown", [False, True])
 @pytest.mark.parametrize("world_event", [False, True])
 def test_wired_interruption_collects_once_after_closure_and_keeps_terminal(
         stage, collection_error, unknown, world_event, tmp_path, monkeypatch):
     order, instances, records = [], [], []
+    player = SimpleNamespace(
+        pid=999999999,
+        returncode=None if stage in {"pre_entry", "measurement", "late_goal"} else 0)
     opening = {"tick": 1, "session_id": "s", "self_identity": {"uid": 1},
                "survival": {"buffs": [{"kind": "Invulnerability"}]}}
     fixture = {"opening": opening, "task": "test goal"}
@@ -194,6 +197,7 @@ def test_wired_interruption_collects_once_after_closure_and_keeps_terminal(
     class Bridge:
         def __init__(self, *args):
             self.process = SimpleNamespace(returncode=0)
+            self.observations = 0
             self.cleanup, self.native_events, self.error_observations = {}, [], []
             self.measured_receipts = []
             self.effect_observations = {"late": {"effect_status": "unknown"}}
@@ -205,7 +209,10 @@ def test_wired_interruption_collects_once_after_closure_and_keeps_terminal(
         async def request(self, *args, **kwargs):
             if stage == "pre_entry":
                 raise asyncio.CancelledError("before entry")
-            return {**opening, "tick": 2}
+            self.observations += 1
+            if stage == "late_goal":
+                player.returncode = 0
+            return {**opening, "tick": self.observations + 1}
 
         async def close(self):
             self.cleanup["stopped"] = True
@@ -241,6 +248,9 @@ def test_wired_interruption_collects_once_after_closure_and_keeps_terminal(
             order.append("server_closed")
 
     class FakeAdapter:
+        async def preflight(self, **kwargs):
+            return {"synthetic": True}
+
         id, engineering, legacy = "mock", True, False
         manifest = {"tool_track": "test"}
         configuration = {"model": "test", "reasoning_effort": "none"}
@@ -308,14 +318,15 @@ def test_wired_interruption_collects_once_after_closure_and_keeps_terminal(
     monkeypatch.setattr(run.setup, "wait_observation", AsyncMock(return_value=opening))
     monkeypatch.setattr(run.setup, "validate_opening", AsyncMock())
     monkeypatch.setattr(run.suite, "setup", AsyncMock(return_value=fixture))
-    monkeypatch.setattr(run.suite, "score", lambda *args: {"success": stage == "post_terminal", "dead": False})
+    monkeypatch.setattr(run.suite, "score", lambda *args: {
+        "success": stage == "post_terminal" or (stage == "late_goal" and args[2]["tick"] > 2),
+        "dead": False})
     monkeypatch.setattr(run, "measurement_validity", lambda *args: {"valid": True})
     monkeypatch.setattr(run, "log_supplies", lambda *args: None)
     monkeypatch.setattr(run, "stop_agent", stop_player)
     monkeypatch.setattr(run.asyncio, "sleep", sleep)
     monkeypatch.setattr(run.asyncio, "create_subprocess_exec",
-                        AsyncMock(return_value=SimpleNamespace(
-                            pid=999999999, returncode=None if stage in {"pre_entry", "measurement"} else 0)))
+                        AsyncMock(return_value=player))
     monkeypatch.setattr(run.lifecycle, "process_start_ticks", lambda pid: 1)
     monkeypatch.setattr(run.lifecycle, "protection_snapshot", lambda: [])
     def adjudicate(*args, **kwargs):
@@ -351,10 +362,21 @@ def test_wired_interruption_collects_once_after_closure_and_keeps_terminal(
         assert result["task_terminal"]["native_success"]
         assert result["interruption"]["stage"] == "post_terminal"
         assert result["timing"]["terminal_reason"] == "native_goal_success"
+    elif stage == "late_goal":
+        assert instances[-1].observations == 2
+        assert result["stop_reason"] == "native_goal_success"
+        assert result["task_terminal"]["native_success"]
+    elif stage == "normal":
+        assert result["final_state_observed"] is True
+        assert result["task_terminal"]["outcome"] == "stopped_without_goal"
+        assert result["task_terminal"]["final_state_observed"] is True
+        assert result["task_terminal"]["classification"] == "entry_exited_without_goal"
+        if not collection_error:
+            assert result["evaluation_validity"]["status"] == ("unknown" if unknown else "valid")
     if collection_error:
         assert result["entry_evidence_collection"]["status"] == (
             "failed" if collection_error is True else "partial")
         assert any(row["source"] == "evidence" for row in result["error_observations"])
-        if stage != "normal":
+        if stage not in {"normal", "late_goal"}:
             assert result["error"]["type"] == "CancelledError"
     assert not result["evaluation_validity"]["accepted"] and not result["capability_claim"]

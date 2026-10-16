@@ -4,8 +4,8 @@ The installed `rpg-benchmark tasks` command and
 [`scenes.json`](harness/scripts/rpg_benchmark/scenes.json) are authoritative.
 The 17 originals retain 25 terrain combinations; the 12 additions bring the
 catalog to 29 definitions and 37 raw combinations. All raw definitions and
-goals are preserved from locally frozen 1.0.0/build001. This initial source
-release is not a new qualification campaign. Structured/hybrid admission for
+goals are preserved from locally frozen 1.0.0/build001. Source release v1.0.1
+does not change them or establish full-catalog qualification. Structured/hybrid admission for
 the additions and limited image support are detailed in [SUPPORT.md](SUPPORT.md).
 T06 weapon conditions are not separate tasks. No table entry implies support
 on every backend or modality.

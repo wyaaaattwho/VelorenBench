@@ -387,6 +387,9 @@ def test_validated_runtime_wires_generic_episode_without_gameagent_or_provider(
             self.returncode = -2
 
     class Adapter:
+        async def preflight(self, **kwargs):
+            return {"synthetic": True}
+
         def __init__(self, *args, **kwargs):
             self.manifest = {"tool_track": "mock"}
             self.id, self.engineering = "mock", True

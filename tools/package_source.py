@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,6 +11,11 @@ TOP = {
     "API.md", "TASKS.md", "SUPPORT.md", "BUILD.md", "PROVENANCE.md",
     "TESTING.md", "CONTRIBUTING.md", "pyproject.toml", "MANIFEST.in",
     "requirements-build.lock", "requirements-test.lock", "requirements-test-sdk.lock",
+}
+INTEGRATION_TOP = {
+    ".gitignore", "LICENSE", "MANIFEST.in", "NOTICE.md", "README.md",
+    "PROVENANCE.md", "pyproject.toml", "requirements.lock",
+    "requirements-hashed.lock", "requirements-build.lock",
 }
 
 
@@ -23,6 +29,12 @@ def source_inventory(root):
         selected.extend(path for path in (root / name).rglob("*") if path.is_file()
                         and "__pycache__" not in path.parts
                         and not path.name.endswith((".pyc", ".pyo")))
+    integration = root / "integrations/deepseek"
+    selected.extend(integration / name for name in INTEGRATION_TOP)
+    selected.extend(path for path in (integration / "dsh_external_v1").rglob("*")
+                    if path.is_file() and path.suffix in {".py", ".mjs", ".json", ".lock"})
+    selected.extend(path for path in (integration / "tests").iterdir()
+                    if path.is_file() and path.suffix in {".py", ".mjs"})
     if any(p.is_symlink() for p in selected):
         raise ValueError("public source cannot contain symlinks")
     return {path.relative_to(root).as_posix(): sha(path) for path in sorted(selected)}
@@ -38,7 +50,12 @@ def main():
     native = {name.removeprefix("native/source/"): digest
               for name, digest in files.items() if name.startswith("native/source/")}
     value = {
-        "schema": "velorenbench-public-source/1", "version": "1.0.0",
+        "schema": "velorenbench-public-source/1",
+        "version": tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"],
+        "status": "source-release",
+        "release_tag": "v1.0.1",
+        "release_source_identity": "resolved Git tag commit; baseline_commit is historical, not release HEAD",
+        "baseline_commit": "504f3f29df649ce19ebe37cd44188baaec828807",
         "frozen_local_build": "001",
         "frozen_harness_manifest_sha256": "314a6d204e4a5b8953d03e374de2273d38b812bf97813ce78f0c885cbe4352b8",
         "selected_native_tree_sha256": "4c2cc4bb7cb7e6a94f963253866f09c2a0a6fde0df2d23ece9c99f78322944db",

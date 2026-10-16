@@ -124,8 +124,8 @@ def admit_selection(args, selected) -> None:
         supported &= (args.scene, args.terrain, args.mode) == ("T05", "natural", "task-engineering")
     if not supported or args.mode not in {"interface-smoke", "setup", "mechanism", "capability", "task-engineering"}:
         raise ValueError("unsupported renderer task/mode combination; inspect the explicit support matrix")
-    if args.mode in {"interface-smoke", "capability", "task-engineering"} and args.harness != "responses":
-        raise ValueError("renderer task entry requires the declared Responses adapter")
+    # Backend admission is a transport capability check in adapter preflight.
+    # This function owns only task/profile/recording support, not Harness policy.
     if args.scene == "C1" and args.mode == "mechanism" and args.observation_mode == "image":
         raise ValueError("C1 image task unsupported: native visual crafting addressing is unavailable")
     if args.recordings is None or (

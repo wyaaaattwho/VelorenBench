@@ -5,6 +5,8 @@ import json
 import math
 from pathlib import Path
 import time
+import sys
+import asyncio
 
 from . import capabilities, lifecycle, providers, results
 from .external import Launch
@@ -16,29 +18,52 @@ class Adapter:
         config = json.loads(args.adapter_config)
         if not isinstance(config, dict) or set(config) - {
                 "mock_provider", "credential_loader", "credential_loader_sha256", "transport_probe",
-                "route", "provider"}:
+                "route", "provider", "endpoint", "api_key_env"}:
             raise ValueError("invalid Responses adapter configuration")
         self.mock, self.config = config.get("mock_provider"), config
         self.engineering = self.mock is not None
-        if not self.mock and not (config.get("route") == "existing-luna" and config.get("credential_loader")
-                                 and config.get("credential_loader_sha256")):
-            raise ValueError("select declared loopback provider or explicitly bound existing-luna route")
+        route = config.get("route")
+        if not self.mock and route not in {"existing-luna", "standard-responses"}:
+            raise ValueError("select loopback engineering or an explicit existing-luna/standard-responses route")
+        if route == "existing-luna" and not (
+                config.get("credential_loader") and config.get("credential_loader_sha256")):
+            raise ValueError("existing-luna requires the explicitly pinned credential loader")
+        if route == "standard-responses":
+            if "credential_loader" in config or "credential_loader_sha256" in config:
+                raise ValueError("standard-responses cannot select an account credential loader")
+            from .provider_route import StandardResponsesRoute
+            StandardResponsesRoute(config.get("endpoint", ""), config.get("api_key_env", ""))
+            if "provider" not in config:
+                raise ValueError("standard-responses requires explicit provider capabilities/defaults")
         if self.mock and ("credential_loader" in config or "credential_loader_sha256" in config):
             raise ValueError("mock provider and live credential route are mutually exclusive")
         mode = args.observation_mode or "structured"
-        if not self.mock and "provider" in config:
+        if route == "existing-luna" and "provider" in config:
             raise ValueError("existing live route capabilities cannot be overridden")
         if self.mock and "route" in config:
             raise ValueError("mock origin cannot select a live route")
         if self.mock and "provider" not in config:
             raise ValueError("loopback mock requires explicit provider capabilities and defaults")
-        self.provider = config["provider"] if self.mock else providers.LUNA
+        self.provider = providers.LUNA if route == "existing-luna" else config["provider"]
         self.manifest = providers.manifest(self.provider, mode)
         self.configuration, self.capabilities, _ = capabilities.negotiate(self.manifest, {
             key: getattr(args, key, None) for key in (
                 "model", "reasoning_effort", "observation_mode", "action_profile")})
         self.frames = args.recordings
         self.context = None
+
+    async def preflight(self, *, backend, frames=None):
+        capabilities.admit_backend(self.configuration, self.capabilities, backend)
+        # The bundled stdlib-only entry is installed with the evaluator.
+        process = await asyncio.create_subprocess_exec(
+            sys.executable, "-I", "-m", "scripts.rpg_benchmark.responses_entry", "--help",
+            stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE)
+        _, stderr = await process.communicate()
+        if process.returncode:
+            raise ValueError("Bundled adapter is not installed in the evaluator interpreter: "
+                             + stderr.decode(errors="replace"))
+        return {"command": [sys.executable, "-I", "-m",
+                            "scripts.rpg_benchmark.responses_entry", "--help"], "exit_code": 0}
 
     def launch(self, *, task, socket, output, output_root, python, common_interface):
         self.context = {"output": str(output), "task": task, "configuration": self.configuration,
@@ -53,9 +78,11 @@ class Adapter:
                    "--provider-declaration", json.dumps(self.provider))
         if self.mock:
             command += ("--mock-provider", self.mock)
-        else:
+        elif self.config.get("route") == "existing-luna":
             command += ("--credential-loader", self.config["credential_loader"],
                         "--credential-loader-sha256", self.config["credential_loader_sha256"])
+        else:
+            command += ("--endpoint", self.config["endpoint"], "--api-key-env", self.config["api_key_env"])
         if self.config.get("transport_probe") is True:
             command += ("--transport-probe",)
         return Launch(command, output_root, {})

@@ -1,11 +1,12 @@
 """054 authorizes ONLY the stated admission change, not easier task predicates."""
 import hashlib
+import asyncio
 import json
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from scripts.rpg_benchmark import renderer_support, suite
+from scripts.rpg_benchmark import renderer_support, suite, launching
 
 def test_final054_qualification_and_support_agree_without_ability_or_freeze_claim():
     matrix = renderer_support.support_matrix()
@@ -48,7 +49,13 @@ def test_new_T12_admission_does_not_open_unsupported_or_unverified_entries(tmp_p
     else:
         selected["renderer_fixture_helper"] = None
     with pytest.raises(ValueError):
-        renderer_support.admit_selection(args, selected)
+        if mutation == "wrong_harness":
+            # Task admission no longer knows Harness identities. The actual
+            # legacy transport still cannot claim unimplemented renderer access.
+            args.backend, args.action_profile = "renderer", None
+            asyncio.run(launching.preflight_builtin(args, selected, None))
+        else:
+            renderer_support.admit_selection(args, selected)
     assert not list(tmp_path.iterdir())
 
 def test_no_other_image_task_is_newly_admitted():

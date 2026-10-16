@@ -129,6 +129,22 @@ class ToolTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValueError):
             self.tools.validate_request("observe", {"private": True})
 
+    async def test_control_help_identifies_each_modes_public_token_source(self):
+        for mode in ("structured", "hybrid", "image"):
+            with self.subTest(mode=mode):
+                tools = RendererTools(self.native, self.evidence, mode, Path("/unused"), "ep")
+                offered = {tool.name: tool for tool in tools.tools}
+                fence = offered["game_step"].parameters["properties"]["control_fence"]
+                for help_text in (fence["description"],
+                                  offered["game_set_control_state"].description):
+                    self.assertIn("structured/hybrid", help_text)
+                    self.assertIn("image-only frame", help_text)
+                self.assertNotIn("observe/map remain available", offered["game_step"].description)
+                self.assertIn(
+                    "expected_protection_generation to the observed protection_generation",
+                    offered["game_set_control_state"].description)
+                self.assertEqual("game_observe" in offered, mode != "image")
+
     async def test_late_async_exception_is_not_model_state_or_retry(self):
         async def failure():
             raise RuntimeError("LEAK position health inventory target answer")

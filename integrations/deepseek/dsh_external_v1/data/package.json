@@ -1,0 +1,12 @@
+{
+  "name": "velorenbench-dsh-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Install-only pins; official runtime code is not vendored",
+  "dependencies": {
+    "@deepseek-ai/dsh": "0.2.1-alpha.3",
+    "@deepseek-ai/dsh-llm-pi-ai": "0.2.1-alpha.3",
+    "@deepseek-ai/dsh-tools": "0.2.1-alpha.3"
+  }
+}

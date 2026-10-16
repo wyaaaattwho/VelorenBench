@@ -1,5 +1,6 @@
 """Finite versioned adapter declarations, negotiated before any launch."""
 SCHEMA = "rpg-external-adapter/2"
+PROCESS_SCHEMA = "rpg-external-adapter/3"
 CONFIGURATION = "rpg-adapter-configuration/1"
 ACTION_PROFILE = "raw-native-v2"
 
@@ -17,7 +18,7 @@ def negotiate(manifest, requested):
         defaults = {"model": manifest["model"], "reasoning_effort": manifest["reasoning_effort"],
                     "observation_mode": "structured", "action_profile": ACTION_PROFILE}
     else:
-        if manifest["schema"] != SCHEMA:
+        if manifest["schema"] not in {SCHEMA, PROCESS_SCHEMA}:
             raise ValueError("Unsupported adapter contract version")
         capabilities = manifest["capabilities"]
         defaults = manifest["default_configuration"]
@@ -55,3 +56,17 @@ def negotiate(manifest, requested):
     if any(not isinstance(value, str) or not value for value in selection.values()):
         raise ValueError("Adapter configuration values must be nonempty strings")
     return {"schema": CONFIGURATION, **selection}, capabilities, legacy
+
+
+def admit_backend(configuration, declared, backend):
+    """Transport support is independent of Harness/provider identity and task support."""
+    mode = configuration["observation_mode"]
+    if backend not in declared.get("backends", ["headless"]):
+        raise ValueError(f"Adapter transport does not declare backend {backend}")
+    if backend == "headless" and mode != "structured":
+        raise ValueError("Headless backend has no native image transport")
+    if backend == "renderer":
+        if declared.get("player_tools") != "rpg-player-tools/1":
+            raise ValueError("Renderer requires the shared projected player-tools transport")
+        if configuration["action_profile"] == ACTION_PROFILE:
+            raise ValueError("Renderer requires an explicitly declared renderer action profile")

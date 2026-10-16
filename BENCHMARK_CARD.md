@@ -4,7 +4,14 @@
 
 Evaluate external agents' decisions and tool use in native RPG tasks:
 resource planning, navigation, crafting, combat, support and NPC contracts.
-This is initial source release 1.0.0, based on local freeze 1.0.0/build001.
+This is source-only release **v1.0.1**, succeeding historical source baseline
+`504f3f2` and local freeze 1.0.0/build001. Identify release source by the
+`v1.0.1` Git tag's resolved commit and source manifest, not the baseline.
+Task/oracle/native semantics are unchanged.
+Bounded official-DSH native/model checks support integration measurement,
+not model ability estimates or universal task coverage. External adapters'
+internal implementation work is not a benchmark publication prerequisite.
+Existing frozen results remain immutable.
 It is not a benchmark of general intelligence or a calibrated difficulty
 scale, and it publishes no model campaign, baseline scores or leaderboard.
 
@@ -65,8 +72,34 @@ An engineering or setup pass is never a model capability result.
 
 ## Evidence and limitations
 
-Local qualification consists of bounded native engineering witnesses and
-unit/contract/installed-artifact checks, not autonomous model performance.
+Local qualification consists of bounded native engineering witnesses,
+official-DSH native/model integration checks and unit/contract/installed-artifact
+checks, not an autonomous model-performance campaign.
+The public-successor hybrid C1 check reached the native craft goal with valid
+attribution and exact observation text, but requested no frame; image delivery
+was verified separately by the valid N1/image normal non-win. Earlier DSH checks
+also cover C1/structured and frame-bearing C1/hybrid. Cleanup completed in those
+checks. No private-state leak was observed in the audited public image session;
+this is not proof for every possible session. Refused or cancelled actions are
+not benchmark wins, and cancellation does not imply zero interim physical effect.
+Final008/core1.0.1 was subsequently exercised in E246: all six selected cells
+were attempted once, four were valid and two were invalid Agent-side, with
+complete owned cleanup in all six and no source repairs or retries. Official
+DSH produced valid C1/structured craft, T05/hybrid recovery with **zero frames**,
+and an N1/image normal non-win with 11 PNGs and 149 history image blocks.
+GameAgent produced valid C1/structured craft; its T05/hybrid failed before
+inference on partial-native-autonomy/protection compatibility, and N1/image
+failed on its 823962-byte UTF-8 history representation exceeding a 65536-byte
+rolling limit after logged Brain SDK/Jev image inputs. These do not establish
+benchmark defects or complete image incapability. A0's bounded disposition:
+no benchmark-side defect was demonstrated **in these six attempts**, not a
+reliability/ability rate or all-task/provider certification. No successful
+mixed visual/state-consumption episode is demonstrated by E246.
+DSH actual backend/model metadata is unknown; GameAgent SDK/Jev names were
+observed but its backend and full ultimate wire remain unknown. Final source
+publication preparation changes only documentation/status/inventory relative
+to final008. Evidence identities and exact summary selectors are in
+[PROVENANCE.md](PROVENANCE.md).
 T12 hybrid has historical native success. Structured qualification includes
 corrected replay of preserved native evidence; it is not a fresh native win
 and does not rewrite the original false/interrupted/unknown result.
