@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import subprocess
 
 import pytest
 
@@ -124,8 +125,104 @@ def test_invalid_external_registration_and_missing_live_admission():
     value = selected()
     with pytest.raises(ValueError, match="not registered"):
         external.Adapter(value, "unregistered", {}, engineering=True)
-    with pytest.raises(ValueError, match="A0"):
+    with pytest.raises(ValueError, match="caller live declaration"):
         external.Adapter(value, "lightweight-mock", {})
+
+
+def test_public_live_declaration_without_team_identity_and_legacy_compatibility(tmp_path):
+    selected_pins = selected()
+    probe = external.Adapter(selected_pins, "lightweight-mock", {}, engineering=True)
+    value = {
+        "schema": external.LIVE, "live": True, "provider": "caller-owned-provider",
+        "pins_sha256": "1" * 64, "adapter_id": probe.id,
+        "adapter_sha256": probe.declaration_sha, "configuration": probe.configuration,
+        "adapter_config": {}, "model": probe.configuration["model"],
+        "reasoning_effort": probe.configuration["reasoning_effort"], "model_calls_admitted": True,
+    }
+    path = tmp_path / "live.json"
+    path.write_text(json.dumps(value))
+    adapter = external.Adapter(selected_pins, probe.id, {}, admission=path, pins_sha="1" * 64)
+    assert not adapter.engineering
+    # Construction performs no native allocation or provider/model request.
+    assert adapter.context is None
+    for field, bad in (("live", False), ("provider", ""), ("adapter_config", {"changed": True}),
+                       ("configuration", {}), ("pins_sha256", "2" * 64),
+                       ("model_calls_admitted", False), ("adapter_sha256", "2" * 64)):
+        path.write_text(json.dumps({**value, field: bad}))
+        with pytest.raises(ValueError, match="declaration|configuration"):
+            external.Adapter(selected_pins, probe.id, {}, admission=path, pins_sha="1" * 64)
+    legacy = {**value, "schema": "rpg-external-admission/1", "approved_by": "A0"}
+    path.write_text(json.dumps(legacy))
+    assert not external.Adapter(selected_pins, probe.id, {}, admission=path,
+                                pins_sha="1" * 64).engineering
+
+
+def test_public_process_live_preflight_and_entry_without_model_calls(tmp_path):
+    """Actual isolated constructors/process, not live inference or native evidence."""
+    from scripts.rpg_benchmark import capabilities, providers, runtime
+    implementation = tmp_path / "adapter.py"
+    implementation.write_text(
+        "from pathlib import Path\nfrom scripts.rpg_benchmark.external import Launch,EVIDENCE,PLAYER\n"
+        "def validate_config(context):\n"
+        "    assert context['config'] == {'provider': 'caller-test'}\n"
+        "def build_launch(context):\n"
+        "    return Launch((context['python'],'-I','-c','print(\"no-model-entry\")'),"
+        "Path(context['output_root']),{})\n"
+        "def collect_evidence(context):\n"
+        "    return dict(schema=EVIDENCE,adapter_id=context['adapter_id'],player_interface=PLAYER,"
+        "entry={'status':'idle','cleanup_errors':[]},entry_receipt_present=True,"
+        "model_requests=[],tool_calls=[],submissions=[],provider_errors=[],owned_processes=[])\n")
+    freeze = tmp_path / "freeze.json"
+    freeze.write_text(json.dumps({"root": str(tmp_path),
+                                 "files": {"adapter.py": pins.lifecycle.sha(implementation)}}))
+    manifest = providers.manifest(providers.LUNA, "structured")
+    manifest["capabilities"]["backends"] = ["headless", "renderer"]
+    manifest["default_configuration"]["action_profile"] = "raw-native-v2"
+    manifest["capabilities"]["action_profiles"].append("raw-native-v2")
+    manifest["capabilities"]["action_profiles_by_observation_mode"]["structured"].append("raw-native-v2")
+    preflight = (
+        "import asyncio,json,sys;from scripts.rpg_benchmark import startup,runtime;"
+        "value=asyncio.run(startup.probe_player(json.load(sys.stdin)));"
+        "value['player_package_files']=runtime.package_files();print(json.dumps(value))")
+    manifest.update(
+        schema=capabilities.PROCESS_SCHEMA, id="public-process", player_interface=external.PLAYER,
+        implementation=str(implementation), implementation_sha256=pins.lifecycle.sha(implementation),
+        freeze={"path": str(freeze), "sha256": pins.lifecycle.sha(freeze)},
+        runtime={"python": sys.executable, "preflight": ["-c", preflight]})
+    path = tmp_path / "adapter.json"
+    path.write_text(json.dumps(manifest))
+    declaration_sha = pins.lifecycle.sha(path)
+    config = {"provider": "caller-test"}
+    admission = tmp_path / "live.json"
+    admission.write_text(json.dumps({
+        "schema": external.LIVE, "live": True, "provider": "caller-test",
+        "pins_sha256": "1" * 64, "adapter_id": "public-process", "adapter_sha256": declaration_sha,
+        "configuration": capabilities.negotiate(manifest, {})[0], "adapter_config": config,
+        "model": "gpt-6-luna", "reasoning_effort": "none", "model_calls_admitted": True}))
+    selected_pins = {"external_adapters": {"public-process": {
+        "path": str(path), "sha256": declaration_sha}}}
+    adapter = external.Adapter(selected_pins, "public-process", config, admission=admission,
+                               pins_sha="1" * 64)
+    installed = json.loads(subprocess.check_output(
+        [sys.executable, "-I", "-c",
+         "import json;from scripts.rpg_benchmark import runtime;print(json.dumps(runtime.package_files()))"],
+        text=True))
+    operation = adapter.preflight(backend="headless", detail_storage=tmp_path / "details")
+    if installed != runtime.package_files():
+        # Source tests intentionally differ from installed bytes: reject them.
+        with pytest.raises(ValueError, match="exact evaluator player package"):
+            asyncio.run(operation)
+        return
+    receipt = asyncio.run(operation)
+    assert receipt["exit_code"] == 0 and receipt["receipt"]["construction_checked"]
+    assert (tmp_path / "details/construction.ndjson").is_file()
+    plan = adapter.launch(task="public goal", socket=tmp_path / "not-connected.sock",
+                          output=tmp_path / "entry", output_root=tmp_path,
+                          python=sys.executable, common_interface=str(HARNESS / "scripts/rpg_sdk_agent.py"))
+    result = subprocess.run(plan.command, cwd=plan.cwd, env=external.clean_environment(),
+                            capture_output=True, text=True, check=True)
+    assert result.stdout.strip() == "no-model-entry"
+    assert not adapter.engineering and adapter.collect()["model_requests"] == []
 
 
 def test_second_adapter_launches_through_same_generic_contract(tmp_path):
@@ -144,18 +241,16 @@ def test_second_adapter_launches_through_same_generic_contract(tmp_path):
                       common_interface=str(HARNESS / "scripts/rpg_sdk_agent.py"))
 
 
-def test_accepted_commands_and_evaluator_policies_are_byte_equivalent_ast():
+def test_accepted_commands_and_evaluator_policies_preserve_precise_historical_contracts():
     from .historical import historical_fixture
+    from .historical_contracts import check_core, check_module
     baseline = json.loads(historical_fixture("accepted-contracts.json").read_text())
-    after = ast.parse(Path(run.__file__).read_text())
-    for name in ("agent_command", "sdk_command", "measurement_stop", "measurement_validity",
-                 "log_supplies", "stop_agent", "bridge_cleanup"):
-        right = next(item for item in after.body if getattr(item, "name", None) == name)
-        assert baseline["ast"]["run.py"][name] == ast.dump(right)
     package = Path(run.__file__).parent
-    for name in ("scene.py", "suite.py", "setup.py", "crafting.py", "combat.py",
-                 "navigation.py", "mixed.py", "oracles.py", "bridge_client.py"):
-        assert baseline["files"][name] == pins.lifecycle.sha(package / name)
+    check_module(baseline, package, "run.py", (
+        "agent_command", "sdk_command", "measurement_stop", "measurement_validity",
+        "log_supplies", "stop_agent", "bridge_cleanup"))
+    check_core(baseline, package)
+    check_module(baseline, package, "bridge_client.py")
     original_catalog = Path(__file__).parent / "fixtures/release041-scenes.json"
     assert baseline["files"]["scenes.json"] == pins.lifecycle.sha(original_catalog)
     original, current = json.loads(original_catalog.read_text()), json.loads((package / "scenes.json").read_text())
@@ -170,13 +265,9 @@ def test_accepted_commands_and_evaluator_policies_are_byte_equivalent_ast():
         assert before == after
     assert {key: value for key, value in original.items() if key != "scenes"} == {
         key: value for key, value in current.items() if key != "scenes"}
-    after_native = ast.parse((package / "native.py").read_text())
-    for name in ("NativeRefusal", "NativeActionFailure", "NativeConfig", "private_server",
-                 "Journal", "stop_owned", "allowed"):
-        right = next(item for item in after_native.body if getattr(item, "name", None) == name)
-        assert baseline["ast"]["native.py"][name] == ast.dump(right)
-    right_bridge = next(item for item in after_native.body if getattr(item, "name", None) == "NativeBridge")
-    assert baseline["ast"]["native.py"]["NativeBridge"] == ast.dump(right_bridge)
+    check_module(baseline, package, "native.py", (
+        "NativeRefusal", "NativeActionFailure", "NativeConfig", "private_server",
+        "Journal", "stop_owned", "allowed", "NativeBridge"))
     after_sdk = ast.parse((package.parent / "rpg_sdk_agent.py").read_text())
     for name in ("validate_request", "validate_controls", "validate_schema", "tool_schema"):
         right = next(item for item in after_sdk.body if getattr(item, "name", None) == name)

@@ -16,7 +16,7 @@ mod minimap;
 mod overhead;
 mod overitem;
 mod popup;
-mod prompt_dialog;
+pub(crate) mod prompt_dialog;
 mod quest;
 mod settings_window;
 mod skillbar;
@@ -740,6 +740,9 @@ pub enum Event {
 
     SettingsChange(SettingsChange),
     AcknowledgePersistenceLoadError,
+    // Preserve the producer identity until the native frame fence has run.
+    // Ordinary sessions unwrap this to the original stock event.
+    PromptDialogOutcome(u64, Option<Box<Event>>),
     MapMarkerEvent(MapMarkerChange),
     Dialogue(EcsEntity, rtsim::Dialogue),
     SetBattleMode(BattleMode),
@@ -1157,6 +1160,9 @@ impl Show {
 }
 
 pub struct PromptDialogSettings {
+    // Private instance identity, not a public widget selector. Replacing even an
+    // identical-looking confirmation must invalidate the old captured frame.
+    id: u64,
     message: String,
     affirmative_event: Event,
     negative_option: bool,
@@ -1165,8 +1171,25 @@ pub struct PromptDialogSettings {
 }
 
 impl PromptDialogSettings {
+    pub(crate) fn id(&self) -> u64 { self.id }
+
+    pub(crate) fn finish(prompt: &mut Option<Self>, outcome: DialogOutcomeEvent) -> Event {
+        prompt.take().expect("outcome requires the displayed stock prompt").outcome_event(outcome)
+    }
+
+    fn outcome_event(&self, outcome: DialogOutcomeEvent) -> Event {
+        let event = match outcome {
+            DialogOutcomeEvent::Affirmative(event) => Some(event),
+            DialogOutcomeEvent::Negative(event) => event,
+        };
+        Event::PromptDialogOutcome(self.id, event.map(Box::new))
+    }
+
     pub fn new(message: String, affirmative_event: Event, negative_event: Option<Event>) -> Self {
+        use std::sync::atomic::{AtomicU64, Ordering};
+        static NEXT_ID: AtomicU64 = AtomicU64::new(1);
         Self {
+            id: NEXT_ID.fetch_add(1, Ordering::Relaxed),
             message,
             affirmative_event,
             negative_option: true,
@@ -1183,6 +1206,15 @@ impl PromptDialogSettings {
     pub fn with_no_negative_option(mut self) -> Self {
         self.negative_option = false;
         self
+    }
+}
+
+impl Event {
+    pub(crate) fn into_stock_event(self) -> Option<Self> {
+        match self {
+            Self::PromptDialogOutcome(_, event) => event.and_then(|event| event.into_stock_event()),
+            event => Some(event),
+        }
     }
 }
 
@@ -3170,17 +3202,8 @@ impl Hud {
             .set(self.ids.prompt_dialog, ui_widgets)
             {
                 Some(dialog_outcome_event) => {
-                    match dialog_outcome_event {
-                        DialogOutcomeEvent::Affirmative(event) => events.push(event),
-                        DialogOutcomeEvent::Negative(event) => {
-                            if let Some(event) = event {
-                                events.push(event);
-                            };
-                        },
-                    };
-
-                    // Close the prompt dialog once an option has been chosen
-                    self.show.prompt_dialog = None;
+                    events.push(PromptDialogSettings::finish(
+                        &mut self.show.prompt_dialog, dialog_outcome_event));
                 },
                 None => {},
             }
@@ -4502,8 +4525,9 @@ impl Hud {
                                 if let Some(inventory) = inventories.get(i.entity)
                                     && let Slot::Inventory(slot) = i.slot
                                 {
-                                    let mut quantity = 1;
-                                    if auto_quantity {
+                                    let quantity = Self::trade_request_quantity(
+                                        auto_quantity, i.amount(inventory).unwrap_or(1), || {
+                                        let mut quantity = 1;
                                         do_auto_quantity(
                                             inventory,
                                             slot,
@@ -4511,9 +4535,8 @@ impl Hud {
                                             false,
                                             &mut quantity,
                                         );
-                                        let inv_quantity = i.amount(inventory).unwrap_or(1);
-                                        quantity = quantity.min(inv_quantity);
-                                    }
+                                        quantity
+                                    });
 
                                     events.push(Event::TradeAction(TradeAction::AddItem {
                                         item: slot,
@@ -4526,8 +4549,9 @@ impl Hud {
                                 if let Some(inventory) = inventories.get(t.entity)
                                     && let Some(invslot) = t.invslot
                                 {
-                                    let mut quantity = 1;
-                                    if auto_quantity {
+                                    let quantity = Self::trade_request_quantity(
+                                        auto_quantity, t.amount(inventory).unwrap_or(1), || {
+                                        let mut quantity = 1;
                                         do_auto_quantity(
                                             inventory,
                                             invslot,
@@ -4535,9 +4559,8 @@ impl Hud {
                                             true,
                                             &mut quantity,
                                         );
-                                        let inv_quantity = t.amount(inventory).unwrap_or(1);
-                                        quantity = quantity.min(inv_quantity);
-                                    }
+                                        quantity
+                                    });
                                     events.push(Event::TradeAction(TradeAction::RemoveItem {
                                         item: invslot,
                                         quantity,
@@ -4770,7 +4793,7 @@ impl Hud {
     }
 
     pub fn native_panel(&mut self, panel: &str) -> Result<(), &'static str> {
-        if !matches!(panel, "world" | "inventory" | "equipment" | "map") {
+        if !matches!(panel, "world" | "inventory" | "equipment" | "map" | "crafting" | "skills" | "trade") {
             return Err("unsupported_ui_panel");
         }
         self.show.ui = true;
@@ -4780,9 +4803,13 @@ impl Hud {
         self.show.trade(false);
         self.show.bag(false);
         self.show.map(false);
+        self.show.diary(false);
         match panel {
             "inventory" | "equipment" => self.show.bag(true),
             "map" => self.show.map(true),
+            "crafting" => self.show.crafting(true),
+            "skills" => self.show.diary(true),
+            "trade" => self.show.trade(true),
             _ => {},
         }
         Ok(())
@@ -4793,35 +4820,93 @@ impl Hud {
             "profile": "normal-voxygen", "visible": self.show.ui,
             "inventory": self.show.bag, "map": self.show.map,
             "trade": self.show.trade, "dialogue": self.current_dialogue().is_some(),
+            "crafting": self.show.crafting, "skills": self.show.diary,
             "debug_overlay": false,
         })
     }
 
     pub fn native_state_key(&self) -> String {
-        format!("{}|{:?}|{:?}", self.native_profile(),
+        format!("{}|{:?}|{:?}|{:?}|{:?}", self.native_profile(),
             self.current_dialogue.as_ref().map(|(sender, _, dialogue)| (sender, dialogue)),
-            self.show.prompt_dialog.is_some())
+            self.native_prompt_id(), self.show.crafting_fields, self.map_drag)
+    }
+
+    pub fn native_dialogue_key(&self) -> String {
+        format!("{:?}", self.current_dialogue.as_ref().map(|(sender, _, dialogue)| (sender, dialogue)))
     }
 
     pub fn native_pointer_available(&self) -> bool {
-        self.show.ui && !self.show.map && !self.show.trade && !self.show.crafting
-            && self.show.prompt_dialog.is_none() && (self.show.bag || self.show.quest)
+        Self::native_pointer_view(self.show.ui, self.show.prompt_dialog.as_ref(),
+            self.show.bag || self.show.quest || self.show.map || self.show.trade
+                || self.show.crafting || self.show.diary)
     }
 
-    pub fn native_pointer(&mut self, x: f64, y: f64, size: [u32; 2], gesture: &str) {
-        use conrod_core::{event::Input, input::{Button, Motion, MouseButton}};
+    pub(crate) fn native_pointer_view(visible: bool, prompt: Option<&PromptDialogSettings>,
+                                    supported_panel: bool) -> bool {
+        visible && (prompt.is_some() || supported_panel)
+    }
+
+    pub(crate) fn native_prompt_id(&self) -> Option<u64> {
+        self.show.prompt_dialog.as_ref().map(PromptDialogSettings::id)
+    }
+
+    fn native_pointer_button(gesture: &str) -> Option<conrod_core::input::MouseButton> {
+        use conrod_core::input::MouseButton;
+        match gesture {
+            "left_click" | "drag" => Some(MouseButton::Left),
+            "right_click" => Some(MouseButton::Right),
+            "middle_click" => Some(MouseButton::Middle),
+            _ => None,
+        }
+    }
+
+    pub(crate) fn trade_request_quantity(
+        auto_quantity: bool, available: u32, automatic: impl FnOnce() -> u32,
+    ) -> u32 {
+        if auto_quantity { automatic().min(available) } else { 1 }
+    }
+
+    pub fn native_pointer(&mut self, x: f64, y: f64, size: [u32; 2], gesture: &str,
+                          destination: Option<[f64; 2]>, modifier: Option<conrod_core::input::Key>) {
+        for event in Self::native_pointer_events(x, y, size, gesture, destination, modifier) {
+            self.ui.handle_event(crate::ui::Event(event));
+        }
+    }
+
+    pub(crate) fn native_pointer_events(
+        x: f64, y: f64, size: [u32; 2], gesture: &str,
+        destination: Option<[f64; 2]>, modifier: Option<conrod_core::input::Key>,
+    ) -> Vec<conrod_core::event::Input> {
+        use conrod_core::{event::Input, input::{Button, Motion}};
+        let mut events = Vec::new();
+        if let Some(key) = modifier { events.push(Input::Press(Button::Keyboard(key))); }
         let motion = Input::Motion(Motion::MouseCursor {
             x: x - size[0] as f64 / 2.0,
             y: size[1] as f64 / 2.0 - y,
         });
-        self.ui.handle_event(crate::ui::Event(motion));
-        if gesture != "hover" {
-            let button = Button::Mouse(if gesture == "right_click" {
-                MouseButton::Right
-            } else { MouseButton::Left });
-            self.ui.handle_event(crate::ui::Event(Input::Press(button)));
-            self.ui.handle_event(crate::ui::Event(Input::Release(button)));
+        events.push(motion);
+        if matches!(gesture, "scroll_up" | "scroll_down") {
+            events.push(Input::Motion(Motion::Scroll {
+                x: 0.0, y: if gesture == "scroll_up" { 3.0 } else { -3.0 },
+            }));
+        } else if let Some(button) = Self::native_pointer_button(gesture) {
+            let button = Button::Mouse(button);
+            events.push(Input::Press(button));
+            if let Some([to_x, to_y]) = destination {
+                events.push(Input::Motion(Motion::MouseCursor {
+                    x: to_x - size[0] as f64 / 2.0,
+                    y: size[1] as f64 / 2.0 - to_y,
+                }));
+            }
+            events.push(Input::Release(button));
         }
+        if let Some(key) = modifier { events.push(Input::Release(Button::Keyboard(key))); }
+        events
+    }
+
+    pub fn native_crafting_prompt(&mut self, tab: CraftingTab,
+                                   sprite: (VolumePos, SpriteKind)) {
+        self.show.open_crafting_tab(tab, Some(sprite));
     }
 
     pub fn native_statement_ack(&self) -> Option<Event> {
@@ -5747,3 +5832,20 @@ fn air_velocity(fluid: Option<comp::Fluid>) -> String {
 /// assert!((negative - (-15.0)).abs() < 0.0001);
 /// ```
 pub fn multiplier_to_percentage(value: f32) -> f32 { value * 100.0 - 100.0 }
+
+#[cfg(test)]
+mod native_pointer_tests {
+    use super::Hud;
+    use conrod_core::input::MouseButton;
+
+    #[test]
+    fn pointer_buttons_are_genuine_and_distinct() {
+        assert_eq!(Hud::native_pointer_button("left_click"), Some(MouseButton::Left));
+        assert_eq!(Hud::native_pointer_button("right_click"), Some(MouseButton::Right));
+        assert_eq!(Hud::native_pointer_button("middle_click"), Some(MouseButton::Middle));
+        assert_eq!(Hud::native_pointer_button("drag"), Some(MouseButton::Left));
+        for gesture in ["hover", "scroll_up", "scroll_down", "unknown"] {
+            assert_eq!(Hud::native_pointer_button(gesture), None);
+        }
+    }
+}

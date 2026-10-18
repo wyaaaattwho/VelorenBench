@@ -1,5 +1,19 @@
 # Support matrix
 
+Current successor implementation/admission is generated at the end of this file.
+The1.1.0 candidate packages125 evidence-backed engineering-qualified keys for its
+selected native/code:40 structured,40 hybrid,40 full-UI image and5 legacy-motor
+image selections. All29 definitions/37 terrain cells remain. The35 unsupported
+selections are genuine legacy-image limitations, not removed tasks. Ordinary
+bound admission uses the packaged records; T05/image is task-engineering only.
+Source-only rows below intentionally cannot bind an unspecified native binary.
+No engineering qualification asserts a model win or final release acceptance.
+
+## Historical v1.0.1 admission
+
+The following release policy and retained receipts describe **frozen v1.0.1**,
+not native qualification of the untagged 1.1.0 candidate.
+
 **v1.0.1 is a source-only release.** This task matrix
 is unchanged and is not a Harness transport certification. External /3 adapters
 must independently pass isolated package/launch preflight and actual media
@@ -57,10 +71,78 @@ clock mapping, not authoritative server/frame tick synchronization.
 The runtime `qualification.json` is retained byte-for-byte as historical
 build metadata, including pre-selection flags. Those flags are not the
 current release status; see [PROVENANCE.md](PROVENANCE.md). Raw witnesses,
-private controllers and historical run data are deliberately not published.
+private controllers and historical run data were not published in v1.0.1.
+The current local1.1.0 candidate includes selected hashed operation evidence in
+its separate portable sidecar; that does not authorize external publication.
 Raw local integration runs are not included in this source export, and no
 public model-performance campaign or leaderboard is claimed.
 
 Local setup refusals, variable-dt timing, GPU/system dependencies, external
 assets, limited image coverage and lack of clean-machine validation remain.
 Admission is not proof of platform independence or model capability.
+
+<!-- BEGIN GENERATED SUCCESSOR -->
+## Support declarations and evidence (generated)
+
+Implementation declarations below are not real-native qualification.
+The validated production registry contains 125 records, 125 engineering-qualified.
+Those exact selected-native/code keys support ordinary bound admission; qualification
+does not assert model success or final release acceptance. T05/image remains task-engineering only.
+This source-only table has no selected native identity and cannot certify a binary.
+Use installed `support --config PATH --config-sha256 SHA` for exact bound readiness.
+Historical scored admission is audit-only, never inherited by a new selection.
+Unqualified cells require `--unqualified-engineering` and
+a selected native contract declaring the required features; capability mode cannot
+use this opt-in. Public build/assembly/binding is renderer-only, never a headless fallback.
+
+The successor intentionally defaults renderer/image to `visual-ui-v1`, including
+omitted CLI flags, ordinary Responses declarations and this matrix (one resolver).
+External adapters keep their declared defaults; effective negotiation precedes admission.
+Structured/hybrid default to `ordinary-renderer-native-v1`; legacy headless uses `raw-native-v2`.
+Image uses actual PNGs and `visual-ui-v1` for semantic HUD operations. Older
+native binaries without an explicit `middle_click` gesture capability cannot expose
+the middle-button map waypoint input (the ordinary HUD's M3 binding).
+Legacy `visual-motor-v1` retains its restricted controls. Map cursor labels are cartographic
+pixels, not structured coordinates or private goal overlays. Dispatch-only receipts
+never assert a craft/trade/skill/inventory effect.
+
+| Task/terrain | Structured implementation | Hybrid implementation | Image implementation (visual-ui-v1) | Legacy image implementation (visual-motor-v1) | Historical scored modes | Successor native qualification |
+| --- | --- | --- | --- | --- | --- | --- |
+| T01/natural | declared | declared | declared | missing native/profile features: dialogue, map | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+| T02/flat | declared | declared | declared | missing native/profile features: pickup, terrain_event | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+| T03/natural | declared | declared | declared | missing native/profile features: crafting, inventory, pickup | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+| T04/natural | declared | declared | declared | missing native/profile features: crafting, equipment, inventory | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+| T05/natural | declared | declared | declared | missing native/profile features: inventory | structured, hybrid, image | unqualified, unqualified, unqualified (source-only) |
+| C1/flat | declared | declared | declared | missing native/profile features: crafting, inventory | none | unqualified, unqualified, unqualified (source-only) |
+| C1/natural | declared | declared | declared | missing native/profile features: crafting, inventory | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+| C2/flat | declared | declared | declared | missing native/profile features: crafting, inventory, pickup | none | unqualified, unqualified, unqualified (source-only) |
+| C2/natural | declared | declared | declared | missing native/profile features: crafting, inventory, pickup | none | unqualified, unqualified, unqualified (source-only) |
+| C3/flat | declared | declared | declared | missing native/profile features: crafting, inventory | none | unqualified, unqualified, unqualified (source-only) |
+| C3/natural | declared | declared | declared | missing native/profile features: crafting, inventory | none | unqualified, unqualified, unqualified (source-only) |
+| C3U/flat | declared | declared | declared | missing native/profile features: crafting, inventory | none | unqualified, unqualified, unqualified (source-only) |
+| C3U/natural | declared | declared | declared | missing native/profile features: crafting, inventory | none | unqualified, unqualified, unqualified (source-only) |
+| C4/flat | declared | declared | declared | missing native/profile features: crafting, inventory | none | unqualified, unqualified, unqualified (source-only) |
+| C4/natural | declared | declared | declared | missing native/profile features: crafting, inventory | none | unqualified, unqualified, unqualified (source-only) |
+| B1/flat | declared | declared | declared | missing native/profile features: inventory | none | unqualified, unqualified, unqualified (source-only) |
+| B1/natural | declared | declared | declared | missing native/profile features: inventory | none | unqualified, unqualified, unqualified (source-only) |
+| B2/flat | declared | declared | declared | missing native/profile features: inventory | none | unqualified, unqualified, unqualified (source-only) |
+| B2/natural | declared | declared | declared | missing native/profile features: inventory | none | unqualified, unqualified, unqualified (source-only) |
+| B3/flat | declared | declared | declared | missing native/profile features: inventory | none | unqualified, unqualified, unqualified (source-only) |
+| B3/natural | declared | declared | declared | missing native/profile features: inventory | none | unqualified, unqualified, unqualified (source-only) |
+| N1/flat | declared | declared | declared | declared | image | unqualified, unqualified, unqualified (source-only) |
+| N2/flat | declared | declared | declared | declared | none | unqualified, unqualified, unqualified (source-only) |
+| N3/flat | declared | declared | declared | declared | none | unqualified, unqualified, unqualified (source-only) |
+| N4/flat | declared | declared | declared | declared | none | unqualified, unqualified, unqualified (source-only) |
+| N5/natural | declared | declared | declared | missing native/profile features: pickup | none | unqualified, unqualified, unqualified (source-only) |
+| N6/flat | declared | declared | declared | declared | none | unqualified, unqualified, unqualified (source-only) |
+| N7/natural | declared | declared | declared | missing native/profile features: map | none | unqualified, unqualified, unqualified (source-only) |
+| X1/natural | declared | declared | declared | missing native/profile features: crafting, pickup | none | unqualified, unqualified, unqualified (source-only) |
+| X2/natural | declared | declared | declared | missing native/profile features: crafting, pickup | none | unqualified, unqualified, unqualified (source-only) |
+| T06/natural | declared | declared | declared | missing native/profile features: equipment | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+| T07/natural | declared | declared | declared | missing native/profile features: skills | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+| T08/natural | declared | declared | declared | missing native/profile features: inventory | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+| T09/natural | declared | declared | declared | missing native/profile features: skills | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+| T10/natural | declared | declared | declared | missing native/profile features: dialogue, trade | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+| T11/natural | declared | declared | declared | missing native/profile features: dialogue, map | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+| T12/natural | declared | declared | declared | missing native/profile features: dialogue, map | structured, hybrid | unqualified, unqualified, unqualified (source-only) |
+<!-- END GENERATED SUCCESSOR -->

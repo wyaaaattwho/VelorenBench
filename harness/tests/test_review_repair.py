@@ -20,7 +20,10 @@ from scripts.rpg_benchmark.timing import AttemptTiming
 ])
 def test_mode_mapping_applies_to_explicit_pairs_and_defaults(mode, profile):
     manifest = providers.manifest(providers.LUNA, mode)
-    assert capabilities.negotiate(manifest, {})[0]["action_profile"] == profile
+    assert capabilities.negotiate(manifest, {})[0]["action_profile"] == capabilities.default_profile("renderer", mode)
+    legacy = copy.deepcopy(manifest)
+    legacy["default_configuration"]["action_profile"] = profile
+    assert capabilities.negotiate(legacy, {})[0]["action_profile"] == profile
     assert capabilities.negotiate(manifest, {"action_profile": profile})[0]["action_profile"] == profile
     for wrong in {"ordinary-renderer-native-v1", "visual-motor-v1", "raw-native-v2"} - {profile}:
         with pytest.raises(ValueError):

@@ -7,7 +7,7 @@ from pathlib import Path
 import signal
 from uuid import uuid4
 
-from scripts.rpg_benchmark import output_paths
+from scripts.rpg_benchmark import external, output_paths, results
 from dsh_external_v1.dsh_agent import EFFORT, MODEL, PROVIDER, OfficialRuntime, prepare_profile
 from dsh_external_v1.dsh_native_protocol import Evidence, NativeClient, common, error_record
 from dsh_external_v1.dsh_provider import CopilotProtocolProxy
@@ -24,15 +24,10 @@ async def run(args):
     try:
         if args.mock_provider is None:
             approved = json.loads(Path(os.environ["RPG_EXTERNAL_ADMISSION"]).read_text())
-            expected = {
-                "schema": "rpg-external-admission/1", "approved_by": "A0",
-                "pins_sha256": os.environ["RPG_EXTERNAL_PINS_SHA"],
-                "adapter_id": "deepseek-harness",
-                "adapter_sha256": os.environ["RPG_EXTERNAL_ADAPTER_SHA"],
-                "model": MODEL, "reasoning_effort": "none", "model_calls_admitted": True,
-            }
-            if any(approved.get(key) != value for key, value in expected.items()):
-                raise ValueError("Live dsh entry lacks exact central A0 experiment admission")
+            external.validate_live_declaration(
+                approved, pins_sha=os.environ["RPG_EXTERNAL_PINS_SHA"],
+                identifier="deepseek-harness", adapter_sha=os.environ["RPG_EXTERNAL_ADAPTER_SHA"],
+                configuration=json.loads(args.configuration), config={"runtime": args.runtime})
         async with AsyncExitStack() as stack:
             def retire(callback):
                 async def close():
@@ -78,6 +73,13 @@ async def run(args):
         record.setdefault("terminal", stamp())
         record.update(status="cancelled" if isinstance(error, asyncio.CancelledError) else "error",
                       error=error_record(error))
+        detail = results.error_event(error, source="entry", category="adapter_failure")
+        if (isinstance(error, asyncio.CancelledError) and error.args
+                and isinstance(error.args[0], dict)
+                and error.args[0].get("stop_id") == os.environ.get("RPG_EVALUATOR_STOP_ID")
+                and error.args[0].get("kind") == "evaluator_stop"):
+            detail.update(category="evaluator_cancellation", caused_by=error.args[0])
+        record.update({key: detail[key] for key in ("occurrence", "category", "caused_by") if key in detail})
         evidence.write("dsh_entry_error", **record)
     finally:
         record.update(runtime_cleanup=runtime.cleanup, cleanup_end=stamp())
@@ -91,13 +93,14 @@ async def signals(args):
     loop = asyncio.get_running_loop()
     stopped = False
 
-    def stop():
+    def stop(sig):
         nonlocal stopped
         if not stopped:
             stopped = True
-            task.cancel()
+            task.cancel({"kind": "evaluator_stop", "signal": sig.name,
+                         "stop_id": os.environ.get("RPG_EVALUATOR_STOP_ID")})
     for sig in (signal.SIGINT, signal.SIGTERM):
-        loop.add_signal_handler(sig, stop)
+        loop.add_signal_handler(sig, stop, sig)
     return await task
 
 

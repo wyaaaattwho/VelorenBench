@@ -166,15 +166,19 @@ def test_terminal_cancellation_evidence_keeps_source_and_does_not_break_adjudica
     adapter = Adapter(args)
     adapter.output = tmp_path
     error = {"type": "CancelledError", "message": ""}
+    # A late recording timestamp alone is no longer sufficient cancellation
+    # evidence. This positive case records the actually observed stop identity.
+    causal = {"kind": "evaluator_stop", "stop_id": "observed-stop", "signal": "SIGINT"}
     (tmp_path / "entry.json").write_text(json.dumps({
-        "status": "cancelled", "error": error, "terminal": {"monotonic": 12}, "cleanup_errors": []}))
+        "status": "cancelled", "error": error, "caused_by": causal,
+        "terminal": {"monotonic": 12}, "cleanup_errors": []}))
     (tmp_path / "events.ndjson").write_text("".join(json.dumps(row) + "\n" for row in (
         {"kind": "entry_ready", "wall_monotonic": 8},
         {"kind": "provider_request", "model": "alternate-model", "effort": "high", "synthetic": True},
-        {"kind": "entry_error", "wall_monotonic": 12, "error": error})))
+        {"kind": "entry_error", "wall_monotonic": 12, "error": error, "caused_by": causal})))
     facts = adapter.collect()
     normalized = results.observations(
-        facts, 10, {"signal": "SIGINT", "sent": True, "requested_monotonic": 11})
+        facts, 10, {"signal": "SIGINT", "sent": True, "requested_monotonic": 11, "stop_id": "observed-stop"})
     assert all(row["source"] == "entry" for row in normalized)
     assert results.validity(facts, normalized, native_terminal=True)["status"] == "valid"
 

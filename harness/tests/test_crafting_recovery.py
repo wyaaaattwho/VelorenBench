@@ -224,7 +224,8 @@ def test_native_close_error_is_not_swallowed_by_cancellation_shield():
 
 @pytest.mark.parametrize("case", sorted(family.TASK_IDS))
 def test_public_goals_and_explicit_modes(case):
-    matrix = support_matrix()["renderer"][f"{case}/natural"]
+    from scripts.rpg_benchmark.renderer_support import historical_policy
+    matrix = historical_policy()["renderer"][f"{case}/natural"]
     assert matrix["structured"]["scored_evaluation"] and matrix["hybrid"]["scored_evaluation"]
     if case == "T05":
         assert matrix["image"]["scored_evaluation"]
@@ -234,6 +235,11 @@ def test_public_goals_and_explicit_modes(case):
     else:
         assert not matrix["image"]["scored_evaluation"]
     assert DEFINITIONS[case]["task"]
+    current = support_matrix()["renderer"][f"{case}/natural"]
+    for mode in ("structured", "hybrid", "image"):
+        assert not current[mode]["scored_evaluation"] and current[mode]["qualification_record"] is None
+    if case == "T05":
+        assert current["image"]["allowed_run_modes"] == ["task-engineering"]
     from types import SimpleNamespace
     args = SimpleNamespace(scene=case, terrain="natural", observation_mode="image",
                            mode="mechanism", harness="responses", recordings=None)

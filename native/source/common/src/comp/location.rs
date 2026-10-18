@@ -47,11 +47,11 @@ impl Default for WaypointArea {
 
 /// Marker on the map, used for sharing waypoint with group and
 /// persisting it server side.
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct MapMarker(pub Vec2<i32>);
 
 impl Component for MapMarker {
-    type Storage = specs::VecStorage<Self>;
+    type Storage = specs::FlaggedStorage<Self, specs::VecStorage<Self>>;
 }
 
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]

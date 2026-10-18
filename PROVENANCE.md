@@ -1,5 +1,68 @@
 # Source-release provenance
 
+## Unreleased successor identity
+
+Distribution `1.1.0` is a modified, uncommitted, untagged candidate based on frozen
+v1.0.1 commit `2e3aa071417a31173726b785689eeb6ec0548273`. It has no release
+tag/commit. The current generated source inventory and native selection bind
+the changed content, not a fabricated Git identity. Existing WRAPPER_COMMIT,
+benchmark/native release IDs, seeds, qualification receipts and asset/upstream
+pins remain historical baselines. They are not distribution-version fields.
+The original scenes/contract scorer hashes and historical fixtures remain
+unchanged. Current-native qualification was collected separately and the
+final1.1.0 local seal integrates125 exact-key evidence-backed engineering
+records, preserving35 legacy-image exclusions. The shared image-intent repair
+and its independent original-cutoff native replay retain non-victory outcomes.
+The final seal changes tests/docs/registry only, so production code/native
+identities remain those of the selected image successor. Evidence object bytes,
+original failures and task/scorer invariants remain attributed to their actual
+source identities. Precise historical test contracts replace obsolete module
+freezes against unchanged fixtures. This is not final release acceptance,
+model capability or external publication.
+
+Successor shared construction now selects a world compatible with flat authored
+coordinates and distinguishes actual in-world resident chunks from synthetic Air.
+Its privileged fixture administrator uses an owned, temporary shared-physics hold,
+including bootstrap and transitions, and restores native position/velocity and
+owned setup permissions. This is not actor grounded evidence or a build ACK;
+`server_mutation_confirmed` stays null. Ordinary teleport behavior and original
+fixture geometry are unchanged. The shared HUD map boundary also emits canonical
+signed integer coordinate arrays into the unchanged strict client parser, retaining
+the original image gesture/fences and private goal/scorer joins. New source identity
+requires a matching native rebuild; source/unit success does not confer native
+task/image qualification.
+
+The successor's public `tools/prepare_assets.py` also makes the existing three
+benchmark entity derivatives reproducible from pinned upstream stock inputs,
+without distributing asset contents. Their exact-male bodies predate this
+successor and are selected before native loadout construction; no task, seed,
+equipment/loot definition or asset hash is changed. BUILD.md lists the original
+output hashes; `native/assets-manifest.json` pins both inputs and outputs.
+The MIT preparation algorithm does not relicense upstream configurations or
+referenced art. Stock acquisition and redistribution rights remain external.
+
+The renderer event-window repair distinguishes native `ready_event()`'s
+domainless reserved `seq=0` transport marker from domain-bearing
+`record_event()` ledger entries. The raw startup/audit envelope is retained.
+Its regression is a bounded exact header/source projection of an actual
+renderer failure trace, with raw-file hashes and actual opening/final anchors;
+it contains no private observation, inventory, entity or chat text. Ledger
+domains, ordering, cursor/update checks and scorer goals are not relaxed.
+This regression is not a successful native/image integration run.
+
+The optional successor visualization utility adapts the prior experiment
+observer dashboard's preview fanout, browser state/recording controls and
+loopback/download protections. It consumes public-only metadata for agent-requested
+PNGs, or optionally passively captures the explicitly registered same-run Linux
+renderer display using adapted PID/start/socket checks and X11 pipe lifecycle.
+No native frame/UI/control requests, second camera, control workspace, legacy
+camera receipt topology or WebM dependency is used. Passive capture IDs/timestamps
+remain distinct from native frame/UI fences. See [VISUALIZATION.md](VISUALIZATION.md)
+for the exact reuse boundary, installed commands and synthetic/native evidence
+distinction. No native/gameplay semantics or evaluation criteria change.
+
+Everything below describes the frozen release's historical provenance.
+
 **VelorenBench v1.0.1 is a source-only release**, with core **1.0.1** and
 reference official-DSH adapter **0.1.0**. Its release source identity is the
 resolved commit of Git tag `v1.0.1`, together with the generated source

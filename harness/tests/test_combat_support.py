@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from scripts.rpg_benchmark import combat_support as family, native_outcomes as oracle, renderer, renderer_support, run, suite
+from scripts.rpg_benchmark import combat_support as family, native_outcomes as oracle, providers, renderer, renderer_support, run, suite
 
 
 def event(name, data, sequence=1):
@@ -402,13 +402,16 @@ def test_unknown_configured_effect_is_not_a_clean_negative_and_stale_control_is_
 
 @pytest.mark.parametrize("case", sorted(family.TASK_IDS))
 @pytest.mark.parametrize("backend,mode", [("headless", "structured"), ("renderer", "image")])
-def test_unsupported_modes_fail_before_allocating_any_episode(case, backend, mode, monkeypatch, tmp_path):
-    monkeypatch.setattr(run.pins, "load", lambda *args, **kwargs: {
-        "renderer": {}, "renderer_fixture_helper": {}})
+def test_unsupported_modes_fail_before_allocating_any_episode(case, backend, mode, monkeypatch, tmp_path, tmp_path_factory):
+    from .test_admission_closeout import selected_native
+    selected = selected_native(tmp_path_factory.mktemp("TEST-ONLY-selected"))
+    monkeypatch.setattr(run.pins, "load", lambda *args, **kwargs: selected)
     args = SimpleNamespace(scene=case, backend=backend, observation_mode=mode,
                            pins=tmp_path / "input.json", pins_sha256="0" * 64,
                            mode="task-engineering", harness="responses", terrain="natural",
-                           out=tmp_path / "unallocated", recordings=None)
+                           out=tmp_path / "unallocated", recordings=None,
+                           action_profile="raw-native-v2" if backend == "headless" else "visual-motor-v1",
+                           adapter_config=json.dumps({"mock_provider": "http://127.0.0.1:1234", "provider": providers.LUNA}))
     with pytest.raises(ValueError, match="unqualified|unsupported"):
         asyncio.run(run.episode(args))
     assert not args.out.exists()
@@ -469,24 +472,34 @@ def test_renderer_partial_startup_keeps_display_cleanup_evidence():
 
 
 @pytest.mark.parametrize("mode", ["structured", "hybrid"])
-def test_t08_native_qualified_modes_are_admitted_without_allocating(mode, tmp_path):
+def test_t08_native_qualified_modes_are_admitted_without_allocating(mode, tmp_path, tmp_path_factory, monkeypatch):
+    from .test_admission_closeout import selected_native, record_for, install_records
     args = SimpleNamespace(scene="T08", observation_mode=mode, mode="capability",
                            harness="responses", terrain="natural", out=tmp_path / "unallocated",
                            recordings=tmp_path / "outputs/recordings/test")
-    renderer_support.admit_selection(
-        args, {"renderer": {}, "renderer_fixture_helper": {}, "protected_paths": []})
-    assert renderer_support.support_matrix()["renderer"]["T08/natural"][mode]["scored_evaluation"]
+    assert renderer_support.historical_policy()["renderer"]["T08/natural"][mode]["scored_evaluation"]
+    assert not renderer_support.support_matrix()["renderer"]["T08/natural"][mode]["scored_evaluation"]
+    selected = selected_native(tmp_path_factory.mktemp("TEST-ONLY-selected"))
+    with pytest.raises(ValueError, match="unqualified"):
+        renderer_support.admit_selection(args, selected)
+    definition = suite.load(Path(selected["dependencies"]["scene_manifest"]["path"]))["T08"]
+    install_records(tmp_path_factory.mktemp("TEST-ONLY-qualified"), monkeypatch, [
+        record_for(definition, selected, terrain="natural", mode=mode)])
+    assert renderer_support.admit_selection(args, selected)["scored_evaluation"]
     assert not args.out.exists() and not args.recordings.exists()
 
 
 @pytest.mark.parametrize("backend,mode", [("headless", "structured"), ("headless", "hybrid"), ("renderer", "image")])
-def test_t08_unqualified_backends_and_image_still_fail_before_allocation(backend, mode, monkeypatch, tmp_path):
-    monkeypatch.setattr(run.pins, "load", lambda *args, **kwargs: {
-        "renderer": {}, "renderer_fixture_helper": {}})
+def test_t08_unqualified_backends_and_image_still_fail_before_allocation(backend, mode, monkeypatch, tmp_path, tmp_path_factory):
+    from .test_admission_closeout import selected_native
+    selected = selected_native(tmp_path_factory.mktemp("TEST-ONLY-selected"))
+    monkeypatch.setattr(run.pins, "load", lambda *args, **kwargs: selected)
     args = SimpleNamespace(scene="T08", backend=backend, observation_mode=mode,
                            pins=tmp_path / "input.json", pins_sha256="0" * 64,
                            mode="capability", harness="responses", terrain="natural",
-                           out=tmp_path / "unallocated", recordings=None)
+                           out=tmp_path / "unallocated", recordings=None,
+                           action_profile="raw-native-v2" if backend == "headless" else "visual-motor-v1",
+                           adapter_config=json.dumps({"mock_provider": "http://127.0.0.1:1234", "provider": providers.LUNA}))
     with pytest.raises(ValueError, match="unqualified|unsupported renderer"):
         asyncio.run(run.episode(args))
     assert not args.out.exists()

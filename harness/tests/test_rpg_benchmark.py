@@ -121,7 +121,8 @@ class EvidenceTests(unittest.TestCase):
 
 
 class SdkTerminalAdjudicationTests(unittest.TestCase):
-    signal = {"signal": "SIGINT", "requested_monotonic": 100.0, "sent": True}
+    signal = {"signal": "SIGINT", "requested_monotonic": 100.0, "sent": True,
+              "terminal_monotonic": 99.0, "stop_id": "observed-sdk-stop"}
 
     def selected(self):
         return {
@@ -129,7 +130,9 @@ class SdkTerminalAdjudicationTests(unittest.TestCase):
                       "cleanup_errors": []},
             "provider_error": False, "actual_sdk_model_events": 3,
             "adapter_error_events": [
-                {"wall_monotonic": 100.1, "error": {"type": "CancelledError"}}],
+                {"wall_monotonic": 100.1, "error": {"type": "CancelledError"},
+                 "caused_by": {"kind": "evaluator_stop", "stop_id": "observed-sdk-stop",
+                               "signal": "SIGINT"}}],
             "transport_errors": [],
         }
 
@@ -223,8 +226,11 @@ class AgentStopSignalTests(unittest.IsolatedAsyncioTestCase):
 
 
 class TerminalEvidenceTests(unittest.TestCase):
+    signal = {"sent": True, "signal": "SIGINT", "requested_monotonic": 100,
+              "stop_id": "observed-legacy-stop"}
+
     def selected(self, root, *, model="jev-1.13.0", cancellation="2026-10-13T19:00:02+00:00",
-                 provider_error=False):
+                 provider_error=False, occurred_monotonic=101):
         public = {"criteria": {"chosen": "one tool"}, "state": {}}
         rows = [
             {"record_type": "async_jev_request", "decision_id": "d", "epoch": 0,
@@ -243,7 +249,9 @@ class TerminalEvidenceTests(unittest.TestCase):
              "host_event_sequence": 4, "action": {"name": "craft", "correlation_id": "native-a",
                                                 "parameters": {"recipe": "mushroom_stick", "amount": 1}}},
             {"record_type": "provider_model_error", "host_recorded_at": cancellation,
-             "error": {"type": "CancelledError"}},
+             "error": {"type": "CancelledError"},
+             "occurrence": {"clock": "host-monotonic", "value": occurred_monotonic, "source": "provider"},
+             "caused_by": {"kind": "evaluator_stop", "stop_id": "observed-legacy-stop", "signal": "SIGINT"}},
         ]
         if provider_error:
             rows.insert(4, {"record_type": "provider_model_error",
@@ -265,6 +273,7 @@ class TerminalEvidenceTests(unittest.TestCase):
     def proof(self, selected, receipts, *, reason="native_goal_success"):
         return evidence.gameagent_success(
             selected, observation(), receipts, {"attributed_action_ids": ["native-a"]},
+            stop_signal=self.signal, terminal_monotonic=99,
             stop_reason=reason, stop_requested_at="2026-10-13T19:00:01+00:00")
 
     def test_correlated_jev_success_survives_evaluator_cancellation_without_brain_receipt(self):
@@ -290,7 +299,7 @@ class TerminalEvidenceTests(unittest.TestCase):
             selected["jev_effect_dispatches"] = []
             selected["entry"]["used"] = {"provider_decisions": 99, "jev_decisions": 99}
             self.assertFalse(self.proof(selected, [self.receipt()])["accepted"])
-            selected = self.selected(root, cancellation="2026-10-13T19:00:00+00:00")
+            selected = self.selected(root, cancellation="2026-10-13T19:00:00+00:00", occurred_monotonic=99)
             self.assertFalse(self.proof(selected, [self.receipt()])["accepted"])
             selected = self.selected(root)
             self.assertFalse(self.proof(selected, [self.receipt()], reason="evaluation_horizon")["accepted"])
@@ -317,11 +326,13 @@ class TerminalEvidenceTests(unittest.TestCase):
                 "response": {"ok": True, "session_id": "s", "result": control}}
             proof = evidence.gameagent_success(
                 selected, observation(), [receipt], {"arrival": True},
+                stop_signal=self.signal, terminal_monotonic=99,
                 stop_reason="native_goal_success", stop_requested_at="2026-10-13T19:00:01+00:00")
             self.assertTrue(proof["accepted"])
             receipt["request"]["args"]["movement"] = [0, 0]
             proof = evidence.gameagent_success(
                 selected, observation(), [receipt], {"arrival": True},
+                stop_signal=self.signal, terminal_monotonic=99,
                 stop_reason="native_goal_success", stop_requested_at="2026-10-13T19:00:01+00:00")
             self.assertFalse(proof["accepted"])
 

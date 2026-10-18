@@ -41,6 +41,30 @@ def route_fixture():
                             "time_visible": None, "exposure": "not-demonstrated", "public_witnesses": []}}
 
 
+def test_route_initial_geometry_uses_complete_common_author_before_event_permission(monkeypatch):
+    layout = tasks.route_layout()
+    admin, actor = object(), object()
+    author = AsyncMock(return_value=[{"voxel":p} for p in layout["voxels"]])
+    monkeypatch.setattr(tasks.native, "author_voxels", author)
+    batch = AsyncMock(side_effect=AssertionError("initial geometry must not depend on old author pose"))
+    monkeypatch.setattr(tasks, "build_batch", batch)
+    permission = AsyncMock()
+    monkeypatch.setattr(tasks, "build_permission", permission)
+    monkeypatch.setattr(tasks, "verify_blocks", AsyncMock(return_value={"verified_voxels":layout["voxels"]}))
+    for name in ("isolate_initial_spawn", "goto", "clean_inventory", "drop_supply"):
+        monkeypatch.setattr(tasks.native, name, AsyncMock(return_value={}))
+    monkeypatch.setattr(tasks.native, "action", AsyncMock(return_value={}))
+    observations = [sample(i,0,p) for i,p in enumerate(layout["alternative"])]
+    observations.append(sample(20,0,layout["start"]))
+    monkeypatch.setattr(tasks.native, "ready_observation", AsyncMock(side_effect=observations))
+    fixture = asyncio.run(tasks.setup_route(admin,actor,{"task":"unchanged authored route"}))
+    author.assert_awaited_once_with(admin,layout["voxels"])
+    permission.assert_awaited_once_with(admin,layout["voxels"]+layout["event_voxels"])
+    batch.assert_not_awaited()
+    assert len(fixture["construction"]) == len(layout["voxels"])
+    assert fixture["layout"] == layout and fixture["event_state"]["status"] == "armed"
+
+
 def test_exact_twenty_inputs_preserved():
     baseline = json.loads(Path(__file__).with_name("fixtures").joinpath("parent20-scenes.json").read_text())
     candidate = json.loads(Path(suite.__file__).with_name("scenes.json").read_text())

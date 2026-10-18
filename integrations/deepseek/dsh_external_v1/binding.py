@@ -100,6 +100,14 @@ def rebase(config, base):
     return result
 
 
+def startup_preflight(adapter, out):
+    # Renderer construction needs explicit frame storage even for structured
+    # observations. Detail storage is independent; neither opens a world/model.
+    return asyncio.run(adapter.preflight(
+        backend="renderer", frames=out / "preflight-frames",
+        detail_storage=out / "preflight-details"))
+
+
 def bind(*, config, config_sha256, python, selected_runtime, out, output_root,
          observation_mode="structured", action_profile="ordinary-renderer-native-v1",
          admit_model_calls=False):
@@ -160,18 +168,19 @@ def bind(*, config, config_sha256, python, selected_runtime, out, output_root,
     if admit_model_calls:
         admission = out / "admission.json"
         write(admission, {
-            "schema": "rpg-external-admission/1", "approved_by": "A0",
+            "schema": external.LIVE, "live": True, "provider": "existing-luna",
             "pins_sha256": pins_sha, "adapter_id": IDENTIFIER,
             "adapter_sha256": declaration_sha, "model": negotiated["model"],
             "reasoning_effort": negotiated["reasoning_effort"],
-            "configuration": negotiated, "model_calls_admitted": True})
+            "configuration": negotiated, "adapter_config": {"runtime": str(selected_runtime)},
+            "model_calls_admitted": True})
     # Synthetic configuration is used only for dependency preflight: no connection is made.
     adapter = external.Adapter(
         selected, IDENTIFIER,
         {"runtime": str(selected_runtime), **({} if admission else
                                              {"mock_provider": "http://127.0.0.1:9"})},
         engineering=admission is None, admission=admission, pins_sha=pins_sha)
-    checked = asyncio.run(adapter.preflight(backend="renderer"))
+    checked = startup_preflight(adapter, out)
     result = {
         "status": "staged-inputs-validated-not-native-qualified",
         "runtime": str(runtime_path), "runtime_sha256": pins_sha,
@@ -197,7 +206,7 @@ def main():
     parser.add_argument("--observation-mode", choices=("structured", "hybrid", "image"), default="structured")
     parser.add_argument("--action-profile", default="ordinary-renderer-native-v1")
     parser.add_argument("--admit-model-calls", action="store_true",
-                        help="Write the legacy exact-config literal gate; no service authorization implied")
+                        help="Declare caller-selected live provider/configuration; no service authorization implied")
     args = parser.parse_args()
     try:
         value = bind(config=args.config, config_sha256=args.config_sha256, python=args.python,

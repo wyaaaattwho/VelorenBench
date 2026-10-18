@@ -1,5 +1,147 @@
 # CLI and agent API
 
+## Unreleased successor contracts
+
+`suite.load/setup/score` remains the task seam. Families own semantic templates
+and feature requirements; `support.resolve` generates admission and docs.
+Implementation, observation/action profile, historical admission, exact-native
+qualification and model success are distinct.
+
+The intentional successor renderer/image default is `visual-ui-v1`, resolved by
+`capabilities.default_profile` for ordinary source support, Responses and CLI
+matrix/admission. Explicit `visual-motor-v1` is unchanged and narrow. External
+adapter declarations are negotiated first; task admission uses the effective
+observation mode/profile rather than substituting bundled defaults.
+
+Navigation templates distinguish supply-free rendezvous from
+`pickup_rendezvous`: the original `natural_long` layout (N5) authors an apple
+and requires its actual pickup and retention as well as arrival. It therefore
+requires `movement`, `coordinate_goal` and `pickup`. Its structured/hybrid and
+image `visual-ui-v1` interfaces remain implemented; legacy image
+`visual-motor-v1` cannot express pickup and is unsupported for this layout.
+The navigation family's existing definition validator checks that an explicit
+template's requirements match its layout, including arbitrary-ID author tasks.
+Renaming a task or selecting a supply-free template cannot bypass this check.
+Supply-free layouts, including original N2, do not acquire a pickup dependency.
+No original goal, supplies, scorer or native control is changed by this declaration.
+
+`rpg-benchmark support` without a runtime is explicitly source-only and cannot
+certify a later binary. `support --config PATH --config-sha256 SHA256` verifies
+the actual renderer/helper/content selection (no process launch) and reports
+its exact qualification keys. Optional `--observation-mode` and
+`--action-profile` select a matrix surface; a profile requires a mode.
+`support --manifest PATH` selects author task data instead of a runtime.
+The runtime's selected task manifest is used with `--config`.
+
+`rpg-benchmark validate-qualification [--records PATH]` is a local strict
+identity/structure check, **not** verification of referenced gameplay artifacts,
+promotion, release acceptance or model success. Execution uses only the packaged
+`current-qualification.json`; validating another file does not install it.
+The1.1.0 candidate packages125 engineering-qualified exact-key records and
+retains35 explicit legacy-image exclusions. Bound ordinary admission uses those
+records without an unqualified opt-in; source-only support still cannot certify
+an unspecified binary. Relative citations resolve against the delivered evidence
+sidecar; `tools/verify_evidence.py` checks closure and installed registry equality.
+T05/image remains task-engineering only. See CONTRIBUTING.md for
+the exact record format and author/curator workflow.
+
+Qualification binds configured task content and its actual family-declared
+setup dependencies, not the entire catalog. `mixed.SETUP_REFERENCES` is the
+current concrete composition; `suite.setup_dependencies` supplies both real
+setup and qualification. Pass the selected `definitions` to `support.resolve`
+for author catalogs. The raw `task_manifest_sha256` in support output is
+provenance outside the key. Unrelated additions and JSON formatting do not
+revoke unchanged task qualification; changed referenced content does.
+
+External `/3` execution preflight now requires `rpg-adapter-preflight/2`.
+With `RPG_ADAPTER_STARTUP=1`, stdin contains `rpg-adapter-startup/1` JSON:
+exact configuration/backend, `frames` (`null` for headless), independent
+absolute `detail_storage`, `model_calls: false`, `native_worlds: false`.
+The adapter must actually construct its own client/player/media/detail objects
+without connecting or inference, returning the exact `startup`,
+`construction_checked: true` and exact `player_package_files`.
+Import-only `/1` may be used for installation checks, not execution admission.
+Core construction is exercised by `startup.probe_player`; a consumer must
+additionally exercise its own real constructor.
+
+Errors retain `source`, `error.type`, `category` and
+`occurrence: {clock, value, source}`. Categories distinguish output validation
+rejection, provider transport failure, evaluator cancellation, adapter failure
+and native refusal. Only an explicitly comparable host-monotonic occurrence can
+establish ordering; a foreign clock or host recording timestamp cannot.
+Cancellation also needs an observed signal carrying
+`caused_by: {kind: evaluator_stop, stop_id, signal}` matching the actual stop
+record. `RPG_EVALUATOR_STOP_ID` is provided at launch for the signal handler.
+Possessing the token or recording after stop alone is not causal evidence.
+
+Private renderer observations/events identify their shared native
+`client-update-counter` domain and session. Observation `event_cursor` bounds
+the native event ledger, not the private server journal. Host-received sample
+identities distinguish reads sharing a client update; they do not imply fixed
+stepping or synchronized effects. Source names and exact transaction joins
+remain intact. Image output remains actual PNGs plus allowed transport/control
+facts, never private canonical actions, inventory/entity/coordinate dumps.
+
+The public `pickup` action's `uid` is optional: omission lets native select the
+nearest pickup in range. Shared evaluator attribution accepts that form only
+when the completed same-action native receipt resolves the exact required UID,
+actor/session, item and amount, with a server `Collected` event, one compatible
+candidate and justified operational collection. An explicit wrong UID still
+fails attribution. Inventory gains, target disappearance, submission or an
+ambiguous/unproven collection do not substitute for that receipt. This is the
+existing native operational association, not stronger server-ground source
+proof (`Collected` itself carries no UID/request ID). Provenance-checked private
+normalization of image HUD pickup uses the same predicate; no private target
+identifiers are added to image tools. Arrival, retention, crafting and authored
+world-event/public-readback requirements remain independent and unchanged.
+
+`visual-ui-v1` optionally accepts `modifiers: ["shift"]` or `["ctrl"]` on a
+`left_click` at the current PNG's pixels, only when the selected native
+`visual_ui.modifiers.left_click` capability advertises it. The stock HUD uses
+Shift-click for an individual quantity request and Ctrl-click for its automatic
+balance/quantity calculation. Modifiers are pressed/released within that one
+fenced gesture, never left held. Omitted/empty modifiers retain ordinary clicking;
+combined/unknown modifiers and modifiers on other gestures are refused.
+Older pins do not expose this argument. This is not a quantity-by-item-ID or
+sale helper: the actual HUD slot, native inventory bounds, prices, trade phases,
+confirmations and task reserves still govern effects and scoring.
+
+Resident-dependent setup waits for opt-in, private native settlement-population
+readiness before loading its destination. A real architect maintenance must run;
+optimistically allocated population counts alone are not completion while due
+settlement spawns remain queued. The native day/clock/population targets stay
+unchanged. Broad nearest-resident discovery precedes eligibility: actual loaded,
+living local Humanoids need native grounded footing and a qualified Human
+interaction placement before an RtSim identity is committed. There is no
+profession/home/travel-state restriction, NPC freezing or NPC teleporting.
+After acceptance, current native bindings must continue to identify that same
+RtSim resident. Private reference responses reuse already-qualified proximity
+when safe; public player dialogue/UI fences are unchanged. No valid local
+resident is an explicit setup failure, not an invented or global substitute.
+Placement reuses an already-loaded Human window and actual native terrain
+support beside the same resident rather than causing another exact-body overlap
+and waiting for collision velocity to decay. Read-only bounded support probes
+precede one strict goto; final settled footing and the original5m bound still
+apply. Unknown/unloaded terrain and transport failures are not ignored.
+
+Fixture construction stays behind that same common `run` / family setup entry.
+Selected flat terrain uses the full native world containing the unchanged authored
+coordinates; compact spawn-relative natural templates remain compact. Private
+terrain/build queries reject out-of-world synthetic default chunks, even if cached
+by a client. An in-world loaded client chunk is not an authoritative write ACK.
+
+The fixture administrator acquires an authenticated, self-only owner-scoped
+`fixture_authoring` hold before moving to the first unbuilt voxel. Existing build
+permission and area authorization still apply. Shared physics holds only that
+administrator's position/velocity; it does not fake grounded support, change
+ordinary teleport/physics, or affect the measured actor's tools/goals. One mutation
+submission is followed by exact client terrain readback, without replay on unknown
+outcomes. Cleanup releases only the acquired owner, restores its captured native
+position/velocity and prior build-enabled flag, and revokes/removes only the created
+area. Primary and cleanup errors are retained. Family opening/footing checks remain
+unchanged. This requires rebuilt matching native source, not an old binary plus
+a Python rebind.
+
 Use `rpg-benchmark --help` and `rpg-benchmark run --help` for the exact
 arguments. Python imports remain under `scripts.rpg_benchmark`; the common
 player tool implementation is `scripts.rpg_sdk_agent`. Core imports do not
@@ -7,7 +149,7 @@ require the optional Copilot SDK, aiohttp or the reference DSH package.
 
 ## Installed Python API quickstart (no native/model execution)
 
-Run this with the interpreter in which you installed core 1.0.1. It loads
+Run this with the interpreter in which you installed core1.1.0. It loads
 the actual task catalog and support schema, without a game, provider or account:
 
 ```sh
@@ -167,11 +309,24 @@ executable contract, and `capabilities.py` for negotiation.
 
 The CLI has `--harness external --adapter ID --adapter-config JSON`; register
 its declaration and hash in runtime/content `external_adapters` first.
-Non-engineering external entries require an exact-configuration admission
-file (`rpg-external-admission/1`; the legacy approver field is literally
-`"approved_by": "A0"`). See `external.Adapter.__init__` for required equality
-checks. It is a configuration/evidence gate, not a credential or service grant.
+Non-engineering external entries use `--external-admission PATH` to select a
+caller-owned explicit live declaration (`rpg-external-live/1`), without a team
+approver. Required fields are `live: true`, nonempty `provider`, `model_calls_admitted: true`,
+`pins_sha256`, `adapter_id`, `adapter_sha256`, `model`, `reasoning_effort`,
+the complete negotiated `configuration`, and the exact `adapter_config` object.
+Keep secrets out of declarations/config files; select credentials through the
+adapter's environment/credential interface. See `external.validate_live_declaration`.
+Legacy `rpg-external-admission/1` internal experiment files remain readable,
+but are not required for public use. Neither form is a credential/service grant
+or release acceptance. Configuration changes require a new matching declaration.
 `--external-engineering` explicitly identifies synthetic checks.
+
+`rpg-benchmark qualification-keys [--config PATH --config-sha256 SHA]` generates
+the actual task/native/code keys for existing variants and declared profiles,
+with implementation/refusal and current family-policy modes. No binary is
+launched and no qualification evidence is generated. Source-only keys cannot
+certify a later native selection; `validate-qualification` validates structure,
+not gameplay claims or release acceptance.
 
 Renderer admission now uses backend/task/action-profile and adapter transport
 capabilities, not the Responses Harness identity. Use

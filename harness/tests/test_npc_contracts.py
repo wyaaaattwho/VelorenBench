@@ -7,7 +7,7 @@ import asyncio
 
 import pytest
 
-from scripts.rpg_benchmark import contract_evidence as private, npc_contracts, renderer_support, run, suite
+from scripts.rpg_benchmark import contract_evidence as private, npc_contracts, providers, renderer_support, run, suite
 
 
 def test_twenty_definitions_preserved_and_only_three_added():
@@ -413,12 +413,16 @@ def test_native_player_death_cannot_be_hidden_between_alive_samples():
 
 @pytest.mark.parametrize("case", sorted(npc_contracts.TASK_IDS))
 @pytest.mark.parametrize("mode", ["image", "headless"])
-def test_unqualified_selections_rejected_before_allocation(case, mode, tmp_path):
+def test_unqualified_selections_rejected_before_allocation(case, mode, tmp_path, tmp_path_factory):
+    from .test_admission_closeout import selected_native
+    selected = selected_native(tmp_path_factory.mktemp("TEST-ONLY-selected"))
     args = SimpleNamespace(scene=case, terrain="natural", observation_mode="image" if mode == "image" else "structured",
                            mode="capability" if mode == "capability" else "task-engineering",
                            harness="responses", backend="headless" if mode == "headless" else "renderer",
-                           recordings=None, pins=tmp_path / "not-created.json", pins_sha256="0" * 64)
-    with patch.object(run.pins, "load", return_value={"renderer": {}, "renderer_fixture_helper": {}}):
+                           recordings=None, pins=tmp_path / "not-created.json", pins_sha256="0" * 64,
+                           action_profile="visual-motor-v1" if mode == "image" else "raw-native-v2",
+                           adapter_config=json.dumps({"mock_provider": "http://127.0.0.1:1234", "provider": providers.LUNA}))
+    with patch.object(run.pins, "load", return_value=selected):
         with pytest.raises(ValueError, match="unqualified|unsupported renderer"):
             asyncio.run(run.episode(args))
     assert list(tmp_path.iterdir()) == []
@@ -426,28 +430,43 @@ def test_unqualified_selections_rejected_before_allocation(case, mode, tmp_path)
 
 
 @pytest.mark.parametrize("mode", ["structured", "hybrid"])
-def test_slay_scored_admission054_keeps_recording_boundary_before_allocation(tmp_path, mode):
+def test_slay_scored_admission054_keeps_recording_boundary_before_allocation(tmp_path, tmp_path_factory, monkeypatch, mode):
+    from .test_admission_closeout import selected_native, record_for, install_records
+    selected = selected_native(tmp_path_factory.mktemp("TEST-ONLY-selected"))
     args = SimpleNamespace(scene="T12", terrain="natural", observation_mode="structured",
                            mode="capability", harness="responses", recordings=None)
     args.observation_mode = mode
+    assert renderer_support.historical_policy()["renderer"]["T12/natural"][mode]["scored_evaluation"]
+    assert not renderer_support.support_matrix()["renderer"]["T12/natural"][mode]["scored_evaluation"]
+    definition = suite.load(Path(selected["dependencies"]["scene_manifest"]["path"]))["T12"]
+    install_records(tmp_path_factory.mktemp("TEST-ONLY-qualified"), monkeypatch, [
+        record_for(definition, selected, terrain="natural", mode=mode)])
     with pytest.raises(ValueError, match="recordings must be"):
-        renderer_support.admit_selection(args, {"renderer": {}, "renderer_fixture_helper": {}})
+        renderer_support.admit_selection(args, selected)
     assert list(tmp_path.iterdir()) == []
-    assert renderer_support.support_matrix()["renderer"]["T12/natural"][mode]["scored_evaluation"]
 
 
 @pytest.mark.parametrize("case", ["T10", "T11", "T12"])
 @pytest.mark.parametrize("mode", ["structured", "hybrid"])
-def test_qualified_scored_selections_use_the_ordinary_renderer_profile(case, mode, tmp_path):
-    assert renderer_support.support_matrix()["renderer"][f"{case}/natural"][mode]["scored_evaluation"]
+def test_qualified_scored_selections_use_the_ordinary_renderer_profile(case, mode, tmp_path, tmp_path_factory, monkeypatch):
+    from .test_admission_closeout import selected_native, record_for, install_records
+    assert renderer_support.historical_policy()["renderer"][f"{case}/natural"][mode]["scored_evaluation"]
+    assert not renderer_support.support_matrix()["renderer"][f"{case}/natural"][mode]["scored_evaluation"]
     args = SimpleNamespace(scene=case, terrain="natural", observation_mode=mode,
                            mode="capability", harness="responses",
                            recordings=tmp_path / "outputs/recordings/run", out=tmp_path / "private/run")
-    selected = {"renderer": {}, "renderer_fixture_helper": {}, "protected_paths": []}
+    selected = selected_native(tmp_path_factory.mktemp("TEST-ONLY-selected"))
+    with pytest.raises(ValueError, match="unqualified"):
+        renderer_support.admit_selection(args, selected)
+    definition = suite.load(Path(selected["dependencies"]["scene_manifest"]["path"]))[case]
+    install_records(tmp_path_factory.mktemp("TEST-ONLY-qualified"), monkeypatch, [
+        record_for(definition, selected, terrain="natural", mode=mode)])
     with patch.object(renderer_support.output_paths, "validate_root"), patch.object(
             renderer_support.output_paths, "validate_output"), patch.object(
             renderer_support.runtime, "exclude_outputs"):
-        renderer_support.admit_selection(args, selected)
+        cell = renderer_support.admit_selection(args, selected)
+        assert cell["scored_evaluation"] and cell["action_profile"] == "ordinary-renderer-native-v1"
+        assert not cell["accepted"] and cell["model_success"] == "not-inferred"
     assert list(tmp_path.iterdir()) == []
 
 

@@ -1,6 +1,14 @@
 """Additive food/reserve, armor/replacement and injured recovery tasks."""
 from __future__ import annotations
 
+LEGACY_TEMPLATES = {"T03": "food_reserve", "T04": "craft_equip", "T05": "recover_health"}
+TEMPLATES = {
+    "food_reserve": {"legacy_case": "T03", "requires": ["movement", "inventory", "pickup", "crafting"]},
+    "craft_equip": {"legacy_case": "T04", "requires": ["movement", "inventory", "crafting", "equipment"]},
+    "recover_health": {"legacy_case": "T05", "requires": ["inventory"],
+                       "run_modes_by_observation_mode": {"image": ["task-engineering"]}},
+}
+
 import asyncio
 import math
 import time

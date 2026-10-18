@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "rpg-benchmark-harness"
-version = "1.0.1"
+version = "1.1.0"
 description = "VelorenBench: an external-agent harness for reproducible RPG task evaluation in Veloren"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -44,8 +44,8 @@ include = ["scripts", "scripts.rpg_benchmark"]
 namespaces = false
 
 [tool.setuptools.package-data]
-"scripts.rpg_benchmark" = ["scenes.json", "host-protection.json", "qualification.json"]
+"scripts.rpg_benchmark" = ["README.md", "scenes.json", "host-protection.json", "qualification.json", "current-qualification.json", "native_features.json", "examples/*.json", "visualization.html", "visualization.js"]
 
 [tool.setuptools.data-files]
-"share/rpg-benchmark-harness" = ["README.md", "NOTICE.md", "BENCHMARK_CARD.md", "API.md", "TASKS.md", "SUPPORT.md", "BUILD.md", "PROVENANCE.md", "TESTING.md", "requirements-build.lock", "requirements-test.lock", "requirements-test-sdk.lock"]
+"share/rpg-benchmark-harness" = ["README.md", "NOTICE.md", "BENCHMARK_CARD.md", "API.md", "TASKS.md", "SUPPORT.md", "BUILD.md", "PROVENANCE.md", "TESTING.md", "CONTRIBUTING.md", "VISUALIZATION.md", "requirements-build.lock", "requirements-test.lock", "requirements-test-sdk.lock"]
 "share/rpg-benchmark-harness/config" = ["config/runtime.example.json", "config/content.example.json", "config/renderer.example.json"]

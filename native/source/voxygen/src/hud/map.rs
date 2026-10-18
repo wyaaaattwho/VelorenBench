@@ -43,6 +43,7 @@ widget_ids! {
         qlog_align,
         //location_name,
         indicator,
+        survey_cursor,
         map_layers[],
         map_title,
         qlog_title,
@@ -418,7 +419,9 @@ impl Widget for Map<'_> {
                     .map(|scroll| scroll.y)
                     .sum();
                 if scrolled != 0.0 {
-                    let max_zoom = 16.0;
+                    // Cartographic precision for ordinary location-addressed goals.
+                    // This is user-selected map zoom, not an agent navigation aid.
+                    let max_zoom = 512.0;
                     let min_zoom = map_size.x / worldsize.reduce_partial_max() as f64 / 2.0;
                     let new_zoom_lvl: f64 = (f64::log2(zoom) - scrolled * 0.03)
                         .exp2()
@@ -458,6 +461,19 @@ impl Widget for Map<'_> {
             &mut events,
             state.ids.map_layers[0],
         );
+
+        // A normal cartographic cursor readout, rendered only as map pixels.
+        // It describes the map under the pointer, never a hidden goal or entity.
+        if let Some(mouse) = ui.widget_input(state.ids.map_layers[0]).mouse() {
+            let cursor = Vec2::from_slice(&mouse.rel_xy());
+            let point = (cursor / zoom - drag).as_::<f32>().cpos_to_wpos() + player_pos;
+            Text::new(&format!("Map cursor: E {:.1}  N {:.1}", point.x, point.y))
+                .mid_top_with_margin_on(state.ids.map_layers[0], 8.0)
+                .font_size(self.fonts.cyri.scale(16))
+                .font_id(self.fonts.cyri.conrod_id)
+                .color(TEXT_COLOR)
+                .set(state.ids.survey_cursor, ui);
+        }
 
         let rect_src = position::Rect::from_xy_dim(
             [

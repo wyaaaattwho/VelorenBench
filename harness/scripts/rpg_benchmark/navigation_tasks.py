@@ -1,6 +1,23 @@
 """Additive resident-information navigation and pickup-triggered world changes."""
 from __future__ import annotations
 
+LEGACY_TEMPLATES = {"T01": "resident_workshop", "T02": "changing_route"}
+TEMPLATES = {
+    "resident_workshop": {"legacy_case": "T01", "requires": ["movement", "dialogue", "map"],
+                          "runtime": {"deferred_actor": True}},
+    "changing_route": {"legacy_case": "T02",
+                       "requires": ["movement", "pickup", "coordinate_goal", "terrain_event"],
+                       "runtime": {"retain_admin": True}},
+}
+for _spec in TEMPLATES.values():
+    _spec["mechanism"] = False
+
+
+def public_observer(fixture):
+    if fixture["case"] == "T02":
+        return lambda request, response: public_witness(fixture, request, response)
+    return None
+
 import asyncio
 import json
 import math
@@ -42,7 +59,33 @@ def settled_pair(opening, goal, samples):
                 and all(arrival_sample(opening, goal, row) for row in pair))
 
 
-async def ask_workshop(actor, resident, *, origin="setup"):
+async def ask_workshop(actor, resident, *, origin="setup", rtsim_uid=None, town=None):
+    source_placements = []
+    source_checks = []
+
+    async def keep_source_in_reach():
+        if rtsim_uid is None:
+            return
+        if origin != "setup":
+            raise ValueError("privileged resident placement is fixture setup only")
+        observation = await actor.request("observe")
+        current = legal_resident(actor, rtsim_uid, town, observation)
+        if current is not None:
+            if current["control_target"] != resident["control_target"]:
+                raise RuntimeError("native reference dialogue speaker changed during placement")
+            if (observation.get("on_ground") is True
+                    and math.sqrt(sum(v * v for v in observation["velocity"])) < .1
+                    and math.dist(observation["position"], current["position"]) < 5):
+                native.require_living(observation)
+                footing = await native.qualify(actor, observation["position"])
+                source_checks.append({"rtsim_uid": rtsim_uid, "resident": current,
+                                      "observation": observation, "footing": footing})
+                return
+        current, placement = await place_near_resident(actor, actor, rtsim_uid, town)
+        if current["control_target"] != resident["control_target"]:
+            raise RuntimeError("native reference dialogue speaker changed during placement")
+        source_placements.append(placement)
+
     await native.action(actor, "context_interact", origin=origin,
                         operation="talk", target=resident["control_target"])
     current = await native.wait_observation(
@@ -67,6 +110,7 @@ async def ask_workshop(actor, resident, *, origin="setup"):
                 actor, lambda row: row["survival"]["buff_clock"]["now"] - since >= 1.5,
                 "native statement acknowledgement guard interval")
             action["operation"] = "ack"
+        await keep_source_in_reach()
         receipts.append(await native.action(actor, "dialogue_action", origin=origin, **action))
         current = await native.wait_observation(
             actor, lambda row: row.get("dialogue") is not None
@@ -82,6 +126,7 @@ async def ask_workshop(actor, resident, *, origin="setup"):
     await native.wait_observation(
         actor, lambda row: row["survival"]["buff_clock"]["now"] - since >= 1.5,
         "native statement acknowledgement guard interval")
+    await keep_source_in_reach()
     await native.action(actor, "dialogue_action", origin=origin, operation="ack",
                         sender_uid=prompt["sender_uid"], dialogue_id=prompt["dialogue_id"],
                         tag=prompt["tag"])
@@ -92,12 +137,147 @@ async def ask_workshop(actor, resident, *, origin="setup"):
             for event in actor.native_events), "actual native resident dialogue End")
     if markers[0] not in follow["dialogue_markers"]:
         raise RuntimeError("native workshop marker did not persist past follow-on dialogue")
-    return {"prompts": prompts, "receipts": receipts, "marker": markers[0], "follow_on": follow}
+    return {"prompts": prompts, "receipts": receipts, "marker": markers[0], "follow_on": follow,
+            "source_placements": source_placements, "source_checks": source_checks}
 
 
-async def setup_facility(admin, actor, definition):
-    await native.command(admin, "site", FACILITY["town"])
-    town = await native.ready_observation(admin)
+def resident_bindings(admin):
+    bindings = private_dialogues({
+        "private_oracle": str(admin.out / "private-native-oracle.ndjson")},
+        latest_event="loaded_actor_bindings")
+    return bindings[-1]["data"]["bindings"] if bindings else []
+
+
+def legal_resident(admin, rtsim_uid, town, observation):
+    native_uids = {entry["uid"] for entry in resident_bindings(admin)
+                   if entry.get("rtsim_uid") == rtsim_uid}
+    resident = next((entity for entity in observation["nearby_entities"]
+                     if entity["uid"] in native_uids and entity.get("body") == "Humanoid"
+                     and entity.get("alias") is None
+                     and entity.get("health", {}).get("current", 0) > 0), None)
+    if resident and math.dist(resident["position"][:2], town["position"][:2]) > 200:
+        raise RuntimeError("nearest existing native resident is outside the selected settlement fixture")
+    return resident
+
+
+async def place_near_resident(admin, actor, rtsim_uid, town):
+    """Qualify Human footing, not the resident's transient RTSim/ECS height.
+
+    Only the administrator/player moves. Residents may walk normally and may
+    acquire a new native UID when reloaded; every selection rejoins the same
+    RTSim identity through the latest private binding.
+    """
+    if actor.process is None:
+        await actor.start()
+
+    arguments = ("rtsim_tp", rtsim_uid)
+    command = arguments if actor is admin else ("sudo", actor.name, *arguments)
+    resident = None
+
+    def selected(row):
+        nonlocal resident
+        resident = legal_resident(admin, rtsim_uid, town, row)
+        return resident
+
+    def in_reach(row):
+        current_resident = selected(row)
+        return current_resident and math.dist(row["position"], current_resident["position"]) < 5
+
+    # Load/qualify this Human, not the owner's client or the NPC's transient Z.
+    await native.command(admin, *command)
+    standing = await native.ready_observation(actor)
+    # Native inspect_terrain is bounded to10m. Reserve2m for a non-overlapping
+    # interaction placement. A second exact NPC overlap is unnecessary when
+    # the first qualified window already loads this local terrain: it can impart
+    # collision velocity and let a normal walking resident escape during decay.
+    offset, query_radius = 2.0, 10.0
+    def placement_window(row):
+        return selected(row) and math.dist(row["position"], resident["position"]) < query_radius - offset
+
+    if not placement_window(standing):
+        await native.command(admin, *command)
+        standing = await native.ready_observation(actor)
+    window = standing if placement_window(standing) else await native.wait_observation(
+        actor, placement_window, "current existing native resident binding in interaction range")
+    reference = resident
+    dx, dy = (reference["position"][i] - window["position"][i] for i in (0, 1))
+    length = math.hypot(dx, dy)
+    dx, dy = (dx / length, dy / length) if length else (1, 0)
+    alternatives = []
+    queries = []
+    # Read-only local footing alternatives; only ONE strict goto is submitted.
+    # No NPC movement, mutation retry, sky probe or global tolerance change.
+    for ox, oy in ((-dy, dx), (dy, -dx), (-dx, -dy), (dx, dy)):
+        point = [reference["position"][0] + offset * ox,
+                 reference["position"][1] + offset * oy, window["position"][2]]
+        query = await native.terrain(actor, point)
+        queries.append(query)
+        if query.get("status") != "complete":
+            raise RuntimeError("native resident placement terrain is not completely loaded")
+        candidates = [entry["standing_position"] for entry in query.get("support_candidates", [])
+                      if entry.get("occupiable") is True
+                      and entry["support"]["kind"] not in {"Leaves", "Wood"}]
+        alternatives.extend((candidate, query) for candidate in candidates)
+    # All cardinal surfaces are measured, including valid elevated surfaces.
+    # Rerank with the same resident's fresh full 3D pose, not its pre-query pose
+    # or a horizontal proxy. Native standing_position is the authoritative f32
+    # target; never reconstruct it from the pre-round Python query point.
+    selection = await actor.request("observe")
+    reference = selected(selection)
+    if reference is None:
+        raise RuntimeError("native resident binding unavailable at footing selection")
+    alternatives = [(point, query) for point, query in alternatives
+                    if math.dist(point, reference["position"]) < 5]
+    if not alternatives:
+        raise RuntimeError("native resident has no loaded occupiable Human interaction footing")
+    target, support = min(alternatives, key=lambda item: math.dist(item[0], reference["position"]))
+    await native.goto(admin, actor, target, horizontal_tolerance=2)
+    opening = await native.ready_observation(actor)
+    # Consume the genuine qualified window before waiting for a future one.
+    # A normally walking resident can leave range between redundant observations.
+    current = opening if in_reach(opening) else await native.wait_observation(
+        actor, in_reach, "same resident within native interaction range")
+    return resident, {"rtsim_uid": rtsim_uid, "standing": standing,
+                      "opening": opening, "current": current, "resident": resident,
+                      "placement_reference": reference, "placement_selection": selection,
+                      "placement_queries": queries, "placement_support": support, "target": target}
+
+
+async def wait_resident_population(admin):
+    witness = None
+
+    def ready(_):
+        nonlocal witness
+        records = private_dialogues({
+            "private_oracle": str(admin.out / "private-native-oracle.ndjson")},
+            latest_event="rtsim_population")
+        witness = records[-1] if records else None
+        state = (witness or {}).get("data", {}).get("settlement_bootstrap", {})
+        return (state.get("ready") is True
+                and witness["data"].get("clock") == "server RTSim tick/time-of-day; not a client-update counter"
+                and type(state.get("last_maintenance_tick")) is int
+                and state["last_maintenance_tick"] > 0
+                and type(state.get("allocated_deficit")) is int
+                and type(state.get("eligible_pending")) is int
+                and state.get("allocated_deficit") == 0 and state.get("eligible_pending") == 0)
+
+    await native.wait_observation(admin, ready, "native settlement population bootstrap")
+    return witness
+
+
+def local_resident_eligible(binding, town):
+    point = binding.get("server_position")
+    return (binding.get("civilised") is True and binding.get("body") == "Humanoid"
+            and binding.get("alive") is True and binding.get("on_ground") is True
+            and type(binding.get("rtsim_uid")) is int
+            # Private Vec3 observations deliberately retain the native object schema.
+            and isinstance(point, dict) and set(point) == {"x", "y", "z"}
+            and all(type(value) in (int, float) and math.isfinite(value) for value in point.values())
+            and math.dist([point["x"], point["y"]], town["position"][:2]) <= 200)
+
+
+async def discover_resident(admin, town):
+    """Choose any actual local resident; commit only after native eligibility."""
     before = len(admin.native_events)
     await native.command(admin, "rtsim_npc", "civilised,humanoid", 1)
 
@@ -110,27 +290,41 @@ async def setup_facility(admin, actor, definition):
     identifiers = re.findall(r"\((\d+)\),", search_reply(None))
     if len(identifiers) != 1:
         raise RuntimeError("native owner search did not identify one existing humanoid resident")
-    rtsim_uid = int(identifiers[0])
+    first_candidate = int(identifiers[0])
+    candidate = None
+
+    def eligible(row):
+        nonlocal candidate
+        bindings = [entry for entry in resident_bindings(admin) if local_resident_eligible(entry, town)]
+        bindings.sort(key=lambda entry: (
+            entry["rtsim_uid"] != first_candidate,
+            math.dist(row["position"], [entry["server_position"][axis] for axis in ("x", "y", "z")])))
+        candidate = bindings[0] if bindings else None
+        return candidate is not None
+
+    await native.wait_observation(admin, eligible, "loaded grounded local resident eligibility")
+    rtsim_uid = candidate["rtsim_uid"]
     await native.command(admin, "rtsim_info", rtsim_uid)
-    await native.command(admin, "rtsim_tp", rtsim_uid)
+    resident, first_placement = await place_near_resident(admin, admin, rtsim_uid, town)
+    current_binding = next((entry for entry in resident_bindings(admin)
+                            if entry.get("rtsim_uid") == rtsim_uid
+                            and entry.get("uid") == resident["uid"]), None)
+    if current_binding is None or not local_resident_eligible(current_binding, town):
+        raise RuntimeError("native resident lost grounded local eligibility before commitment")
+    discovery = {"rtsim_uid": rtsim_uid, "first_candidate_rtsim_uid": first_candidate,
+                 "eligibility": {"binding": current_binding, "pre_placement_binding": candidate,
+                                 "human_placement": first_placement},
+                 "owner_events": admin.native_events[before:]}
+    return resident, first_placement, discovery
 
-    def legal_resident(row):
-        bindings = [entry for entry in private_dialogues({
-            "private_oracle": str(admin.out / "private-native-oracle.ndjson")})
-                    if entry["event"] == "loaded_actor_bindings"]
-        native_uids = {entry["uid"] for entry in bindings[-1]["data"]["bindings"]
-                       if entry.get("rtsim_uid") == rtsim_uid} if bindings else set()
-        return next((entity for entity in row["nearby_entities"]
-                     if entity["uid"] in native_uids and entity.get("body") == "Humanoid"
-                     and entity.get("alias") is None
-                     and entity.get("health", {}).get("current", 0) > 0), None)
 
-    residents = await native.wait_observation(admin, legal_resident, "actual existing native resident binding")
-    resident = legal_resident(residents)
-    if math.dist(resident["position"][:2], town["position"][:2]) > 200:
-        raise RuntimeError("nearest existing native resident is outside the selected settlement fixture")
-    await native.goto(admin, admin, resident["position"], horizontal_tolerance=2)
-    reference = await ask_workshop(admin, resident)
+async def setup_facility(admin, actor, definition):
+    population = await wait_resident_population(admin)
+    await native.command(admin, "site", FACILITY["town"])
+    town = await native.ready_observation(admin)
+    resident, first_placement, discovery = await discover_resident(admin, town)
+    rtsim_uid = discovery["rtsim_uid"]
+    reference = await ask_workshop(admin, resident, rtsim_uid=rtsim_uid, town=town)
     marker = reference["marker"]["marker"]["wpos"]
     if [marker["x"], marker["y"]] != FACILITY["root_xy"]:
         raise RuntimeError("native resident selected a different actual workshop plot; fixture unqualified")
@@ -155,14 +349,7 @@ async def setup_facility(admin, actor, definition):
             raise RuntimeError("native facility floor-level approach did not reach its endpoint")
         reachability.append({"goal": point, "receipt": receipt, "achieved": achieved,
                              "terrain": await native.qualify(admin, achieved["position"])})
-    await native.command(admin, "rtsim_tp", rtsim_uid)
-    current = await native.wait_observation(admin, legal_resident, "current existing native resident binding")
-    resident = legal_resident(current)
-    if actor.process is None:
-        await actor.start()
-        current = await native.wait_observation(admin, legal_resident, "current existing native resident binding")
-        resident = legal_resident(current)
-    await native.goto(admin, actor, resident["position"], horizontal_tolerance=2)
+    resident, final_placement = await place_near_resident(admin, actor, rtsim_uid, town)
     opening = await native.ready_observation(actor)
     native.require_uninjured_start(opening)
     if opening["dialogue_markers"] or opening.get("dialogue") is not None:
@@ -171,7 +358,8 @@ async def setup_facility(admin, actor, definition):
             "opening": opening, "start": opening["position"], "goal": FACILITY["goal"],
             "supplies": [], "resident": resident, "facility": FACILITY,
             "native_information_reference": reference, "native_facility_observation": facility,
-            "native_resident_discovery": {"rtsim_uid": rtsim_uid, "owner_events": admin.native_events[before:]},
+            "resident_placements": [first_placement, final_placement],
+            "native_resident_discovery": discovery, "native_population_readiness": population,
             "reachability": reachability, "private_oracle": str(admin.out / "private-native-oracle.ndjson")}
 
 
@@ -244,9 +432,10 @@ async def verify_blocks(admin, voxels):
 async def setup_route(admin, actor, definition):
     layout = route_layout()
     initialization = await native.isolate_initial_spawn(admin, actor)
-    await native.author_voxels(admin, [layout["voxels"][0]])
+    # The common author restores its original pose. Do not rely on its first
+    # voxel leaving the administrator near a separate airborne/batch engine.
+    construction = await native.author_voxels(admin, layout["voxels"])
     await build_permission(admin, layout["voxels"] + layout["event_voxels"])
-    construction = await build_batch(admin, layout["voxels"][1:])
     readback = await verify_blocks(admin, layout["voxels"])
     await native.goto(admin, actor, layout["start"])
     cleanup = await native.clean_inventory(admin, actor)
@@ -350,7 +539,7 @@ def public_witness(fixture, request, response):
             "interpretation": "normal structured geometry delivered; not a replanning or collision claim"})
 
 
-def private_dialogues(fixture):
+def private_dialogues(fixture, *, latest_event=None):
     from pathlib import Path
     payload = Path(fixture["private_oracle"]).read_bytes()
     lines = payload.split(b"\n")
@@ -358,6 +547,16 @@ def private_dialogues(fixture):
     fixture["private_oracle_snapshot"] = {
         "complete_records": len(lines), "pending_tail_bytes": len(pending),
         "framing": "newline commits a native record; incomplete tail is not evidence"}
+    if latest_event is not None:
+        # Live placement needs one current snapshot, not repeated JSON decode
+        # of the entire dialogue/movement history while its resident walks.
+        token = json.dumps(latest_event).encode()
+        for line in reversed(lines):
+            if token in line:
+                row = json.loads(line)
+                if row["event"] == latest_event:
+                    return [row]
+        return []
     return [json.loads(line) for line in lines]
 
 
@@ -451,7 +650,8 @@ async def mechanism(actor, fixture):
 
 
 def finalize_environment(record):
-    if record.get("scene") == "T01" and record.get("score", {}).get("oracle_validity") == "unknown":
+    template = record.get("task_template", LEGACY_TEMPLATES.get(record.get("scene")))
+    if template == "resident_workshop" and record.get("score", {}).get("oracle_validity") == "unknown":
         evaluation = record["evaluation_validity"]
         if evaluation["status"] != "invalid":
             evaluation["status"] = "unknown"
@@ -460,7 +660,7 @@ def finalize_environment(record):
         evaluation["accepted"] = False
         record.update(success=False, capability_claim=False)
         return
-    if record.get("scene") != "T02" or "world_event" not in record:
+    if template != "changing_route" or "world_event" not in record:
         return
     state = record["world_event"]
     evaluation = record["evaluation_validity"]

@@ -97,7 +97,7 @@ pub use self::{
     ori::Ori,
     pet::Pet,
     phys::{
-        CapsulePrism, Collider, Density, ForceUpdate, Immovable, Mass, PhysicsState, Pos,
+        CapsulePrism, Collider, Density, FixtureAuthoring, ForceUpdate, Immovable, Mass, PhysicsState, Pos,
         PosVelOriDefer, PreviousPhysCache, Scale, Sticky, Vel,
     },
     player::{AliasError, DisconnectReason, MAX_ALIAS_LEN, Player},

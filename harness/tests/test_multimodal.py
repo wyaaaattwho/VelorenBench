@@ -63,7 +63,7 @@ class VisibilityTests(unittest.TestCase):
                                observation_mode="image", action_profile=None, model=None,
                                reasoning_effort=None, recordings=Path("/tmp/outputs/recordings/test"))
         adapter = Adapter(args)
-        self.assertEqual(adapter.configuration["action_profile"], "visual-motor-v1")
+        self.assertEqual(adapter.configuration["action_profile"], "visual-ui-v1")
         manifest = json.loads(json.dumps(adapter.manifest))
         del manifest["capabilities"]["image_transport"]
         with self.assertRaises(ValueError):

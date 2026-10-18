@@ -1,5 +1,16 @@
 from __future__ import annotations
 
+LEGACY_TEMPLATES = {"X1": "craft_fight_travel", "X2": "calibrated_craft_fight_travel"}
+# The only current cross-task setup composition. Both actual setup and
+# qualification resolve these roles through suite.setup_dependencies.
+SETUP_REFERENCES = {"craft": ("C2", "crafting"), "encounter": ("B1", "combat")}
+TEMPLATES = {
+    "craft_fight_travel": {"legacy_case": "X1",
+                          "requires": ["movement", "combat", "crafting", "pickup", "coordinate_goal"]},
+    "calibrated_craft_fight_travel": {"legacy_case": "X2",
+                                     "requires": ["movement", "combat", "crafting", "pickup", "coordinate_goal"]},
+}
+
 from scripts.rpg_benchmark import combat, crafting, navigation
 from scripts.rpg_benchmark.scene import counts
 from scripts.rpg_benchmark import setup as native
@@ -46,12 +57,12 @@ def resource_adequacy(craft: dict) -> dict:
             "scope": "native known recipe plus supplied ingredient quantities; not a combat survival guarantee"}
 
 
-async def setup(admin, actor, definition: dict, terrain: str, suite: dict) -> dict:
-    craft_definition = {**suite["C2"], **definition.get("craft_overrides", {})}
+async def setup(admin, actor, definition: dict, terrain: str, dependencies: dict) -> dict:
+    craft_definition = {**dependencies["craft"], **definition.get("craft_overrides", {})}
     craft = await crafting.setup(admin, actor, craft_definition, terrain)
     adequate = resource_adequacy(craft)
     recipe_component = await qualify_food_recipe(admin, craft["recipe_spec"]) if definition["id"] == "X2" else None
-    encounter = dict(suite["B1"])
+    encounter = dict(dependencies["encounter"])
     # Compose primitives without cleaning away the crafting supplies.
     placement = craft["placement"]
     from scripts.rpg_benchmark.scene import item_id

@@ -167,6 +167,7 @@ fn do_command(
         ServerChatCommand::DropAll => handle_drop_all,
         ServerChatCommand::Dummy => handle_spawn_training_dummy,
         ServerChatCommand::Explosion => handle_explosion,
+        ServerChatCommand::FixtureAuthoring => handle_fixture_authoring,
         ServerChatCommand::Faction => handle_faction,
         ServerChatCommand::GiveItem => handle_give_item,
         ServerChatCommand::Gizmos => handle_gizmos,
@@ -2867,6 +2868,114 @@ fn handle_spawn_portal(
     } else {
         Err(action.help_content())
     }
+}
+
+fn fixture_authoring_change(
+    current: Option<&comp::FixtureAuthoring>, owner: &str, operation: &str,
+    point: Option<Vec3<f32>>, position: comp::Pos, velocity: comp::Vel,
+) -> Result<(Option<comp::FixtureAuthoring>, comp::Pos, comp::Vel), &'static str> {
+    if owner.is_empty() || owner.len() > 128
+        || !owner.bytes().all(|byte| byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_')
+    {
+        return Err("invalid fixture authoring owner");
+    }
+    if current.is_some_and(|hold| hold.owner != owner) {
+        return Err("fixture authoring owner mismatch");
+    }
+    match (operation, current, point) {
+        ("begin", None, None) => {
+            let hold = comp::FixtureAuthoring {
+                owner: owner.into(), position, restore_position: position, restore_velocity: velocity,
+            };
+            Ok((Some(hold), position, comp::Vel::zero()))
+        },
+        ("move", Some(hold), Some(point)) if point.map(f32::is_finite).reduce_and() => {
+            let hold = comp::FixtureAuthoring { position: comp::Pos(point), ..hold.clone() };
+            Ok((Some(hold), comp::Pos(point), comp::Vel::zero()))
+        },
+        ("end", Some(hold), None) => Ok((None, hold.restore_position, hold.restore_velocity)),
+        _ => Err("fixture authoring requires one begin, owned move, then owned end"),
+    }
+}
+
+#[cfg(test)]
+mod fixture_authoring_tests {
+    use super::*;
+    #[test]
+    fn fixture_authoring_requires_admin_and_keeps_ownership_and_exact_restore_state() {
+        assert_eq!(ServerChatCommand::FixtureAuthoring.needs_role(), Some(comp::AdminRole::Admin));
+        let position = comp::Pos(Vec3::new(1.,2.,3.));
+        let velocity = comp::Vel(Vec3::new(4.,5.,-40.));
+        let (hold, at, speed) = fixture_authoring_change(None, "owner", "begin", None, position, velocity).unwrap();
+        let hold = hold.unwrap();
+        assert_eq!((at,speed), (position, comp::Vel::zero()));
+        assert!(fixture_authoring_change(Some(&hold), "other", "end", None, at, speed).is_err());
+        assert!(fixture_authoring_change(Some(&hold), "owner", "begin", None, at, speed).is_err());
+        assert!(fixture_authoring_change(None, "owner", "move", Some(Vec3::zero()), at, speed).is_err());
+        assert!(fixture_authoring_change(Some(&hold), "owner", "move",
+            Some(Vec3::new(f32::NAN,0.,0.)), at, speed).is_err());
+        let (moved, at, speed) = fixture_authoring_change(Some(&hold), "owner", "move",
+            Some(Vec3::new(18700.5,10800.5,501.8)), at, speed).unwrap();
+        let (none, restored, restored_speed) = fixture_authoring_change(
+            moved.as_ref(), "owner", "end", None, at, speed).unwrap();
+        assert!(none.is_none());
+        assert_eq!((restored,restored_speed), (position,velocity));
+    }
+}
+
+fn handle_fixture_authoring(
+    server: &mut Server, client: EcsEntity, target: EcsEntity,
+    args: Vec<String>, _action: &ServerChatCommand,
+) -> CmdResult<()> {
+    // do_command has already required Admin. Never sudo this onto an actor.
+    if client != target {
+        return Err(Content::Plain("fixture authoring is administrator-self only".into()));
+    }
+    if args.len() != 2 && args.len() != 5 {
+        return Err(Content::Plain("fixture_authoring <owner> begin|move x y z|end".into()));
+    }
+    let point = if args.len() == 5 {
+        let values: Result<Vec<f32>, _> = args[2..].iter().map(|value| value.parse()).collect();
+        let values = values.map_err(|_| Content::Plain("invalid fixture authoring position".into()))?;
+        Some(Vec3::new(values[0], values[1], values[2]))
+    } else { None };
+    if args[1] != "end" {
+        let allowed = server.state.ecs().read_storage::<comp::CanBuild>()
+            .get(client).is_some_and(|permission| permission.enabled && !permission.build_areas.is_empty());
+        if !allowed {
+            return Err(Content::Plain("fixture authoring requires enabled assigned build permission".into()));
+        }
+        if let Some(point) = point {
+            let terrain = server.state.terrain();
+            if !point.map(f32::is_finite).reduce_and()
+                || !terrain.map_size_lg().contains_chunk(
+                    common::terrain::TerrainGrid::chunk_key(point.map(|value| value.floor() as i32)))
+            {
+                return Err(Content::Plain("fixture authoring position is outside world bounds".into()));
+            }
+        }
+    }
+    let position = server.state.ecs().read_storage::<comp::Pos>().get(client).copied()
+        .ok_or_else(|| Content::Plain("fixture authoring position unavailable".into()))?;
+    let velocity = server.state.ecs().read_storage::<comp::Vel>().get(client).copied()
+        .ok_or_else(|| Content::Plain("fixture authoring velocity unavailable".into()))?;
+    let current = server.state.ecs().read_storage::<comp::FixtureAuthoring>().get(client).cloned();
+    let (next, position, velocity) = fixture_authoring_change(
+        current.as_ref(), &args[0], &args[1], point, position, velocity,
+    ).map_err(|message| Content::Plain(message.into()))?;
+    if let Some(hold) = next {
+        insert_or_replace_component(server, client, hold, "administrator")?;
+    } else {
+        server.state.ecs().write_storage::<comp::FixtureAuthoring>().remove(client);
+    }
+    insert_or_replace_component(server, client, position, "administrator")?;
+    insert_or_replace_component(server, client, velocity, "administrator")?;
+    if let Some(force) = server.state.ecs().write_storage::<comp::ForceUpdate>().get_mut(client) {
+        force.update();
+    }
+    server.notify_client(client, ServerGeneral::server_msg(ChatType::CommandInfo,
+        Content::Plain(format!("fixture authoring {} {}", args[0], args[1]))));
+    Ok(())
 }
 
 fn handle_build(

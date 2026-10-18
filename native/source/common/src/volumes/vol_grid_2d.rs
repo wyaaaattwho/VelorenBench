@@ -29,6 +29,9 @@ pub struct VolGrid2d<V: RectRasterableVol> {
 }
 
 impl<V: RectRasterableVol> VolGrid2d<V> {
+    /// Synthetic out-of-map defaults are readable, but never writable terrain.
+    pub fn map_size_lg(&self) -> MapSizeLg { self.map_size_lg }
+
     #[inline(always)]
     pub fn chunk_key<P: Into<Vec2<i32>>>(pos: P) -> Vec2<i32> {
         pos.into()

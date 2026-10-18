@@ -46,6 +46,7 @@ macro_rules! synced_components {
             collider: Collider,
             sticky: Sticky,
             immovable: Immovable,
+            fixture_authoring: FixtureAuthoring,
             character_state: CharacterState,
             character_activity: CharacterActivity,
             shockwave: Shockwave,
@@ -75,6 +76,7 @@ macro_rules! synced_components {
             can_build: CanBuild,
             is_interactor: IsInteractor,
             interactors: Interactors,
+            map_marker: MapMarker,
         }
     };
 }
@@ -246,6 +248,10 @@ impl NetSync for Immovable {
     const SYNC_FROM: SyncFrom = SyncFrom::AnyEntity;
 }
 
+impl NetSync for FixtureAuthoring {
+    const SYNC_FROM: SyncFrom = SyncFrom::ClientEntity;
+}
+
 impl NetSync for CharacterState {
     const SYNC_FROM: SyncFrom = SyncFrom::AnyEntity;
 }
@@ -314,4 +320,72 @@ impl NetSync for IsInteractor {
 
 impl NetSync for Interactors {
     const SYNC_FROM: SyncFrom = SyncFrom::ClientSpectatorEntity;
+}
+
+// The HUD keeps its own optimistic marker, while the private observation reads
+// the real component. Replicate server insert/update/remove only to its owner;
+// existing explicit group-marker messages retain their separate visibility.
+impl NetSync for MapMarker {
+    const SYNC_FROM: SyncFrom = SyncFrom::ClientEntity;
+}
+
+#[cfg(test)]
+mod map_marker_tests {
+    use super::*;
+    use crate::{
+        msg::EcsCompPacket,
+        sync::{CompSyncPackage, UpdateTracker, WorldSyncExt},
+    };
+    use common::resources::PlayerEntity;
+    use specs::{Builder, World, WorldExt};
+    use vek::Vec2;
+
+    #[test]
+    fn map_marker_is_replicated_only_to_its_owner() {
+        assert!(matches!(MapMarker::SYNC_FROM, SyncFrom::ClientEntity));
+    }
+
+    #[test]
+    fn actual_marker_packets_track_signed_set_update_and_remove() {
+        let mut server = World::new();
+        server.register::<MapMarker>();
+        let entity = server.create_entity().build();
+        let mut tracker = UpdateTracker::<MapMarker>::new(&server);
+        let mut client = World::new();
+        client.register::<MapMarker>();
+        client.register_sync_marker();
+        let owner = client.create_entity_synced().build();
+        client.insert(PlayerEntity(Some(owner)));
+        let unrelated = client
+            .create_entity()
+            .with(MapMarker(Vec2::new(42, 43)))
+            .build();
+        let uid = client.uid_from_entity(owner).unwrap();
+        for expected in [
+            Some(Vec2::new(-18_700, 10_800)),
+            Some(Vec2::new(i32::MAX, i32::MIN)),
+            None,
+        ] {
+            match expected {
+                Some(position) => {
+                    server.write_storage::<MapMarker>().insert(entity, MapMarker(position)).unwrap();
+                },
+                None => { server.write_storage::<MapMarker>().remove(entity); },
+            }
+            let storage = server.read_storage::<MapMarker>();
+            tracker.record_changes(&storage);
+            let mut packet = CompSyncPackage::<EcsCompPacket>::new();
+            packet.add_component_update(&tracker, &storage, uid.0, entity, false);
+            assert_eq!(packet.comp_updates.len(), 1);
+            let wire = bincode::serde::encode_to_vec(&packet, bincode::config::legacy()).unwrap();
+            let (decoded, consumed): (CompSyncPackage<EcsCompPacket>, usize) =
+                bincode::serde::decode_from_slice(&wire, bincode::config::legacy()).unwrap();
+            assert_eq!(consumed, wire.len());
+            assert_eq!(decoded.comp_updates[0].0, uid.0);
+            client.apply_comp_sync_package(decoded);
+            let observed = client.read_storage::<MapMarker>();
+            assert_eq!(observed.get(owner).map(|marker| marker.0), expected);
+            assert_eq!(observed.get(unrelated).unwrap().0, Vec2::new(42, 43));
+        }
+    }
 }

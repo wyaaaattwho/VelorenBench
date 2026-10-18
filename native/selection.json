@@ -1,0 +1,13 @@
+{
+  "baseline": {
+    "commit": "2e3aa071417a31173726b785689eeb6ec0548273",
+    "distribution": "v1.0.1",
+    "manifest_sha256": "e8f6e3a62c1ba28b2daf1f0be83deb8aa831109811361997d569b943544eaa08",
+    "source_tree_sha256": "4c2cc4bb7cb7e6a94f963253866f09c2a0a6fde0df2d23ece9c99f78322944db"
+  },
+  "distribution": "1.1.0",
+  "release_commit": null,
+  "schema": "velorenbench-native-selection/1",
+  "source_manifest_sha256": "f303e8aa0d93c19089db8b070ecefe04dc2afea1e84d1ccf3dee522bd4141ba1",
+  "source_tree_sha256": "20bc8489d1acc07086a6525e64f100c4117e1080aacaf0739b94edb3fd905cf4"
+}

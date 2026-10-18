@@ -5,6 +5,14 @@ CONFIGURATION = "rpg-adapter-configuration/1"
 ACTION_PROFILE = "raw-native-v2"
 
 
+def default_profile(backend, mode):
+    """Successor defaults, not overrides of an external adapter's declaration."""
+    if backend not in {"renderer", "headless"} or mode not in {"structured", "image", "hybrid"}:
+        raise ValueError("unknown backend or observation mode")
+    return (ACTION_PROFILE if backend == "headless" else
+            "visual-ui-v1" if mode == "image" else "ordinary-renderer-native-v1")
+
+
 def negotiate(manifest, requested):
     legacy = manifest["schema"] == "rpg-external-adapter/1"
     if legacy:

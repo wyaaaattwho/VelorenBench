@@ -1,10 +1,47 @@
 # Building from a source checkout
 
+## Untagged release candidate 1.1.0
+
+This candidate is **not** v1.0.1 and has no release commit/tag. Python packages
+use `1.1.0` for both core and reference adapter. This is not release acceptance.
+The final local seal is tests/docs/registry-only relative to the image-intent
+successor: production Python and native code identities are unchanged.
+Its125 exact qualified keys remain usable;35 legacy-image exclusions and the
+T05/image task-engineering restriction remain. No native rebuild is required
+for this data-only seal. The delivery includes the byte-identical selected
+native descriptor/binaries and entire corresponding source, not an asset tree.
+`verify_evidence.py --root evidence --native native-bundle/bundle.json
+--source-manifest source/source-manifest.json` works after relocation and links
+the GPL evidence object to the actual included source. Keep all upstream notices;
+the18 original game PNGs remain evidence subject to upstream asset terms for
+any future authorized external distribution. This local seal is not publication.
+`native/selection.json` binds the deliberately modified current
+native tree/manifest, while `source.json.successor_baseline` and the existing
+benchmark/upstream pins retain their historical meanings. Do not substitute
+distribution identity for a benchmark/native baseline or invent a Git commit.
+After native edits run `tools/refresh_native.py --write`, and after final source
+edits run `tools/package_source.py --write`; inspect both generated inventories.
+The existing build/assembly/bind commands below use the selected successor
+inventory. They require the same exact legally obtained external assets and
+Linux/aarch64 toolchain. No source/binary/license/platform closure or real
+native task qualification follows from an inventory check or Python install.
+No GameAgent checkout, account, local model or private headless binding is a
+standalone package dependency. Original source-release receipts below remain
+historical; do not overwrite their builds/bindings/results.
+
+Successor `generic-release-2` adds genuine middle-button HUD injection. Rebuild
+from the newly selected native source, assemble a new bundle, then bind the
+matching Python package; an older binary cannot qualify the new gesture.
+Python advertises `middle_click` only when the actual renderer-ready capability
+includes it. The public map input uses its existing M3 waypoint binding, not a
+structured coordinate command. Native integration qualification is still separate.
+
 ## Python Harness
 
-Source release: **v1.0.1**, with core **1.0.1** and the separate reference
-adapter **0.1.0**. Use the tag-pinned checkout in [README.md](README.md).
-Native Rust source/mechanics and asset identities are unchanged. New adapter environments
+Frozen historical source release: **v1.0.1**, with core **1.0.1** and reference
+adapter **0.1.0**. Those identities are not this candidate. For this candidate,
+build/install core and adapter **1.1.0** from the same verified checkout.
+Native source changes require a newly assembled bundle; asset identities remain pinned. New adapter environments
 are independent installations: install the same benchmark wheel in each,
 then the adapter's declared dependency lock and installed entry module.
 Run the adapter's no-model preflight before a native episode. Core installation
@@ -23,10 +60,16 @@ python3.13 -m venv --copies /absolute/build-env
 
 Install the resulting wheel with `pip install --no-deps FILE.whl`. The
 wheel and sdist contain the MIT Python Harness/docs/tools/tests as applicable,
-not native source/metadata, game assets, historical evidence or materials
+not native source/metadata, game assets, the separate evidence sidecar or materials
 inventories. The Git source checkout is the native build entry. Python
 build dependencies are pinned; their availability still requires a package
 index or predownloaded wheelhouse. See [TESTING.md](TESTING.md).
+
+Build the reference adapter separately with the same build interpreter:
+`/absolute/build-env/bin/python -m build --no-isolation --outdir /absolute/adapter-dist integrations/deepseek`.
+Install the same exact core wheel in the independent adapter environment, then
+its hash-locked dependencies and adapter wheel. Run `python -m pip check` in
+both environments; matching version text never replaces preflight byte identity.
 
 ## Selected native platform and prerequisites
 
@@ -66,6 +109,50 @@ For a Git/LFS upstream checkout, fetch the corresponding upstream revision
 and its LFS objects using upstream instructions; compare the actual files,
 not LFS pointer stubs. Extra or changed files cause assembly/binding refusal.
 
+### Reconstruct the three benchmark entity configurations
+
+The selected 10,579-file inventory includes three benchmark-authored
+exact-male-body derivatives that are **not stock upstream filenames**.
+`tools/prepare_assets.py` reconstructs them locally from the three pinned
+stock configurations; no held benchmark asset directory is required.
+All stock files must match `native/assets-manifest.json`. Only the three
+derivative entries may be absent; any present derivatives must match too.
+
+Paths below are relative to `common/entity/`:
+
+| Stock input | Generated output | Existing output SHA-256 |
+| --- | --- | --- |
+| `wild/aggressive/green_legoom.ron` | `benchmark/male_green_legoom.ron` | `c7be31b1bfab963903bc1ee5c5ed78b31af5b85f1c7b12761b64fea876f80435` |
+| `wild/aggressive/ogre.ron` | `benchmark/male_ogre.ron` | `94c4e8c1b881002b9627a1475efa3935456d1fcd1298f2adb02e6e2016941a89` |
+| `wild/aggressive/wolf.ron` | `benchmark/male_wolf.ron` | `9c40d12de1ad5cce59055760a366501779fe0763d82725c70152aa062ef841c3` |
+
+```sh
+python3 tools/prepare_assets.py --assets /absolute/stock/assets \
+  --out /absolute/benchmark-assets --check
+python3 tools/prepare_assets.py --assets /absolute/stock/assets \
+  --out /absolute/benchmark-assets
+```
+
+`--check` validates every input hash, computes the three derivatives and
+verifies their exact hashes and the resulting complete inventory, without
+creating output. Preparation copies the stock files into a **new external**
+`/absolute/benchmark-assets/assets`, adds the three derivatives, verifies all
+10,579 hashes again and writes `/absolute/benchmark-assets/receipt.json`.
+The final tree digest remains
+`cec450b9d592af4c1ef60db1a9a77112957a15c7449aa3cfcea842a4a562e8a8`.
+Existing outputs, overlapping paths, symlinks, extra/altered stock files and
+wrong generated hashes are refused. Source assets are never changed.
+
+Only the body selection and historical whitespace/final-newline formatting
+change. Original names, alignment, loot and loadouts remain intact, including
+Green Legoom's inherited loadout and Ogre/Wolf's native `FromBody` equipment
+construction. These are the existing fixtures, not new tasks or eased goals.
+The public tool supplies original transformation instructions, **not copied
+upstream configurations or art**. Its MIT license does not relicense generated
+files: retain upstream terms and credits, and review rights before sharing a
+locally materialized asset tree. See [NOTICE.md](NOTICE.md). The tool cannot
+obtain missing stock files or establish redistribution rights for you.
+
 The full selected source manifest includes one compile-time resource:
 `assets/voxygen/audio/null.ogg`. It is **not** in this public checkout.
 The build tool copies its exact hash-checked bytes from
@@ -81,9 +168,9 @@ Choose new output prefixes outside this checkout. Paths must be absolute
 without symlinks or `..`, and outputs must not overlap any inputs.
 
 ```sh
-python3 tools/build_native.py --assets /absolute/veloren/assets \
+python3 tools/build_native.py --assets /absolute/benchmark-assets/assets \
   --out /absolute/new-native-build --check
-python3 tools/build_native.py --assets /absolute/veloren/assets \
+python3 tools/build_native.py --assets /absolute/benchmark-assets/assets \
   --out /absolute/new-native-build --fetch --jobs 8
 ```
 
@@ -105,20 +192,25 @@ cargo build --offline --locked -p veloren-client --features bin_bot --example ag
 cargo build --offline --locked -p veloren-voxygen --bin veloren-voxygen --no-default-features --features simd,shaderc-from-source -j 8
 ```
 
-The tool uses an empty compiler target and records command/log digests in
+The tool defaults to an empty compiler target and records command/log digests in
 `receipt.json`; a failed prerequisite/compiler command leaves a failed
 receipt and log, not a false success. `VELOREN_GIT_VERSION=/f974743d/1788840834`
 is the inherited protocol compatibility stamp, not a clean Git status or
 binary-equivalence claim. No internal binary/cache bundle is needed.
+For an owned local cache, `--target-cache /absolute/previous/target` makes an
+independent copy, runs all the same selected Cargo builds/invalidation, and records
+`compiler_artifacts_inherited: true` and its input path. Assembly preserves that
+provenance and still verifies exact selected source, all build logs and binary
+hashes; cached builds are not empty-target or clean-machine claims.
 
 ## Assemble and bind the renderer
 
 ```sh
 python3 tools/assemble_native.py --fresh-build /absolute/new-native-build \
-  --assets /absolute/veloren/assets --out /absolute/native-dist
+  --assets /absolute/benchmark-assets/assets --out /absolute/native-dist
 rpg-benchmark bind-native --native /absolute/native-dist/bundle.json \
   --native-sha256 DESCRIPTOR_SHA256 \
-  --assets /absolute/veloren/assets --out /absolute/new-binding
+  --assets /absolute/benchmark-assets/assets --out /absolute/new-binding
 rpg-benchmark check --backend renderer \
   --config /absolute/new-binding/runtime.json --config-sha256 RUNTIME_SHA256
 ```

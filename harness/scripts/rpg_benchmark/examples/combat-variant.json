@@ -1,0 +1,13 @@
+{
+  "id": "example-sentinel-encounter",
+  "kind": "combat",
+  "template": "single_creature",
+  "terrains": ["flat", "natural"],
+  "gameplay_mode": "work-state",
+  "asset": "common.entity.benchmark.male_green_legoom",
+  "body": {"BipedSmall": {"species": "GreenLegoom", "body_type": "Male"}},
+  "consumables": {"common.items.consumable.potion_minor": 2},
+  "loadout_provenance": "exact-body derivative of common.entity.wild.aggressive.green_legoom; unchanged common.loadout.world.legoom.green_legoom",
+  "task": "Defeat the hostile Green Legoom in this encounter and survive. Choose your own combat tools, positioning and recovery.",
+  "qualification": "Contributor example only, unqualified; not part of the scored catalog."
+}

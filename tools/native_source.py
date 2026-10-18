@@ -7,6 +7,13 @@ import shutil
 ROOT = Path(__file__).resolve().parents[1]
 SELECTED_TREE = "4c2cc4bb7cb7e6a94f963253866f09c2a0a6fde0df2d23ece9c99f78322944db"
 SELECTED_MANIFEST = "e8f6e3a62c1ba28b2daf1f0be83deb8aa831109811361997d569b943544eaa08"
+BASELINE_TREE, BASELINE_MANIFEST = SELECTED_TREE, SELECTED_MANIFEST
+if (ROOT / "native/selection.json").is_file():
+    _selection = json.loads((ROOT / "native/selection.json").read_text())
+    if _selection.get("schema") != "velorenbench-native-selection/1":
+        raise ValueError("unknown native selection manifest")
+    SELECTED_TREE = _selection["source_tree_sha256"]
+    SELECTED_MANIFEST = _selection["source_manifest_sha256"]
 EXTERNAL_RESOURCE = "assets/voxygen/audio/null.ogg"
 
 

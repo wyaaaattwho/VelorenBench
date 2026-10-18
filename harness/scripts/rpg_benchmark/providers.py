@@ -25,7 +25,7 @@ def manifest(provider: dict, mode: str) -> dict:
                 or not isinstance(profile["reasoning_efforts"], list) or not profile["reasoning_efforts"]
                 or any(not isinstance(effort, str) or not effort for effort in profile["reasoning_efforts"])):
             raise ValueError("invalid provider model/effort profile")
-    profile = "visual-motor-v1" if mode == "image" else "ordinary-renderer-native-v1"
+    profile = capabilities.default_profile("renderer", mode)
     value = {"schema": capabilities.SCHEMA, "tool_track": "ordinary-renderer-public",
              "capabilities": {
                  "native_protocol": "0.2", "integer_transport": "strict", "asynchronous_receipts": True,

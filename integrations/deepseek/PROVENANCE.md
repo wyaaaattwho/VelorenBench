@@ -1,12 +1,12 @@
 # Reference integration provenance
 
-This is adapter **0.1.0** for benchmark source release **v1.0.1**, not a
+This is the untagged adapter **1.1.0** candidate for benchmark core **1.1.0**, not a
 registry publication or a vendored official runtime. Original integration
 source is MIT; third-party runtime/assets remain separate. Use the same exact
 core wheel in evaluator and adapter environments. The dependency and no-model
-preflight both require `rpg-benchmark-harness==1.0.1`; version text alone is
+installation requires `rpg-benchmark-harness==1.1.0`; version text alone is
 insufficient, because preflight also checks actual player-package bytes.
-Verify the tagged source manifest and your locally built artifact hashes,
+Verify the candidate source manifest and your locally built artifact hashes,
 not a same-named registry package. Wheels/sdists are local validation outputs,
 not uploaded release assets.
 
@@ -57,7 +57,7 @@ that audited image session. Refusals and cancelled mutations remain visible;
 cancellation is not evidence of zero interim physical effect. Actual provider
 backend/model metadata remains `unknown` unless externally exposed.
 
-Core 1.0.1 carries retained runtime evidence through core/native
+Historical core 1.0.1 carries retained runtime evidence through core/native
 byte equivalence to public007 (itself help-only relative to005). Adapter
 execution bytes are unchanged from007 except the exact required core-version
 literal in preflight. E246 then exercised final008 directly: DSH C1/structured
@@ -66,10 +66,15 @@ was a valid normal non-win with 11 recorded PNGs and 149 history image blocks.
 All three had complete owned cleanup. E246 does not show successful mixed
 visual/state consumption; historical frame-bearing hybrid evidence is distinct.
 The root provenance records exact E246 summary selectors and evidence hashes.
-Publication preparation is documentation/status/inventory-only relative to008,
+Historical publication preparation was documentation/status/inventory-only relative to008,
 with byte-identical executable adapter/core payload, tasks, native source and tests.
 Bounded integrated review found no remaining public core/DSH defect in its
 reviewed scope, not universal task/provider/platform qualification.
+
+The 1.1.0 successor changes binding/entry live declaration validation to the
+shared public caller-owned schema and updates the exact core dependency. Those
+changes do not make historical native/provider evidence current qualification;
+no-model installation/process receipts and exact source mappings are separate.
 
 Local receipts, environments, bindings and raw runs stay outside the export.
 They are not portable example bindings or a model-performance campaign.

@@ -12,7 +12,9 @@ N1_VISUAL_GOAL = (
 
 
 def public_task(definition, fixture, mode):
-    if definition["id"] != "N1" or mode != "image":
+    from . import navigation
+    template = definition.get("template", navigation.LEGACY_TEMPLATES.get(definition["id"]))
+    if template != "wall_rendezvous" or mode != "image":
         return fixture["task"]
     expected = layouts.scene("wall_side_detour")
     if fixture["layout"]["geometry_sha256"] != expected["geometry_sha256"]:

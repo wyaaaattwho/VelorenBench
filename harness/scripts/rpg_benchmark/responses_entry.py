@@ -4,14 +4,16 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 from pathlib import Path
 import signal
+import sys
 import time
 from uuid import uuid4
 
 from scripts import rpg_sdk_agent as common
-from . import lifecycle, output_paths
-from .renderer_tools import RendererTools
+from . import lifecycle, output_paths, results
+from .player import tools_for
 from .responses import ResponsesProvider, play
 from .timing import stamp
 
@@ -54,9 +56,7 @@ async def run(args) -> dict:
         provider = ResponsesProvider(evidence, declaration=declaration, configuration=configuration,
                                      mock_url=args.mock_provider, route=route)
         await native.connect()
-        tools = RendererTools(native, evidence, args.observation_mode, args.frames, args.episode_id,
-                              configuration["action_profile"])
-        native.request_validator = tools.validate_request
+        tools = tools_for(native, evidence, configuration, frames=args.frames, episode=args.episode_id)
         lifecycle.write(out / "harness-entry.json", stamp())
         evidence.write("entry_ready", mode=args.observation_mode)
         if args.transport_probe:
@@ -79,7 +79,14 @@ async def run(args) -> dict:
     except BaseException as error:
         entry.update(status="cancelled" if isinstance(error, asyncio.CancelledError) else "error",
                      error=common.error_record(error))
-        evidence.write("entry_error", error=entry["error"])
+        detail = results.error_event(error, source="entry", category="adapter_failure")
+        if (isinstance(error, asyncio.CancelledError) and error.args
+                and isinstance(error.args[0], dict)
+                and error.args[0].get("stop_id") == os.environ.get("RPG_EVALUATOR_STOP_ID")
+                and error.args[0].get("kind") == "evaluator_stop"):
+            detail.update(category="evaluator_cancellation", caused_by=error.args[0])
+        entry.update({key: detail[key] for key in ("occurrence", "caused_by", "category") if key in detail})
+        evidence.write("entry_error", **detail)
     finally:
         entry["terminal"] = stamp()
         try:
@@ -96,14 +103,22 @@ async def run(args) -> dict:
 async def signals(args):
     task = asyncio.create_task(run(args))
     for sig in (signal.SIGINT, signal.SIGTERM):
-        asyncio.get_running_loop().add_signal_handler(sig, task.cancel)
+        asyncio.get_running_loop().add_signal_handler(
+            sig, task.cancel, {"kind": "evaluator_stop", "signal": sig.name,
+                              "stop_id": os.environ.get("RPG_EVALUATOR_STOP_ID")})
     return await task
 
 
 def main():
+    if sys.argv[1:] == ["--startup-check"]:
+        from . import runtime, startup
+        receipt = asyncio.run(startup.probe_player(json.loads(sys.stdin.read())))
+        print(json.dumps({**receipt, "player_package_files": runtime.package_files()}))
+        return
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("episode-socket", "out", "output-root", "frames"):
+    for name in ("episode-socket", "out", "output-root"):
         parser.add_argument("--" + name, type=Path, required=True)
+    parser.add_argument("--frames", type=Path)
     for name in ("task", "episode-id", "observation-mode", "configuration", "provider-declaration"):
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--mock-provider")

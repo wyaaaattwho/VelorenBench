@@ -1,0 +1,31 @@
+{
+  "source": "a3-author-runs/sentinel-flat-image-001",
+  "native_events_sha256": "ab66cd96f8b3c4ac9db544e457825f2d7fee8f535fc1fe3aa075bc79fc2c0fd9",
+  "trajectory_sha256": "a4a164ffc93a1e3fa02a865cf4522d70e295198afc490445e76adc76e3f02349",
+  "projection": "Exact event headers and data.source only; no private state/chat text/entities. Opening/final are actual trajectory anchors.",
+  "opening": {"session_id": "rpg47f731ee8c", "tick": 15351, "event_cursor": 18, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+  "final": {"session_id": "rpg47f731ee8c", "tick": 15476, "event_cursor": 18, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+  "events": [
+    {"type": "event", "event": "ready", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 0, "tick": 0},
+    {"type": "event", "event": "native_renderer_ready", "protocol_version": "0.2", "session_id": "rpg47f731ee8c"},
+    {"type": "event", "event": "combat_health_change", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 1, "tick": 7, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}, "data": {"source": "server_outcome_health_change"}},
+    {"type": "event", "event": "combat_health_change", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 2, "tick": 19, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}, "data": {"source": "server_outcome_health_change"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 3, "tick": 21, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "action_started", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 4, "tick": 33, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "action_completed", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 5, "tick": 39, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "action_started", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 6, "tick": 41, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "action_completed", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 7, "tick": 46, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 8, "tick": 2258, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 9, "tick": 2907, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 10, "tick": 3768, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 11, "tick": 4481, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 12, "tick": 5550, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 13, "tick": 6984, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 14, "tick": 7438, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 15, "tick": 8257, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 16, "tick": 9158, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 17, "tick": 9878, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 18, "tick": 10583, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}},
+    {"type": "event", "event": "chat", "protocol_version": "0.2", "session_id": "rpg47f731ee8c", "seq": 19, "tick": 15477, "sequence_domain": {"kind": "client-update-counter", "session_id": "rpg47f731ee8c"}}
+  ]
+}

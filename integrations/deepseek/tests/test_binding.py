@@ -10,6 +10,21 @@ from scripts.rpg_benchmark import capabilities, external, lifecycle
 
 
 class BindingTests(unittest.TestCase):
+    def test_binding_construction_has_independent_frame_and_detail_storage(self):
+        from scripts.rpg_benchmark import startup
+        class Adapter:
+            async def preflight(self, *, backend, frames, detail_storage):
+                return startup.context(binding.DEFAULT, backend, frames, detail_storage)
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            context = binding.startup_preflight(Adapter(), out)
+            self.assertEqual(context["frames"], str(out / "preflight-frames"))
+            self.assertEqual(context["detail_storage"], str(out / "preflight-details"))
+            self.assertEqual(context["backend"], "renderer")
+            self.assertFalse(context["model_calls"])
+            self.assertFalse(context["native_worlds"])
+            self.assertEqual(list(out.iterdir()), [])
+
     def test_shim_exports_without_provider_imports(self):
         self.assertTrue(callable(adapter.build_launch))
         self.assertTrue(callable(adapter.collect_evidence))

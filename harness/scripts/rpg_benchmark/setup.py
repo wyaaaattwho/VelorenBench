@@ -3,10 +3,11 @@ from __future__ import annotations
 import asyncio
 import math
 import time
+from contextlib import asynccontextmanager
 from uuid import uuid4
 
 from scripts.rpg_benchmark.scene import counts, item_id
-from scripts.rpg_benchmark.native import NativeActionFailure
+from scripts.rpg_benchmark.native import NativeActionFailure, NativeRefusal
 
 
 class ContinuousRouteFailure(RuntimeError):
@@ -255,7 +256,8 @@ async def learn(admin, actor, group: str) -> dict:
 
 async def clean_inventory(admin, actor) -> dict:
     # Unwanted starter supplies are dropped far from the measured scene.
-    opening = await actor.request("observe")
+    # Cache qualified footing, not a transient descending spawn/teleport pose.
+    opening = await ready_observation(actor)
     here = position(opening)
     await goto(admin, actor, [here[0] + 100, here[1] + 100, here[2] + 100], settle=False)
     removed = []
@@ -379,34 +381,148 @@ async def site(admin, actor, terrain_track: str, placements: dict,
             "terrain": await qualify(actor, start), "constructed": True}
 
 
+@asynccontextmanager
+async def fixture_authoring(admin, low, high):
+    """Owned privileged hold, including the first voxel; restore on every exit."""
+    initial = await ready_observation(admin)
+    controls = initial["character_controls"]
+    if controls.get("fixture_authoring") is not None:
+        raise RuntimeError("fixture administrator already has an authoring owner")
+    enabled_before = (controls.get("can_build") or {}).get("enabled") is True
+    area = "benchmark_" + uuid4().hex[:12]
+    owner = uuid4().hex
+    attempted_area = attempted_permission = attempted_hold = False
+    errors = []
+    try:
+        attempted_area = True
+        await command(admin, "area_add", area, "build", low[0], high[0], low[1], high[1], low[2], high[2])
+        attempted_permission = True
+        await command(admin, "permit_build", area)
+        if not enabled_before:
+            await command(admin, "build")
+        await wait_observation(admin, lambda row: (row["character_controls"].get("can_build") or {}).get(
+            "enabled") is True, "administrator-only native build permission")
+        attempted_hold = True
+        await command(admin, "fixture_authoring", owner, "begin")
+        await wait_observation(admin, lambda row: (
+            row["character_controls"].get("fixture_authoring") or {}).get("owner") == owner,
+            "server-authorized fixture administrator hold")
+        yield owner
+    except BaseException as error:
+        errors.append(error)
+    finally:
+        cleanup_errors = []
+        async def release():
+            await command(admin, "fixture_authoring", owner, "end")
+            await wait_observation(admin, lambda row: row["character_controls"].get(
+                "fixture_authoring") is None, "fixture administrator hold released")
+        async def restore_permission():
+            current = await ready_observation(admin)
+            if ((current["character_controls"].get("can_build") or {}).get("enabled") is True) != enabled_before:
+                await command(admin, "build")
+            await command(admin, "revoke_build", area)
+        for attempted, cleanup in (
+            (attempted_hold, release),
+            (attempted_permission, restore_permission),
+            (attempted_area, lambda: command(admin, "area_remove", area, "build")),
+        ):
+            if attempted:
+                try:
+                    await cleanup()
+                except BaseException as error:
+                    errors.append(error)
+                    cleanup_errors.append(str(error))
+        admin.journal.write(origin="setup", event="fixture_authoring_cleanup", owner=owner,
+                            area=area, cleanup_complete=not cleanup_errors, cleanup_errors=cleanup_errors)
+    if len(errors) == 1:
+        raise errors[0]
+    if errors:
+        raise BaseExceptionGroup("fixture authoring and/or scoped cleanup failed", errors)
+
+
 async def author_voxels(admin, voxels: list[list[int]]) -> list[dict]:
     low = [min(point[i] for point in voxels) for i in range(3)]
     high = [max(point[i] for point in voxels) + 1 for i in range(3)]
-    area = "benchmark_" + uuid4().hex[:12]
-    await command(admin, "area_add", area, "build", low[0], high[0], low[1], high[1], low[2], high[2])
-    await command(admin, "permit_build", area)
-    await command(admin, "build")
-    await wait_observation(admin, lambda row: (row["character_controls"].get("can_build") or {}).get(
-        "enabled") is True, "administrator-only native build permission")
     results = []
-    for point in voxels:
-        top = [point[0] + .5, point[1] + .5, point[2] + 1]
-        await goto(admin, admin, [top[0], top[1], top[2] + .8], settle=False)
-        receipt = await action(admin, "build_block", operation="place", position=point,
-                               expected_kind="Air", new_kind="Rock", color_rgb=[160, 160, 160])
-        await goto(admin, admin, top)
-        settled = await ready_observation(admin)
-        readback = await terrain(admin, top)
-        if not any(row["occupiable"] is True and row["support"]["position"] == point
-                   and row["support"]["kind"] == "Rock" and row["support"]["solid"] is True
-                   for row in readback.get("support_candidates", [])):
-            raise RuntimeError(f"explicit build submission lacks exact native Rock readback: {point}")
-        result = {"voxel": point, "receipt": receipt, "terrain": readback,
-                  "settled_on_top": {key: settled[key] for key in (
-                      "position", "velocity", "on_ground", "tick", "session_id", "self_identity")}}
-        results.append(result)
-        admin.journal.write(origin="setup", event="explicit_authored_rock_voxel", **result)
+    async with fixture_authoring(admin, low, high) as owner:
+        anchor = None
+        for point in voxels:
+            top = [point[0] + .5, point[1] + .5, point[2] + 1]
+            # Reuse a stable observation anchor while it remains comfortably
+            # inside the unchanged native 10m horizontal / 2m vertical bounds.
+            if anchor is None or math.dist(anchor[:2], top[:2]) > 8 or abs(anchor[2] - top[2]) > 1.5:
+                anchor = [top[0], top[1], top[2] + .8]
+                await command(admin, "fixture_authoring", owner, "move", *anchor)
+                await wait_observation(admin, lambda row: (
+                    row["character_controls"].get("fixture_authoring") or {}).get("owner") == owner
+                    and math.dist(position(row), anchor) < .01,
+                    "stable fixture authoring observation anchor")
+            loaded = await construction_readback(admin, point, phase="loaded-input", owner=owner)
+            receipt = await action(admin, "build_block", operation="place", position=point,
+                                   expected_kind="Air", new_kind="Rock", color_rgb=[160, 160, 160])
+            support = await construction_readback(admin, point, phase="effect", receipt=receipt, owner=owner)
+            # No standing teleport: a held admin is not physical support proof.
+            # Actor opening qualification below the family boundary is unchanged.
+            result = {"voxel": point, "receipt": receipt, "loaded_input": loaded,
+                      "support_before_standing": support, "terrain": support,
+                      "administrator_hold": {"owner": owner, "position": list(anchor),
+                                             "not_grounded_evidence": True}}
+            results.append(result)
+            admin.journal.write(origin="setup", event="explicit_authored_rock_voxel", **result)
     return results
+
+
+async def construction_readback(admin, point, *, phase, receipt=None, timeout=15, owner=None):
+    """Read-only readiness/effect polling; never retry an unknown mutation."""
+    top = [point[0] + .5, point[1] + .5, point[2] + 1]
+    deadline = time.monotonic() + timeout
+    last = None
+    reason = "no readback"
+
+    def fail(cause):
+        evidence = {"voxel": point, "phase": phase, "cause": cause,
+                    "receipt": receipt, "last_terrain": last,
+                    "scope": "native client loaded-terrain readback, not a server acknowledgement"}
+        admin.journal.write(origin="setup", event="construction_readback_failed", **evidence)
+        error = RuntimeError(f"construction {phase} lacks exact native Rock readback at {point}: {cause}")
+        error.construction = evidence
+        raise error
+
+    while time.monotonic() < deadline:
+        try:
+            last = await terrain(admin, top)
+        except NativeRefusal as error:
+            # Includes leaving the bounded column while falling. Do not teleport
+            # back onto unconfirmed support, resubmit, or relabel the refusal.
+            fail(f"native query refused: {error}")
+        status = last.get("status")
+        if owner is not None and (
+                last.get("binding", {}).get("readiness", {}).get("fixture_authoring") or {}).get("owner") != owner:
+            fail("fixture administrator authoring ownership changed")
+        candidates = last.get("support_candidates", [])
+        if phase == "loaded-input":
+            if (status in {"complete", "no_candidate_in_window"}
+                    and last.get("vertical_scan", {}).get("all_cells_loaded") is True):
+                return last
+            reason = f"target/clearance not loaded: {status}"
+        elif phase == "effect":
+            if status == "complete" and any(
+                    row.get("occupiable") is True and row["support"]["position"] == point
+                    and row["support"]["kind"] == "Rock" and row["support"]["solid"] is True
+                    for row in candidates):
+                return last
+            wrong = [row["support"] for row in candidates
+                     if row.get("support", {}).get("position") == point
+                     and row["support"].get("kind") not in {"Air", "Rock"}]
+            if wrong:
+                fail(f"conflicting target block: {wrong}")
+            reason = f"submitted effect still unconfirmed: {status}"
+        else:
+            raise ValueError("unknown construction readback phase")
+        if status not in {"complete", "no_candidate_in_window", "unloaded_cells", "unknown_cells"}:
+            fail(f"invalid native terrain readback status: {status}")
+        await asyncio.sleep(.1)
+    fail(reason)
 
 
 async def settled_point(admin, point: list[float]) -> list[float]:

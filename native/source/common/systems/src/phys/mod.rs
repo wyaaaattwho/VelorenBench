@@ -1,6 +1,6 @@
 use common::{
     comp::{
-        Body, CapsulePrism, CharacterState, Collider, Density, Immovable, Mass, Ori, PhysicsState,
+        Body, CapsulePrism, CharacterState, Collider, Density, FixtureAuthoring, Immovable, Mass, Ori, PhysicsState,
         Pos, PosVelOriDefer, PreviousPhysCache, Projectile, Scale, Stats, Sticky, Vel,
         body::ship::{self, figuredata::VOXEL_COLLIDER_MANIFEST},
         fluid_dynamics::{Fluid, Wings},
@@ -149,6 +149,7 @@ pub struct PhysicsRead<'a> {
     scales: ReadStorage<'a, Scale>,
     stickies: ReadStorage<'a, Sticky>,
     immovables: ReadStorage<'a, Immovable>,
+    fixture_authoring: ReadStorage<'a, FixtureAuthoring>,
     masses: ReadStorage<'a, Mass>,
     colliders: ReadStorage<'a, Collider>,
     is_riders: ReadStorage<'a, Is<Rider>>,
@@ -182,6 +183,17 @@ pub struct PhysicsData<'a> {
 }
 
 impl PhysicsData<'_> {
+    fn anchor_fixture_administrators(&mut self) {
+        for (position, velocity, hold, physics) in (
+            &mut self.write.positions, &mut self.write.velocities,
+            &self.read.fixture_authoring, (&mut self.write.physics_states).maybe(),
+        ).join() {
+            hold.anchor(position, velocity);
+            // A hold is not grounded/collision evidence, even above a Rock.
+            if let Some(physics) = physics { *physics = PhysicsState::default(); }
+        }
+    }
+
     /// Add/reset physics state components
     fn reset(&mut self) {
         span!(_guard, "Add/reset physics state components");
@@ -409,7 +421,7 @@ impl PhysicsData<'_> {
                     char_state_maybe,
                 )| {
                     let is_sticky = sticky.is_some();
-                    let is_immovable = immovable.is_some();
+                    let is_immovable = immovable.is_some() || read.fixture_authoring.get(entity).is_some();
                     let is_mid_air = physics.on_surface().is_none();
                     let mut entity_entity_collision_checks = 0;
                     let mut entity_entity_collisions = 0;
@@ -687,6 +699,7 @@ impl PhysicsData<'_> {
             write.previous_phys_cache.mask(),
             !&read.is_riders,
             !&read.is_volume_riders,
+            !&read.fixture_authoring,
         )
             .join()
             .map(|t| (t.0, *t.2, *t.3, *t.4))
@@ -720,6 +733,7 @@ impl PhysicsData<'_> {
             read.scales.maybe(),
             !&read.is_riders,
             !&read.is_volume_riders,
+            !&read.fixture_authoring,
         )
             .par_join()
             .for_each_init(
@@ -738,6 +752,7 @@ impl PhysicsData<'_> {
                     mass,
                     density,
                     scale,
+                    _,
                     _,
                     _,
                 )| {
@@ -857,6 +872,7 @@ impl PhysicsData<'_> {
             previous_phys_cache,
             !&read.is_riders,
             !&read.is_volume_riders,
+            !&read.fixture_authoring,
         )
             .par_join()
             .filter(|tuple| tuple.3.is_voxel() == terrain_like_entities)
@@ -879,6 +895,7 @@ impl PhysicsData<'_> {
                     physics_state,
                     pos_vel_ori_defer,
                     previous_cache,
+                    _,
                     _,
                     _,
                 )| {
@@ -1458,6 +1475,7 @@ impl<'a> System<'a> for Sys {
 
     fn run(job: &mut Job<Self>, mut physics_data: Self::SystemData) {
         physics_data.reset();
+        physics_data.anchor_fixture_administrators();
 
         // Apply pushback
         //
@@ -1479,6 +1497,7 @@ impl<'a> System<'a> for Sys {
 
         let voxel_collider_spatial_grid = physics_data.construct_voxel_collider_spatial_grid();
         physics_data.handle_movement_and_terrain(job, &voxel_collider_spatial_grid);
+        physics_data.anchor_fixture_administrators();
 
         // Spatial grid used by other systems
         physics_data.update_cached_spatial_grid();

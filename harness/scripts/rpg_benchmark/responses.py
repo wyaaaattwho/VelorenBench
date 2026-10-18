@@ -144,13 +144,24 @@ class ResponsesProvider:
         self.evidence.write("provider_request", request_id=request_id, model=body["model"],
                             effort=body["reasoning"]["effort"], synthetic=self.mock_url is not None,
                             images=identities, actual_image_blocks=len(identities))
+        from . import results
         try:
-            response = self.accepted(await asyncio.to_thread(self._post, body), body)
+            raw = await asyncio.to_thread(self._post, body)
+        except (OSError, ValueError, RuntimeError) as error:
+            self.evidence.write("provider_error", request_id=request_id,
+                                **results.error_event(error, source="provider",
+                                    category="provider_transport_failure"),
+                                images=identities, effect_status="transport-outcome-unknown")
+            raise RuntimeError("provider transport failed; consult private transport evidence") from None
+        try:
+            response = self.accepted(raw, body)
             if response["id"] in self.response_ids:
                 raise RuntimeError("provider response identity was reused")
             self.response_ids.add(response["id"])
         except (OSError, ValueError, RuntimeError) as error:
             self.evidence.write("provider_error", request_id=request_id, error_type=type(error).__name__,
+                                **results.error_event(error, source="provider",
+                                    category="output_validation_rejection"),
                                 message="provider request failed; private details withheld",
                                 images=identities, effect_status="transport-outcome-unknown")
             raise RuntimeError("provider request failed; consult private transport evidence") from None

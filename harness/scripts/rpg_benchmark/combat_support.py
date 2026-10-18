@@ -1,11 +1,20 @@
 """Additive encounter/build/support tasks; legacy combat remains unchanged."""
 from __future__ import annotations
 
+LEGACY_TEMPLATES = {"T06": "weapon_condition", "T07": "skill_training",
+                    "T08": "ranged_encounter", "T09": "group_support"}
+TEMPLATES = {
+    "weapon_condition": {"legacy_case": "T06", "requires": ["movement", "combat", "equipment"]},
+    "skill_training": {"legacy_case": "T07", "requires": ["movement", "combat", "skills"]},
+    "ranged_encounter": {"legacy_case": "T08", "requires": ["movement", "combat", "inventory"]},
+    "group_support": {"legacy_case": "T09", "requires": ["movement", "combat", "skills"]},
+}
+
 import asyncio
 import copy
 import time
 
-from . import crafting_recovery as shared, native_outcomes as oracle, scene, setup as native
+from . import crafting_recovery as shared, native_outcomes as oracle, scene, setup as native, visual_ui
 from .native import NativeBridge
 
 TASK_IDS = frozenset({"T06", "T07", "T08", "T09"})
@@ -245,12 +254,19 @@ def intent_receipts(opening, receipts):
         if request["cmd"] == "step":
             action = args.get("action", {})
             fence = args.get("control_fence") or {}
+            # HUD canonicalization retains a genuine frame/actuator fence, not
+            # a structured control_fence. Never let damaged visual provenance
+            # fall through to the structured path, even if one is supplied.
+            visual = ("public_request" in row or "resolution_source" in row
+                      or "visual_resolution" in result or action.get("type") == "visual_input")
+            fenced = (visual_ui.intent_fence_matches(row, opening) if visual else
+                      fence.get("expected_session_id") == opening["session_id"]
+                      and fence.get("actor") == opening["control_actor"])
             if (result.get("status") in {"completed", "cancelled"}
                     and result.get("action_type") == action.get("type")
                     and isinstance(action.get("action_id"), str)
                     and result.get("action_id") == action["action_id"]
-                    and fence.get("expected_session_id") == opening["session_id"]
-                    and fence.get("actor") == opening["control_actor"]):
+                    and fenced):
                 accepted.append({"request_id": request["id"], "action": action, "detail": result.get("detail") or {},
                                  "wall_monotonic": row.get("wall_monotonic")})
         elif request["cmd"] == "set_control_state" and result.get("status") == "applied":

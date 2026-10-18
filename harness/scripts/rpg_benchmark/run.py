@@ -149,11 +149,12 @@ def measurement_stop(record: dict, definition: dict, validity: dict, *,
 
 async def stop_agent(process: asyncio.subprocess.Process, start: int, record: dict) -> None:
     if process.returncode is None:
-        lifecycle.assert_owned(process.pid, start)
+        from .native import signal_owned
         record["stop_signal"] = {
-            "signal": "SIGINT", "requested_monotonic": time.monotonic(), "sent": False}
-        process.send_signal(signal.SIGINT)
-        record["stop_signal"]["sent"] = True
+            "signal": "SIGINT", "requested_monotonic": time.monotonic(), "sent": False,
+            "clock": "host-monotonic", "stop_id": record.get("stop_id"),
+            "recipient_pid": process.pid, "recipient_start_ticks": start}
+        record["stop_signal"]["sent"] = await signal_owned(process, start, signal.SIGINT)
         try:
             await asyncio.wait_for(process.wait(), 45)
         except TimeoutError:
@@ -224,6 +225,7 @@ def collect_entry(args, out, record, timing, adapter, actor, fixture, sdk_out):
         record["model_success_evidence"] = evidence.gameagent_evaluation(
             entry_evidence, stop_reason=record["stop_reason"],
             stop_signal=record["cleanup"]["agent"].get("stop_signal", {}),
+            terminal_monotonic=timing.points["terminal"]["monotonic"],
             stop_requested_at=record.get("evaluator_stop_requested_at"))
     if adapter is not None or args.harness == "copilot-sdk":
         facts = entry_evidence if adapter is not None else entry_evidence["common_facts"]
@@ -246,6 +248,8 @@ def collect_entry(args, out, record, timing, adapter, actor, fixture, sdk_out):
         record["model_success_evidence"].update(evidence.gameagent_success(
             entry_evidence, fixture["opening"], actor.measured_receipts, record["score"],
             stop_reason=record["stop_reason"],
+            stop_signal=record["cleanup"]["agent"].get("stop_signal", {}),
+            terminal_monotonic=timing.points["terminal"]["monotonic"],
             stop_requested_at=record.get("evaluator_stop_requested_at")))
     entry = entry_evidence.get("entry")
     record["harness_cleanup_complete"] = bool(
@@ -273,8 +277,23 @@ def collect_entry(args, out, record, timing, adapter, actor, fixture, sdk_out):
 async def episode(args: argparse.Namespace) -> dict:
     timing = AttemptTiming()
     preflight = pins.load(args.pins, args.pins_sha256, backend=getattr(args, "backend", "headless"))
-    if args.scene in {f"T{i:02}" for i in range(1, 13)} and getattr(args, "backend", "headless") != "renderer":
-        raise ValueError("new family headless combinations are unqualified; use the explicit renderer matrix")
+    manifest = preflight.get("dependencies", {}).get("scene_manifest", {}).get("path")
+    definition = suite.load(Path(manifest) if manifest else Path(suite.__file__).with_name("scenes.json"))[args.scene]
+    # Adapter defaults are authoritative for external consumers. Never admit a
+    # UI task from source defaults and subsequently launch a motor-only adapter.
+    if getattr(args, "backend", "headless") == "renderer":
+        effective = launching.configuration(args, preflight)
+        for field in ("observation_mode", "action_profile"):
+            setattr(args, field, effective[field])
+    suite.runtime_options(definition, variant=getattr(args, "variant", None))
+    from .support import resolve, admit
+    selection = resolve(definition, args.terrain, getattr(args, "backend", "headless"),
+                        args.observation_mode or "structured", getattr(args, "action_profile", None))
+    if not selection["implemented"]:
+        raise ValueError(f"unsupported {getattr(args, 'backend', 'headless')} selection: {selection['reason']}")
+    if getattr(args, "backend", "headless") == "headless":
+        admit(definition, args.terrain, "headless", args.observation_mode or "structured",
+              getattr(args, "action_profile", None), args.mode)
     if args.harness == "responses" and getattr(args, "backend", "headless") != "renderer":
         raise ValueError("Responses multimodal entry requires --backend renderer")
     if args.mode == "interface-smoke" and args.harness not in {"responses", "external"}:
@@ -284,9 +303,7 @@ async def episode(args: argparse.Namespace) -> dict:
         raise ValueError("task-engineering requires a declared renderer adapter")
     if getattr(args, "backend", "headless") == "renderer":
         from .renderer_support import admit_selection
-        admit_selection(args, preflight)
-    if getattr(args, "variant", None) is not None and args.scene != "T06":
-        raise ValueError("--variant is only available for the single multi-weapon task T06")
+        args.support_admission = admit_selection(args, preflight)
     # Setup-only mechanism selections retain no-allocation semantics.
     if args.mode == "mechanism":
         definition = suite.load(Path(preflight["dependencies"]["scene_manifest"]["path"]))[args.scene]
@@ -349,7 +366,7 @@ async def episode(args: argparse.Namespace) -> dict:
         record.setdefault("artifact_sha256", {})["timing.json"] = lifecycle.sha(out / "timing.json")
         if hasattr(timing, "record") or "error" in record:
             results.finalize(record, timing)
-            navigation_tasks.finalize_environment(record)
+            suite.finalize_environment(record)
         lifecycle.write(out / "result.json", record)
     return record
 
@@ -383,6 +400,9 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
         raise ValueError("Legacy built-in entry does not support the requested configuration")
     definitions = suite.load(Path(selected["dependencies"]["scene_manifest"]["path"]))
     definition = definitions[args.scene]
+    family_runtime = suite.runtime_options(
+        definition, renderer=renderer_selected, variant=getattr(args, "variant", None),
+        terrain=args.terrain)
     if args.terrain not in definition["terrains"] or args.seed not in selected["seeds"]:
         raise ValueError("scene/terrain/seed selection not admitted by frozen manifest")
     if args.mode == "mechanism" and definition.get("mechanism_mode") == "setup-only":
@@ -395,7 +415,8 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
     preflight_receipt = None
     if adapter is not None:
         preflight_receipt = await adapter.preflight(
-            backend=args.backend, frames=getattr(args, "recordings", None))
+            backend=args.backend, frames=getattr(args, "recordings", None),
+            detail_storage=out / "startup-detail")
     elif args.mode == "capability":
         preflight_receipt = await launching.preflight_builtin(args, selected, source)
     config = NativeConfig(
@@ -403,10 +424,9 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
         bridge=Path(selected["dependencies"]["bridge"]["path"]),
         assets=Path(selected["assets"]["root"]), root=Path(selected["engine_root"]),
         seed=definition.get("native_world_seed", args.seed),
-        small_world=renderer_selected and args.scene in {"C1", "T11", "T12"},
+        small_world=family_runtime["small_world"],
         private_oracle=selected.get("native_interactions") is not None,
-        resident_fixture={"T10": "resident-smoke-v1", "T11": "outcomes-message-v1",
-                          "T12": "outcomes-slay-v1"}.get(args.scene))
+        resident_fixture=family_runtime["resident_fixture"])
     output_root = output_paths.validate_root(getattr(args, "output_root", None) or pins.ROOT)
     sdk_root = output_paths.validate_root(getattr(args, "sdk_output_root", None) or output_root / "sdk-adapter")
     sdk_out = sdk_root / "episodes" / out.name
@@ -414,6 +434,7 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
     admin_name, actor_name = f"setup{token}", f"rpg{token}"
     record = {
         "schema": 2, "mode": args.mode, "scene": args.scene, "terrain": args.terrain,
+        "task_kind": definition["kind"], "task_template": definition["template"],
         "output_root": str(output_root), "sdk_output_root": str(sdk_root),
         "harness": args.harness, "source_profile": args.source, "source": source,
         "scene_qualification": definition.get("qualification", "native per-episode fixture validation; capability tier not calibrated"),
@@ -445,6 +466,7 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
         record["adapter_capabilities"] = adapter.capabilities
         record["legacy_contract_compatibility"] = adapter.legacy
     if renderer_selected:
+        record["support_admission"] = getattr(args, "support_admission", None)
         record["renderer"] = {
             **selected["renderer"], "selected_for_episode": True,
             "status": "episode-selected", "native_execution": "not-yet-started",
@@ -483,13 +505,15 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
                 from .renderer import RendererBridge
                 args.recordings.mkdir(parents=True, exist_ok=False)
                 actor = RendererBridge(out, actor_name, port, userdata, journal, config,
-                                       renderer=selected["renderer"], frames=args.recordings)
+                                       renderer=selected["renderer"], frames=args.recordings,
+                                       public_run={"run_id": out.name, "task_id": args.scene,
+                                                   "terrain": args.terrain})
             else:
                 actor = NativeBridge(out, actor_name, port, userdata, journal, config)
             actor.family_companions = []
             try:
                 await admin.start()
-                deferred_actor = definition.get("layout") == "named_site_long" or args.scene == "T01"
+                deferred_actor = family_runtime["deferred_actor"]
                 if not deferred_actor:
                     await actor.start()
                     if renderer_selected:
@@ -500,14 +524,9 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
                     buff.get("kind") == "Invulnerability" for buff in row["survival"]["buffs"]),
                     "setup administrator-only invulnerability")
                 record["setup_admin_protection"] = protected["survival"]["buffs"]
-                if definition.get("layout") == "named_site_long":
-                    fixture = await navigation.setup_named_site(admin, actor, definition, start_actor=True)
-                else:
-                    if args.scene == "T06":
-                        definition = {**definition, "selected_variant": getattr(args, "variant", None) or "sword"}
-                    fixture = await suite.setup(admin, actor, definition, args.terrain, definitions)
-                    if renderer_selected and deferred_actor:
-                        record["renderer"]["native_execution"] = "started-same-ordinary-actor"
+                fixture = await suite.setup(admin, actor, definition, args.terrain, definitions)
+                if renderer_selected and deferred_actor:
+                    record["renderer"]["native_execution"] = "started-same-ordinary-actor"
                 if renderer_selected:
                     from .renderer_tasks import public_task
                     fixture["task"] = public_task(definition, fixture, args.observation_mode or "structured")
@@ -528,7 +547,7 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
                         lifecycle.write(out / "fixture.json", persisted_fixture)
                     else:
                         lifecycle.write(out / "fixture.json", fixture)
-                if args.scene != "T02":
+                if not family_runtime["retain_admin"]:
                     await admin.close()
                     record["cleanup"]["admin"] = admin.cleanup
                 timing.mark("setup_qualified")
@@ -566,10 +585,7 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
                                                    actor.native_events, samples)
                     record["final_state_observed"] = True
                     measurement_validity(record, fixture, final, actor.measured_receipts, record["score"], journal)
-                    if definition["kind"] == "combat":
-                        record["mechanism_effect_verified"] = bool(record["score"]["enemy_damage_events"])
-                    else:
-                        record["mechanism_effect_verified"] = record["score"]["success"]
+                    record["mechanism_effect_verified"] = suite.mechanism_verified(definition, record["score"])
                     record["stop_reason"] = "mechanism_completed"
                     record["classification"] = ("mechanism_pass" if record["mechanism_effect_verified"]
                                                 else "mechanism_failure")
@@ -579,9 +595,7 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
                     if renderer_selected:
                         from .renderer import RendererBoundary
                         boundary = RendererBoundary(actor, socket_path, args.observation_mode or "structured")
-                        if args.scene == "T02":
-                            boundary.public_observer = lambda request, response: navigation_tasks.public_witness(
-                                fixture, request, response)
+                        boundary.public_observer = suite.public_observer(definition, fixture)
                     else:
                         boundary = EpisodeBoundary(actor, socket_path)
                     await boundary.start()
@@ -597,6 +611,9 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
                     lifecycle.write(out / "agent-command.json", command)
                     environment = external.clean_environment()
                     environment.update(plan.env)
+                    stop_id = uuid4().hex
+                    record["cleanup"].setdefault("agent", {})["stop_id"] = stop_id
+                    environment["RPG_EVALUATOR_STOP_ID"] = stop_id
                     timing.mark("agent_launch_start")
                     player_log = (out / "agent-console.log").open("x")
                     player = await asyncio.create_subprocess_exec(
@@ -616,11 +633,10 @@ async def _episode(args: argparse.Namespace, timing: AttemptTiming, out: Path) -
                         # An entry stop needs a sample taken after its last possible submission.
                         entry_exited = player.returncode is not None
                         final = await actor.request("observe", origin="judge")
-                        if definition["kind"] == "navigation_tasks":
-                            await navigation_tasks.update_event(admin, actor, fixture, final)
+                        await suite.update_event(definition, admin, actor, fixture, final)
                         final["_elapsed_s"] = time.monotonic() - start
-                        if final["tick"] > samples[-1]["tick"]:
-                            samples.append(final)
+                        from .temporal import append_sample
+                        append_sample(samples, final)
                         record["score"] = suite.score(definition, fixture, final, actor.measured_receipts,
                                                        actor.native_events, samples)
                         record["final_state_observed"] = True
@@ -787,8 +803,9 @@ def parser() -> argparse.ArgumentParser:
                         help="SDK allowlist root; default is OUTPUT_ROOT/sdk-adapter.")
     result.add_argument("--mode", required=True, choices=("capability", "mechanism", "setup", "interface-smoke", "task-engineering"))
     result.add_argument("--scene", default="C1")
-    result.add_argument("--variant", choices=("sword", "bow", "staff", "sceptre"),
-                        help="T06 configured weapon condition; one task, not four task definitions.")
+    result.add_argument("--variant", help="A variant declared by the selected family/template.")
+    result.add_argument("--unqualified-engineering", action="store_true",
+                        help="Explicitly open implemented but unqualified renderer cells in engineering modes only.")
     result.add_argument("--terrain", choices=("flat", "natural"), default="natural")
     result.add_argument("--seed", type=int, default=lifecycle.SEED)
     result.add_argument("--source", choices=("baseline", "candidate"), default="baseline")
@@ -806,7 +823,8 @@ def parser() -> argparse.ArgumentParser:
                         help="Opt into historical scene horizons when no horizon is specified.")
     result.add_argument("--external-engineering", action="store_true",
                         help="Synthetic external integration check, never capability evidence.")
-    result.add_argument("--external-admission", type=Path, help="A0 exact-configuration live experiment admission.")
+    result.add_argument("--external-admission", type=Path,
+                        help="Caller-owned exact provider/live/config declaration (legacy experiment admission supported).")
     result.add_argument("--evaluation-horizon", type=float,
                         help="Explicit evaluator wall horizon; omitted stops on success/death/entry error.")
     return result

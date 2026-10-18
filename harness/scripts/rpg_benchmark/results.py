@@ -11,6 +11,12 @@ NATIVE_REASONS = {"native_goal_success", "player_death", "evaluation_horizon",
                   "required_target_unavailable"}
 
 
+def error_event(error, *, source, category="unclassified"):
+    return {"source": source, "category": category, "error": exception_detail(error),
+            "occurrence": {"clock": "host-monotonic", "value": time.monotonic(),
+                           "source": source}}
+
+
 def terminal(record, timing):
     timing.mark("terminal")
     if "task_terminal" in record:
@@ -57,26 +63,53 @@ def observations(facts, terminal_monotonic=None, stop_signal=None):
                         if row.get("source") == "adapter" and row.get("error") == detail]
             if matching and all(type(value) in (int, float) and math.isfinite(value) for value in matching):
                 stamp = min(matching)
-        values.append({"source": "entry", "error": detail, "wall_monotonic": stamp})
+        values.append({"source": "entry", "error": detail, "wall_monotonic": stamp,
+                       **{key: entry[key] for key in ("occurrence", "caused_by", "category")
+                          if key in entry}})
     values.extend({"source": "cleanup", "phase": "cleanup", "error": row}
                   for row in entry.get("cleanup_errors", []))
     normalized = []
     for value in values:
         value = dict(value)
+        # Recompute this evaluator-owned decision; do not trust adapter flags.
+        value.pop("evaluator_terminal_cancellation", None)
         detail = value.get("error")
         value["error_detail"] = (detail if isinstance(detail, dict) else {
             "type": value.get("error_type", "unknown"),
             "message": detail if isinstance(detail, str) else value.get("message"),
         })
         stamp = value.get("wall_monotonic")
+        occurrence = value.get("occurrence")
+        if occurrence is not None:
+            if not isinstance(occurrence, dict):
+                raise ValueError("error occurrence must identify its clock/source/value")
+            if occurrence.get("clock") == "host-monotonic":
+                stamp = occurrence.get("value")
+            else:
+                # A foreign monotonic or ISO recording time is not comparable.
+                stamp = None
+        value["occurrence"] = occurrence or {
+            "clock": "host-monotonic" if stamp is not None else "unknown",
+            "value": stamp, "source": value["source"], "basis": "legacy wall_monotonic"}
+        value["category"] = value.get("category", "unclassified")
+        if value["category"] not in {
+                "unclassified", "output_validation_rejection", "provider_transport_failure",
+                "evaluator_cancellation", "adapter_failure", "native_refusal"}:
+            raise ValueError("unknown evaluator error category")
         cutoff = (stop_signal or {}).get("requested_monotonic")
+        cause = value.get("caused_by") or {}
         evaluator_cancel = (
             value["error_detail"].get("type") == "CancelledError"
             and (stop_signal or {}).get("sent") is True
             and (stop_signal or {}).get("signal") == "SIGINT"
             and type(stamp) in (int, float) and math.isfinite(stamp)
             and type(cutoff) in (int, float) and math.isfinite(cutoff)
-            and terminal_monotonic is not None and stamp >= cutoff >= terminal_monotonic)
+            and terminal_monotonic is not None and stamp >= cutoff >= terminal_monotonic
+            and cause.get("kind") == "evaluator_stop"
+            and isinstance((stop_signal or {}).get("stop_id"), str)
+            and bool((stop_signal or {}).get("stop_id"))
+            and cause.get("stop_id") == stop_signal["stop_id"]
+            and cause.get("signal") == stop_signal["signal"])
         if evaluator_cancel:
             value["evaluator_terminal_cancellation"] = True
         if type(stamp) not in (int, float) or not math.isfinite(stamp):

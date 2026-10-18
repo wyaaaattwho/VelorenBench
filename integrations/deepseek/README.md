@@ -4,8 +4,8 @@ This separately installed reference adapter is original integration code, not
 a vendored official DSH runtime. Its shared execution code has local native/model
 integration evidence for structured, hybrid and image-only input. These bounded
 checks do not establish broad benchmark coverage, model ability or clean-machine
-native readiness. This is adapter **0.1.0** for source release **v1.0.1**;
-see the root [status and tag-pinned checkout](../../README.md).
+native readiness. This is the untagged adapter **1.1.0** candidate paired with
+core **1.1.0**; see the root [status and source identity](../../README.md).
 No registry upload or leaderboard is implied.
 
 The separately installed official DSH Cordis composition, stdio SDK and pi-ai
@@ -19,7 +19,7 @@ a task solver, an evaluator fork or a private GameAgent implementation.
 - Python **3.13+**, Linux process ownership (`/proc`, `prctl`), Node/npm.
   Local installation checks used Python 3.13, Node 22.22.2, npm 10.9.7.
 - Install the **same exact core artifact** in evaluator and adapter venvs.
-  This release uses `rpg-benchmark-harness==1.0.1`. Matching version text
+  This candidate uses `rpg-benchmark-harness==1.1.0`. Matching version text
   is insufficient: preflight compares the core's actual `package_files()`.
 - Obtain/build native binaries and external assets separately using the public
   root [`BUILD.md`](../../BUILD.md), including all asset/license prerequisites.
@@ -46,7 +46,7 @@ private freeze parent is required.
 ```sh
 python3.13 -m venv "$CORE_ENV"
 python3.13 -m venv "$ADAPTER_ENV"
-# Build from the tagged source and verify that local artifact before installing.
+# Build from the verified candidate source and verify artifact hashes before installing.
 "$CORE_ENV/bin/python" -m pip install --no-deps "$CORE_WHEEL"
 "$ADAPTER_ENV/bin/python" -m pip install --no-deps "$CORE_WHEEL"
 "$ADAPTER_ENV/bin/python" -m pip install --require-hashes -r "$INTEGRATION/requirements-build.lock"
@@ -104,11 +104,15 @@ preflight command, strict transport, capability mappings and exact core
 identity remain enforced before any world allocation. Failed final validation
 may leave a partial new binding; do not reuse it, choose another new output.
 The base binding and protected-process entries remain unchanged.
+The final constructor preflight uses distinct binding-owned `preflight-frames`
+and `preflight-details` paths even for structured observations; this is storage
+construction only, not native allocation or a model request.
 
 `--admit-model-calls` is an explicit local opt-in to write `admission.json`.
-The retained core/entry schema requires the **legacy literal**
-`"approved_by": "A0"`. This is an exact-configuration file gate, **not a team
-approval workflow, provider authorization or service grant**. The helper does
+It writes a public `rpg-external-live/1` declaration with `live: true`, explicit
+`provider`, exact negotiated configuration and exact adapter options. No team
+approver identity is required. This is **not provider authorization or a service
+grant**. The helper does
 not contact anyone or obtain permissions. Without that option it writes no
 admission and its dependency checks use an inert loopback engineering
 configuration; no socket connection is made. A live run still requires an

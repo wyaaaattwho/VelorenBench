@@ -57,8 +57,8 @@ def test_child_entry_persists_after_close_cancellation_and_parent_collects_it(
                 raise close_error("concrete close failure")
 
     monkeypatch.setattr(responses_entry.common, "NativeClient", Native)
-    monkeypatch.setattr(responses_entry, "RendererTools",
-                        lambda *args: SimpleNamespace(validate_request=lambda *args: None))
+    monkeypatch.setattr(responses_entry, "tools_for",
+                        lambda *args, **kwargs: SimpleNamespace(validate_request=lambda *args: None))
     monkeypatch.setattr(responses_entry, "play", AsyncMock(
         side_effect=primary("primary entry failure") if primary else None,
         return_value={"finish_reason": "model_stopped"}))

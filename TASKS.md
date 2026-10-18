@@ -1,12 +1,22 @@
 # Task definitions
 
+The generated successor template/requirements catalog is at the end of this
+file. Historical v1.0.1 definitions, authored goals and byte fixtures below are
+preserved; source implementation is not current-native qualification.
+Current1.1.0 packages125 evidence-backed qualified selections and35 explicit
+legacy-image refusals, without altering these29 goals/37 terrain cells.
+Full-UI image has40 selections including weapon variants; qualification is
+engineering evidence, not a required task victory. Use native-bound support,
+not the historical admission prose below, for current run modes.
+
 The installed `rpg-benchmark tasks` command and
 [`scenes.json`](harness/scripts/rpg_benchmark/scenes.json) are authoritative.
 The 17 originals retain 25 terrain combinations; the 12 additions bring the
 catalog to 29 definitions and 37 raw combinations. All raw definitions and
 goals are preserved from locally frozen 1.0.0/build001. Source release v1.0.1
-does not change them or establish full-catalog qualification. Structured/hybrid admission for
-the additions and limited image support are detailed in [SUPPORT.md](SUPPORT.md).
+does not change them or establish full-catalog qualification. Historical structured/hybrid admission for
+the additions and limited image support, and current qualification, are
+distinguished in [SUPPORT.md](SUPPORT.md).
 T06 weapon conditions are not separate tasks. No table entry implies support
 on every backend or modality.
 
@@ -41,3 +51,42 @@ on every backend or modality.
 | T10 | npc_contracts | natural | Sell some surplus materials to the named local merchant, buy the specified stocked equipment from that merchant, and actually wear it in its appropriate equipment slot. Keep the stated coin and material reserves in your bag and stay alive. The exact merchant, equipment and reserves are stated in your opening goal; normal merchant stock, native prices and bilateral offers are available through ordinary trade. Choose any legal payment combination satisfying these conditions. |
 | T11 | npc_contracts | natural | Accept the offered message-courier contract through normal dialogue. Remember its identity and place clues, find the correct recipient among the local people, deliver the message and receive the actual native reward in your bag. Stay alive. This is a Message contract, not an item-delivery alternative; choose your own conversations and route. |
 | T12 | npc_contracts | natural | Accept the offered native Slay contract through normal dialogue. Use its normal clues or marker to find the contracted monster, defeat that actual target with your own valid combat contribution, and return alive to the quest giver to report and receive the actual reward in your bag. Choose your own route, equipment, abilities and tactics; no particular build or last blow is required. |
+
+<!-- BEGIN GENERATED SUCCESSOR -->
+## Task catalog (generated)
+
+The packaged scored catalog remains 29 definitions / 37 authored terrain cells.
+The separate arbitrary-ID example is not silently included.
+
+| Task | Family | Semantic template | Terrain | Requirements |
+| --- | --- | --- | --- | --- |
+| T01 | navigation_tasks | resident_workshop | natural | dialogue, map, movement |
+| T02 | navigation_tasks | changing_route | flat | coordinate_goal, movement, pickup, terrain_event |
+| T03 | crafting_recovery | food_reserve | natural | crafting, inventory, movement, pickup |
+| T04 | crafting_recovery | craft_equip | natural | crafting, equipment, inventory, movement |
+| T05 | crafting_recovery | recover_health | natural | inventory |
+| C1 | crafting | starter_food | flat, natural | crafting, inventory, movement |
+| C2 | crafting | gather_food | flat, natural | crafting, inventory, movement, pickup |
+| C3 | crafting | known_food | flat, natural | crafting, inventory, movement |
+| C3U | crafting | learn_food | flat, natural | crafting, inventory, movement |
+| C4 | crafting | leather_chain | flat, natural | crafting, inventory, movement |
+| B1 | combat | single_creature | flat, natural | combat, inventory, movement |
+| B2 | combat | single_creature | flat, natural | combat, inventory, movement |
+| B3 | combat | single_creature | flat, natural | combat, inventory, movement |
+| N1 | navigation | wall_rendezvous | flat | coordinate_goal, movement |
+| N2 | navigation | supply_rendezvous | flat | coordinate_goal, movement |
+| N3 | navigation | terrain_rendezvous | flat | coordinate_goal, movement |
+| N4 | navigation | terrain_rendezvous | flat | coordinate_goal, movement |
+| N5 | navigation | pickup_rendezvous | natural | coordinate_goal, movement, pickup |
+| N6 | navigation | terrain_rendezvous | flat | coordinate_goal, movement |
+| N7 | navigation | named_site | natural | map, movement |
+| X1 | mixed | craft_fight_travel | natural | combat, coordinate_goal, crafting, movement, pickup |
+| X2 | mixed | calibrated_craft_fight_travel | natural | combat, coordinate_goal, crafting, movement, pickup |
+| T06 | combat_support | weapon_condition | natural | combat, equipment, movement |
+| T07 | combat_support | skill_training | natural | combat, movement, skills |
+| T08 | combat_support | ranged_encounter | natural | combat, inventory, movement |
+| T09 | combat_support | group_support | natural | combat, movement, skills |
+| T10 | npc_contracts | resident_exchange | natural | dialogue, movement, trade |
+| T11 | npc_contracts | message_contract | natural | dialogue, map, movement |
+| T12 | npc_contracts | slay_contract | natural | combat, dialogue, map, movement |
+<!-- END GENERATED SUCCESSOR -->

@@ -82,23 +82,26 @@ def test_entry_cancellation_requires_observed_post_signal_ordering(stamp, expect
     error = {"type": "CancelledError", "message": ""}
     data["entry"].update(status="interrupted", error=error)
     data["error_observations"] = [{"source": "adapter", "error": error, "wall_monotonic": stamp}]
+    cause = {"kind": "evaluator_stop", "stop_id": "observed-stop", "signal": "SIGINT"}
+    data["entry"]["caused_by"] = cause
+    data["error_observations"][0]["caused_by"] = cause
     _, proof = external.adjudicate(
         data, [receipt], OPENING, {"success": True}, native_classification="capability_success",
         stop_reason="native_goal_success", terminal_monotonic=20,
-        stop_signal={"sent": True, "signal": "SIGINT", "requested_monotonic": 20.5})
+        stop_signal={"sent": True, "signal": "SIGINT", "requested_monotonic": 20.5,
+                     "stop_id": "observed-stop"})
     assert proof["evaluation_validity"]["status"] == expected
     assert proof["accepted"] is (expected == "valid")
     assert len(proof["error_observations"]) == 2
 
 
-def test_all_seventeen_old_definitions_and_scoring_are_byte_preserved():
+def test_all_seventeen_old_definitions_and_original_function_contracts_are_preserved():
     from .historical import historical_fixture
+    from .historical_contracts import check_core
     package = Path(run.__file__).parent
     fixtures = Path(__file__).parent / "fixtures"
     baseline = json.loads(historical_fixture("accepted-contracts.json").read_text())
-    for name in ("scene.py", "suite.py", "setup.py", "crafting.py",
-                 "combat.py", "navigation.py", "mixed.py", "oracles.py"):
-        assert run.lifecycle.sha(package / name) == baseline["files"][name]
+    check_core(baseline, package)
     definitions = json.loads((package / "scenes.json").read_text())
     legacy = json.loads((fixtures / "legacy-scenes.json").read_text())
     selected_definitions = {row["id"]: row for row in definitions["scenes"]}
@@ -192,6 +195,11 @@ def test_gameagent_negative_measurements_have_independent_validity(case, expecte
         data["provider_cancellation_events"] = [{
             "host_recorded_at": "2026-10-15T00:00:02+00:00" if case == "cancelled"
             else "2026-10-15T00:00:00+00:00", "error": {"type": "CancelledError"}}]
+        data["provider_cancellation_events"][0].update(
+            occurrence={"clock": "host-monotonic", "value": 12 if case == "cancelled" else 9,
+                        "source": "provider"} if case == "cancelled" else
+                       {"clock": "unknown", "value": None, "source": "provider"},
+            caused_by={"kind": "evaluator_stop", "stop_id": "observed-stop", "signal": "SIGINT"})
     elif case == "provider":
         data["provider_errors_excluding_cancellation"] = [{"type": "ProviderHTTPError"}]
     elif case == "entry-error":
@@ -199,7 +207,8 @@ def test_gameagent_negative_measurements_have_independent_validity(case, expecte
     elif case == "no-model":
         data["record_counts"] = {}
     proof = evidence.gameagent_evaluation(
-        data, stop_reason="player_death", stop_signal={"sent": True},
+        data, stop_reason="player_death", stop_signal={"sent": True, "signal": "SIGINT",
+            "stop_id": "observed-stop", "requested_monotonic": 11, "terminal_monotonic": 10},
         stop_requested_at="2026-10-15T00:00:01+00:00")
     assert proof["evaluation_validity"]["status"] == expected
     assert not proof["accepted"]  # A valid death measurement is not a successful task.

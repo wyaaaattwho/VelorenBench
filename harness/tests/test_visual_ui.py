@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import pytest
 
 from scripts import rpg_sdk_agent as common
-from scripts.rpg_benchmark import capabilities, observations, providers, renderer_support, visual_ui
+from scripts.rpg_benchmark import capabilities, observations, providers, renderer_support, support, visual_ui
 from scripts.rpg_benchmark.renderer_tools import RendererTools
 from scripts.rpg_benchmark.player_types import Invocation
 
@@ -35,7 +35,11 @@ def native():
 
 def test_visual_profile_is_explicit_and_mode_mapped():
     manifest = providers.manifest(providers.LUNA, "image")
-    assert capabilities.negotiate(manifest, {})[0]["action_profile"] == "visual-motor-v1"
+    assert capabilities.negotiate(manifest, {})[0]["action_profile"] == visual_ui.PROFILE
+    legacy = copy.deepcopy(manifest)
+    legacy["default_configuration"]["action_profile"] = "visual-motor-v1"
+    assert capabilities.negotiate(legacy, {})[0]["action_profile"] == "visual-motor-v1"
+    assert capabilities.negotiate(manifest, {"action_profile": "visual-motor-v1"})[0]["action_profile"] == "visual-motor-v1"
     assert capabilities.negotiate(manifest, {"action_profile": visual_ui.PROFILE})[0]["action_profile"] == visual_ui.PROFILE
     for mode in ("structured", "hybrid"):
         with pytest.raises(ValueError, match="mapping"):
@@ -151,19 +155,32 @@ def test_pending_and_unknown_visual_action_never_resubmits():
 ])
 def test_admission_only_adds_the_qualified_image_task_profile(
         tmp_path, scene, terrain, profile, run_mode, admitted):
+    from .test_admission_closeout import selected_native
+    # Preserve this entire historical034 policy table as historical evidence.
+    # It cannot authorize any later native, source, or action-profile selection.
+    historical = renderer_support.historical_policy()["renderer"][f"{scene}/{terrain}"]["image"]
+    assert bool(historical["scored_evaluation"]
+                and profile == historical.get("action_profile", "visual-motor-v1")
+                and run_mode in historical.get("allowed_run_modes", ["capability"])) is admitted
     args = SimpleNamespace(scene=scene, terrain=terrain, observation_mode="image",
                            action_profile=profile, mode=run_mode, harness="responses",
                            recordings=tmp_path / "outputs/recordings/new-run", out=tmp_path / "run")
-    selected = {"renderer": {}, "renderer_fixture_helper": {}, "protected_paths": []}
-    if admitted:
+    selected = selected_native(tmp_path)  # Synthetic TEST ONLY verified dependency fixture.
+    with pytest.raises(ValueError, match="unsupported"):
         renderer_support.admit_selection(args, selected)
+    args.unqualified_engineering = True
+    if run_mode == "task-engineering" and profile == visual_ui.PROFILE:
+        cell = renderer_support.admit_selection(args, selected)
+        assert not cell["scored_evaluation"] and cell["qualification_record"] is None
+        assert not cell["accepted"] and cell["integration_qualification"] == "unqualified"
     else:
         with pytest.raises(ValueError, match="unsupported"):
             renderer_support.admit_selection(args, selected)
 
 
-def test_support_matrix_separates_primitives_from_full_task_qualification():
-    matrix = renderer_support.support_matrix()
+def test_support_matrix_separates_primitives_from_full_task_qualification(tmp_path):
+    from .test_admission_closeout import selected_native
+    matrix = renderer_support.historical_policy()
     image = matrix["renderer"]["T05/natural"]["image"]
     assert image["scored_evaluation"] and image["action_profile"] == visual_ui.PROFILE
     assert image["allowed_run_modes"] == ["task-engineering"] and image["accepted"] is False
@@ -183,4 +200,16 @@ def test_support_matrix_separates_primitives_from_full_task_qualification():
     assert evidence["native_tree_sha256"] == "4c2cc4bb7cb7e6a94f963253866f09c2a0a6fde0df2d23ece9c99f78322944db"
     assert {row["task"] for row in evidence["fresh_integrated_tasks"]} == {
         "T02", "T05", "T06", "T09", "T10", "T11"}
+    for current in (renderer_support.support_matrix(),
+                    support.matrix(selected=selected_native(tmp_path))):
+        image = current["renderer"]["T05/natural"]["image"]
+        assert image["historical_evidence"]["scored_evaluation"] is True
+        assert "integrated034-t05-image-001" in image["historical_evidence"]["qualification"]
+        assert image["action_profile"] == visual_ui.PROFILE
+        assert image["allowed_run_modes"] == ["task-engineering"]
+        assert not image["scored_evaluation"] and not image["accepted"]
+        assert image["qualification_record"] is None
+        assert current["visual_primitives"]["historical_only"] is True
+        assert current["qualification_evidence_basis"] == (
+            "no matching selected-native qualification; historical evidence separate")
     assert "parent0.4.1/candidate001" in evidence["historical_correspondence"]

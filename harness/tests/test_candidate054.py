@@ -6,10 +6,11 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from scripts.rpg_benchmark import renderer_support, suite, launching
+from scripts.rpg_benchmark import renderer_support, suite, launching, qualification, support
+from .test_admission_closeout import selected_native
 
-def test_final054_qualification_and_support_agree_without_ability_or_freeze_claim():
-    matrix = renderer_support.support_matrix()
+def test_final054_qualification_and_support_agree_without_ability_or_freeze_claim(tmp_path):
+    matrix = renderer_support.historical_policy()
     q = matrix["qualification_evidence"]
     assert q["version"] == "1.0.0"
     final = q["final054"]
@@ -21,6 +22,22 @@ def test_final054_qualification_and_support_agree_without_ability_or_freeze_clai
     for mode, allowed in final["T12_scored_admission"].items():
         assert matrix["renderer"]["T12/natural"][mode]["scored_evaluation"] is allowed
     assert final["chronological_transition_index_zero_based"] == [843, 844]
+
+    # Historic054 remains exact audit evidence, not qualification of a later
+    # source/native selection. The selected dependency below is TEST ONLY.
+    current_source = renderer_support.support_matrix()
+    current_native = support.matrix(selected=selected_native(tmp_path))
+    assert current_source["renderer"]["T12/natural"]["structured"]["qualification_key"]["native_identity"] is None
+    assert current_native["renderer"]["T12/natural"]["structured"]["qualification_key"]["native_identity"] is not None
+    for current in (current_source, current_native):
+        for mode, allowed in final["T12_scored_admission"].items():
+            cell = current["renderer"]["T12/natural"][mode]
+            assert cell["historical_evidence"]["scored_evaluation"] is allowed
+            assert cell["integration_qualification"] == "unqualified"
+            assert cell["qualification_record"] is None
+            assert not cell["scored_evaluation"] and not cell["accepted"]
+            assert cell["model_success"] == "not-inferred"
+            assert "capability" not in cell["allowed_run_modes"]
 
 def test_all29_raw_definitions_and052_scoring_code_are_byte_preserved():
     package = Path(suite.__file__).parent
@@ -58,9 +75,27 @@ def test_new_T12_admission_does_not_open_unsupported_or_unverified_entries(tmp_p
             renderer_support.admit_selection(args, selected)
     assert not list(tmp_path.iterdir())
 
-def test_no_other_image_task_is_newly_admitted():
-    matrix = renderer_support.support_matrix()["renderer"]
+def test_no_other_image_task_is_newly_admitted(tmp_path):
+    matrix = renderer_support.historical_policy()["renderer"]
     admitted = {key for key, modes in matrix.items()
                 if modes.get("image", {}).get("scored_evaluation")}
     assert admitted == {"T05/natural", "N1/flat"}
     assert matrix["T05/natural"]["image"]["allowed_run_modes"] == ["task-engineering"]
+
+    records = qualification.load()["records"]
+    for current in (renderer_support.support_matrix(),
+                    support.matrix(selected=selected_native(tmp_path))):
+        current_admitted = {key for key, modes in current["renderer"].items()
+                            if modes.get("image", {}).get("scored_evaluation")}
+        # Neither source-only nor explicitly synthetic native hashes inherit
+        # real production evidence, even after a later release fills the registry.
+        identities = {qualification.digest(cell["qualification_key"])
+                      for modes in current["renderer"].values() for cell in modes.values()}
+        assert not identities & {qualification.digest(record["key"]) for record in records}
+        assert not current_admitted
+        for modes in current["renderer"].values():
+            for cell in modes.values():
+                assert cell["qualification_record"] is None
+                assert not cell["scored_evaluation"] and not cell["accepted"]
+        image = current["renderer"]["T05/natural"]["image"]
+        assert image["allowed_run_modes"] == ["task-engineering"]

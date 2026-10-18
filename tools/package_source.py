@@ -11,6 +11,7 @@ TOP = {
     "API.md", "TASKS.md", "SUPPORT.md", "BUILD.md", "PROVENANCE.md",
     "TESTING.md", "CONTRIBUTING.md", "pyproject.toml", "MANIFEST.in",
     "requirements-build.lock", "requirements-test.lock", "requirements-test-sdk.lock",
+    "VISUALIZATION.md",
 }
 INTEGRATION_TOP = {
     ".gitignore", "LICENSE", "MANIFEST.in", "NOTICE.md", "README.md",
@@ -52,13 +53,15 @@ def main():
     value = {
         "schema": "velorenbench-public-source/1",
         "version": tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"],
-        "status": "source-release",
-        "release_tag": "v1.0.1",
-        "release_source_identity": "resolved Git tag commit; baseline_commit is historical, not release HEAD",
+        "status": "unreleased-successor",
+        "release_tag": None,
+        "release_source_identity": "uncommitted candidate; no release commit/tag fabricated",
+        "successor_base_commit": "2e3aa071417a31173726b785689eeb6ec0548273",
         "baseline_commit": "504f3f29df649ce19ebe37cd44188baaec828807",
         "frozen_local_build": "001",
         "frozen_harness_manifest_sha256": "314a6d204e4a5b8953d03e374de2273d38b812bf97813ce78f0c885cbe4352b8",
-        "selected_native_tree_sha256": "4c2cc4bb7cb7e6a94f963253866f09c2a0a6fde0df2d23ece9c99f78322944db",
+        "historical_native_baseline_tree_sha256": "4c2cc4bb7cb7e6a94f963253866f09c2a0a6fde0df2d23ece9c99f78322944db",
+        "selected_native_tree_sha256": json.loads((ROOT / "native/source.json").read_text())["source_tree_sha256"],
         "exported_native_subset_sha256": hashlib.sha256(
             json.dumps(native, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
         "native_omitted_external_resource": "assets/voxygen/audio/null.ogg",

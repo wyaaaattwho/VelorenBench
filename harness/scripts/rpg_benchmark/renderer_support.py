@@ -4,7 +4,7 @@ from pathlib import Path
 from . import output_paths, runtime
 
 
-def support_matrix() -> dict:
+def historical_policy() -> dict:
     matrix = {
         "schema": "rpg-task-mode-support/1",
         "renderer": {
@@ -102,32 +102,32 @@ def support_matrix() -> dict:
     return matrix
 
 
-def admit_selection(args, selected) -> None:
+def support_matrix() -> dict:
+    from .support import matrix
+    return matrix()
+
+
+def admit_selection(args, selected) -> dict:
     if selected.get("renderer") is None or selected.get("renderer_fixture_helper") is None:
         raise ValueError("renderer episodes require verified renderer and matching-source fixture helper")
     mode = args.observation_mode or "structured"
-    supported = ((args.scene, args.terrain) == ("C1", "natural")
-                 and (mode in {"structured", "hybrid"} or args.mode in {"setup", "interface-smoke"}))
-    supported |= (args.scene, args.terrain, mode) == ("N1", "flat", "image")
-    supported |= (args.scene in {"T03", "T04", "T05"} and args.terrain == "natural"
-                  and mode in {"structured", "hybrid"})
-    supported |= (args.scene == "T05" and args.terrain == "natural" and mode == "image"
-                  and args.mode == "task-engineering" and args.action_profile == "visual-ui-v1")
-    supported |= ((args.scene, args.terrain) in {("T01", "natural"), ("T02", "flat")}
-                  and mode in {"structured", "hybrid"} and args.mode in {"setup", "task-engineering", "capability"})
-    supported |= (args.scene in {"T06", "T07", "T08", "T09"} and args.terrain == "natural"
-                  and mode in {"structured", "hybrid"} and args.mode != "mechanism")
-    supported |= (args.scene in {"T10", "T11", "T12"} and args.terrain == "natural"
-                  and mode in {"structured", "hybrid"}
-                  and args.mode in {"setup", "task-engineering", "capability"})
-    if mode == "image" and getattr(args, "action_profile", None) == "visual-ui-v1":
-        supported &= (args.scene, args.terrain, args.mode) == ("T05", "natural", "task-engineering")
-    if not supported or args.mode not in {"interface-smoke", "setup", "mechanism", "capability", "task-engineering"}:
-        raise ValueError("unsupported renderer task/mode combination; inspect the explicit support matrix")
-    # Backend admission is a transport capability check in adapter preflight.
-    # This function owns only task/profile/recording support, not Harness policy.
-    if args.scene == "C1" and args.mode == "mechanism" and args.observation_mode == "image":
-        raise ValueError("C1 image task unsupported: native visual crafting addressing is unavailable")
+    from . import lifecycle, qualification, suite, support
+    manifest = selected.get("dependencies", {}).get("scene_manifest", {}).get("path")
+    definitions = suite.load(Path(manifest)) if manifest else support.catalog()
+    if args.scene not in definitions:
+        raise ValueError("unknown task definition")
+    unqualified = getattr(args, "unqualified_engineering", False)
+    native_features = selected["renderer"].get("benchmark_features")
+    if unqualified and native_features is None:
+        raise ValueError("unsupported renderer: selected native contract does not declare successor features")
+    definition = definitions[args.scene]
+    suite.runtime_options(definition, variant=getattr(args, "variant", None))
+    cell = support.admit(definition, args.terrain, "renderer", mode,
+                         getattr(args, "action_profile", None), args.mode,
+                         unqualified_engineering=unqualified, native_features=native_features,
+                         native_identity=qualification.selected_native(selected),
+                         definitions=definitions,
+                         task_manifest_sha256=lifecycle.sha(Path(manifest)) if manifest else None)
     if args.recordings is None or (
             args.recordings.parent.name != "recordings" or args.recordings.parent.parent.name != "outputs"):
         raise ValueError("renderer recordings must be an explicit outputs/recordings/RUN-ID path")
@@ -137,3 +137,4 @@ def admit_selection(args, selected) -> None:
     runtime.exclude_outputs(recording_root, [Path(p) for p in selected["protected_paths"]])
     if args.recordings == args.out or args.out.is_relative_to(args.recordings) or args.recordings.is_relative_to(args.out):
         raise ValueError("recordings and private run outputs must be separate")
+    return cell

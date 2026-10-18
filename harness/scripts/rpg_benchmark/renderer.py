@@ -5,7 +5,6 @@ import asyncio
 import json
 import os
 from pathlib import Path
-import select
 import time
 
 from . import lifecycle
@@ -33,6 +32,40 @@ class RendererJournal(Journal):
         super().write(**row)
 
 
+async def read_display_number(read_fd):
+    """Consume Xserver's complete displayfd line before closing the read end.
+
+    Xserver can write the digits and newline separately. Accepting the first
+    readable bytes then closing the pipe races its final write (EPIPE is fatal
+    to Xvfb), even though the digits already name a listening display.
+    """
+    loop = asyncio.get_running_loop()
+    result = loop.create_future()
+    payload = bytearray()
+
+    def readable():
+        if result.done():
+            return
+        try:
+            chunk = os.read(read_fd, 64)
+            payload.extend(chunk)
+            if len(payload) > 64 or (not chunk and b"\n" not in payload):
+                raise RuntimeError("owned Xvfb failed to publish a complete display number")
+            if b"\n" in payload:
+                number, rest = bytes(payload).split(b"\n", 1)
+                if not number or not number.isdigit() or rest:
+                    raise RuntimeError("owned Xvfb published an invalid display number")
+                result.set_result(":" + number.decode("ascii"))
+        except Exception as error:
+            result.set_exception(error)
+
+    loop.add_reader(read_fd, readable)
+    try:
+        return await asyncio.wait_for(result, 15)
+    finally:
+        loop.remove_reader(read_fd)
+
+
 async def check_display(display, journal):
     check = await asyncio.create_subprocess_exec(
         "xdpyinfo", "-display", display, stdout=asyncio.subprocess.DEVNULL,
@@ -57,13 +90,28 @@ async def check_display(display, journal):
 
 
 class RendererBridge(NativeBridge):
-    def __init__(self, *args, renderer: dict, frames: Path, **kwargs):
+    def __init__(self, *args, renderer: dict, frames: Path, public_run: dict | None = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.renderer, self.frames = renderer, frames
         self.renderer_ready = None
         self.display_process = None
         self.display_log = None
         self.display_cleanup = {"started": False, "stopped": True}
+        self.observation_sequence = 0
+        self.public_media = None
+        if public_run is not None:
+            from .frame_feed import Publisher
+            self.public_media = Publisher(frames, **public_run)
+
+    async def request(self, command, args=None, *, origin="setup"):
+        result = await super().request(command, args, origin=origin)
+        if command == "observe":
+            self.observation_sequence += 1
+            result["sample_identity"] = {
+                "kind": "host-received-observation-sequence", "session_id": result["session_id"],
+                "sequence": self.observation_sequence}
+            result["received_host_monotonic"] = time.monotonic()
+        return result
 
     def on_event(self, row: dict) -> None:
         if row.get("event") == "native_renderer_ready" and not self.renderer_ready.done():
@@ -101,11 +149,8 @@ render_mode:(shadow:None,cloud:Minimal,bloom:Off,profiler_enabled:false)),
                                pid=self.display_process.pid, start_ticks=self.display_start)
             os.close(write_fd)
             write_fd = None
-            readable, _, _ = await asyncio.to_thread(select.select, [read_fd], [], [], 15)
-            if not readable:
-                raise TimeoutError("owned Xvfb display startup timeout")
-            display = ":" + os.read(read_fd, 64).decode().strip()
-            if not display[1:].isdigit() or self.display_process.returncode is not None:
+            display = await read_display_number(read_fd)
+            if self.display_process.returncode is not None:
                 raise RuntimeError("owned Xvfb failed to publish a display")
         finally:
             os.close(read_fd)
@@ -146,8 +191,29 @@ render_mode:(shadow:None,cloud:Minimal,bloom:Off,profiler_enabled:false)),
                 or ready["data"]["same_client"] is not True
                 or ready["data"]["client_type"] != "game"):
             raise RuntimeError("renderer is not the same ordinary player")
+        if self.public_media is not None:
+            try:
+                from .passive_capture import register
+                register(self.public_media, display=display, xvfb_pid=self.display_process.pid,
+                         xvfb_start=self.display_start, renderer_pid=self.process.pid,
+                         renderer_start=self.start_ticks, session_id=ready["session_id"],
+                         actor=ready["data"]["actor"])
+            except Exception as error:
+                # Optional registration must not mutate gameplay/public frame fences.
+                from .frame_feed import atomic_json
+                self.public_media.run["passive_capture_error"] = type(error).__name__
+                atomic_json(self.public_media.root / "run.json", self.public_media.run)
+                self.journal.write(origin="media", event="passive_capture_registration_error",
+                                   error_type=type(error).__name__)
 
     async def close(self) -> None:
+        # Revoke passive attachment before retiring its registered processes.
+        if self.public_media is not None:
+            try:
+                self.public_media.close()
+            except (OSError, ValueError) as error:
+                self.journal.write(origin="media", event="public_feed_close_error",
+                                   error_type=type(error).__name__)
         try:
             await super().close()
         finally:
@@ -177,12 +243,15 @@ class RendererBoundary(EpisodeBoundary):
     def public_ready(self) -> dict:
         ready = self.bridge.ready.result()
         native = self.bridge.renderer_ready.result()["data"]
+        selected_renderer = getattr(self.bridge, "renderer", {})
         public = {
             **project_image(ready),
             "renderer": {
                 "actor": native["actor"], "native_tick": None,
                 **({"visual_ui": native["visual_ui"]} if "visual_ui" in native else {}),
                 "ui_panels": native["ui_panels"],
+                **({"benchmark_features": selected_renderer["benchmark_features"]}
+                   if "benchmark_features" in selected_renderer else {}),
                 "visibility_profile": "image-receipts-v1" if self.mode == "image" else "structured-native-v2",
                 "control": {key: native["actuator"]["control"][key] for key in (
                     "owner", "generation", "sequence", "protection_generation")
@@ -197,6 +266,18 @@ class RendererBoundary(EpisodeBoundary):
         observer = getattr(self, "public_observer", None)
         if observer is not None:
             observer(request, response)
-        if self.mode == "image":
-            return project_image(response, frame=request.get("cmd") == "frame" and response.get("ok") is True)
-        return response
+        public = (project_image(response, frame=request.get("cmd") == "frame" and response.get("ok") is True)
+                  if self.mode == "image" else response)
+        publisher = getattr(self.bridge, "public_media", None)
+        if publisher is not None and request.get("cmd") == "frame" and public.get("ok") is True:
+            try:
+                publisher.publish(public["result"])
+            except (OSError, ValueError, KeyError, TypeError) as error:
+                # Optional media must not change the native/public response or agent semantics.
+                self.bridge.journal.write(origin="media", event="public_feed_error",
+                                          error_type=type(error).__name__)
+                try:
+                    publisher.fail(error)
+                except (OSError, ValueError):
+                    pass
+        return public

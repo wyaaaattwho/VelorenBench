@@ -1005,14 +1005,24 @@ class ReliabilityRepairTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_explicit_build_ack_without_exact_readback_fails(self):
         from unittest.mock import AsyncMock, Mock
-        with patch.object(setup, "command", new=AsyncMock()), patch.object(
-                setup, "wait_observation", new=AsyncMock()), patch.object(
+        from functools import partial
+        from tests.authoring import Administrator
+        admin = Mock()
+        state = Administrator(admin)
+        async def terrain(*args):
+            return state.readback({"status": "no_candidate_in_window",
+                "vertical_scan": {"all_cells_loaded": True}, "support_candidates": []},
+                [18713, 10809, 410])
+        readback = partial(setup.construction_readback, timeout=.001)
+        with patch.object(setup, "command", new=state.command), patch.object(
+                setup, "construction_readback", new=readback), patch.object(
+                setup, "wait_observation", side_effect=state.wait), patch.object(
                 setup, "goto", new=AsyncMock()), patch.object(
                 setup, "action", new=AsyncMock(return_value={"status": "completed"})), patch.object(
-                setup, "ready_observation", new=AsyncMock()), patch.object(
-                setup, "terrain", new=AsyncMock(return_value={"support_candidates": []})):
+                setup, "ready_observation", new=state.ready), patch.object(
+                setup, "terrain", new=terrain):
             with self.assertRaisesRegex(RuntimeError, "exact native Rock readback"):
-                await setup.author_voxels(Mock(), [[18713, 10809, 410]])
+                await setup.author_voxels(admin, [[18713, 10809, 410]])
 
     async def test_climb_cancel_is_native_and_grounding_precedes_new_control(self):
         from unittest.mock import AsyncMock, Mock

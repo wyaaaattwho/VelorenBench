@@ -13,6 +13,34 @@ from scripts.rpg_benchmark import capabilities, results
 CONTRACT = "rpg-external-adapter/1"
 EVIDENCE = "rpg-external-evidence/1"
 PLAYER = "rpg-sdk-native-contract/2"
+LIVE = "rpg-external-live/1"
+
+
+def validate_live_declaration(value, *, pins_sha, identifier, adapter_sha, configuration,
+                              config, legacy=False):
+    """Caller-owned live selection, separate from internal experiment approval.
+
+    Legacy experiment admissions remain readable; new public declarations bind
+    provider, negotiated configuration AND adapter options without a team identity.
+    Neither form supplies credentials or changes synthetic/effect adjudication.
+    """
+    expected = {
+        "pins_sha256": pins_sha, "adapter_id": identifier, "adapter_sha256": adapter_sha,
+        "model": configuration["model"], "reasoning_effort": configuration["reasoning_effort"],
+        "model_calls_admitted": True,
+    }
+    if isinstance(value, dict) and value.get("schema") == LIVE:
+        expected.update(schema=LIVE, live=True, configuration=configuration, adapter_config=config)
+        if not isinstance(value.get("provider"), str) or not value["provider"].strip():
+            raise ValueError("Public live declaration requires an explicit provider")
+    else:
+        expected.update(schema="rpg-external-admission/1", approved_by="A0")
+        if not legacy:
+            expected["configuration"] = configuration
+    if (not isinstance(value, dict) or any(value.get(key) != item for key, item in expected.items())
+            or value.get("model_calls_admitted") is not True
+            or (value.get("schema") == LIVE and value.get("live") is not True)):
+        raise ValueError("Live declaration does not match exact external configuration")
 
 
 @dataclass(frozen=True)
@@ -72,18 +100,12 @@ class Adapter:
         verify_freeze(freeze_path, self.manifest["freeze"]["sha256"])
         if not engineering:
             if admission is None:
-                raise ValueError("Live external model entry requires A0 experiment admission")
+                raise ValueError("Live external model entry requires an explicit caller live declaration")
             approved = json.loads(Path(admission).read_text())
-            expected = {
-                "schema": "rpg-external-admission/1", "approved_by": "A0",
-                "pins_sha256": pins_sha, "adapter_id": identifier,
-                "adapter_sha256": declaration["sha256"], "model": self.configuration["model"],
-                "reasoning_effort": self.configuration["reasoning_effort"], "model_calls_admitted": True,
-            }
-            if not self.legacy:
-                expected["configuration"] = self.configuration
-            if any(approved.get(key) != value for key, value in expected.items()):
-                raise ValueError("A0 admission does not match exact external configuration")
+            validate_live_declaration(
+                approved, pins_sha=pins_sha, identifier=identifier,
+                adapter_sha=declaration["sha256"], configuration=self.configuration,
+                config=config, legacy=self.legacy)
         module_name = "_rpg_external_" + declaration["sha256"]
         spec = importlib.util.spec_from_file_location(module_name, implementation)
         if spec is None or spec.loader is None:
@@ -104,25 +126,29 @@ class Adapter:
                     or any(not isinstance(arg, str) or not arg for arg in self.runtime["preflight"])):
                 raise ValueError("Process adapters require an independent interpreter and preflight command")
 
-    async def preflight(self, *, backend, frames=None):
+    async def preflight(self, *, backend, frames=None, detail_storage=None):
         capabilities.admit_backend(self.configuration, self.capabilities, backend)
         if self.runtime is None:
             raise ValueError("Migrate external adapters to /3 with an isolated runtime/preflight before execution")
         validate = getattr(self.module, "validate_config", None)
         if not callable(validate):
             raise ValueError("Process adapter must validate its configuration before native allocation")
+        from . import startup
+        construction = startup.context(self.configuration, backend, frames, detail_storage)
         validate({"config": self.config, "runtime": self.runtime, "engineering": self.engineering,
-                  "configuration": self.configuration, "backend": backend})
+                  **construction})
         python = Path(self.runtime["python"])
         if not python.is_file() or not os.access(python, os.X_OK):
             raise ValueError(f"Adapter interpreter is not executable: {python}")
         command = [str(python), "-I", *self.runtime["preflight"]]
         environment = clean_environment()
+        environment["RPG_ADAPTER_STARTUP"] = "1"
         process = await asyncio.create_subprocess_exec(
-            *command, env=environment, stdout=asyncio.subprocess.PIPE,
+            *command, env=environment, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT)
         try:
-            stdout, _ = await asyncio.wait_for(process.communicate(), 60)
+            stdout, _ = await asyncio.wait_for(
+                process.communicate(json.dumps(construction, allow_nan=False).encode()), 60)
         except BaseException:
             if process.returncode is None:
                 process.kill()
@@ -133,10 +159,10 @@ class Adapter:
                              + stdout.decode(errors="replace").strip())
         from . import runtime
         receipt = json.loads(stdout)
-        if (receipt.get("schema") != "rpg-adapter-preflight/1"
-                or receipt.get("player_package_files") != runtime.package_files()):
+        startup.validate_receipt(receipt, construction)
+        if receipt.get("player_package_files") != runtime.package_files():
             raise ValueError("Adapter must install the exact evaluator player package; content differs")
-        self.backend, self.frames = backend, frames
+        self.backend, self.frames, self.startup = backend, frames, construction
         return {"command": command, "exit_code": process.returncode, "receipt": receipt}
 
     def launch(self, *, task, socket, output, output_root, python, common_interface):
@@ -155,6 +181,7 @@ class Adapter:
             "pins_sha256": self.pins_sha, "adapter_sha256": self.declaration_sha,
             "backend": getattr(self, "backend", "headless"),
             "frames": str(self.frames) if getattr(self, "frames", None) else None,
+            "detail_storage": getattr(self, "startup", {}).get("detail_storage"),
             "episode_id": output.parent.name,
         }
         plan = self.module.build_launch(self.context)
@@ -220,10 +247,12 @@ def adjudicate(facts, receipts, opening, score, *, native_classification, stop_r
                terminal_monotonic=None, unknown_effects=()):
     """Native scoring plus explicit observed model/intent/receipt joins, never self-success."""
     entry = facts["entry"]
+    errors = results.observations(facts, terminal_monotonic, stop_signal)
     evaluator_cancel = (
         entry.get("status") == "cancelled" and stop_reason != "normal_entry_exited"
-        and stop_signal.get("sent") is True)
-    errors = results.observations(facts, terminal_monotonic, stop_signal)
+        and any(row.get("evaluator_terminal_cancellation") for row in errors)
+        and all(row.get("evaluator_terminal_cancellation") for row in errors
+                if row["error_detail"].get("type") == "CancelledError"))
     evaluation = results.validity(facts, errors, native_terminal=stop_reason in results.NATIVE_REASONS,
                                   unknown_effects=unknown_effects)
     calls = {row["id"]: row for row in facts["tool_calls"]}

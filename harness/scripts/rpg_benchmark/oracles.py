@@ -5,6 +5,11 @@ from scripts.rpg_benchmark.scene import item_id
 
 def pickup_actions(opening: dict, receipts: list[dict], uid: int, item: str,
                    amount: int = 1) -> list[str]:
+    """Match native operational collection, including optional nearest pickup.
+
+    An omitted request UID is resolved by native; the exact receipt target and
+    all collection predicates below remain required. An explicit UID must match.
+    """
     selected = []
     for row in receipts:
         action = row["request"].get("args", {}).get("action", {})
@@ -13,7 +18,7 @@ def pickup_actions(opening: dict, receipts: list[dict], uid: int, item: str,
         detail = receipt.get("detail") or {}
         feedback = detail.get("pickup_feedback") or {}
         collected = feedback.get("collected_item") or {}
-        if (action.get("type") == "pickup" and action.get("uid") == uid
+        if (action.get("type") == "pickup" and ("uid" not in action or action["uid"] == uid)
                 and row["actor"] == opening["self_identity"]["uid"]
                 and response.get("session_id") == opening["session_id"]
                 and response.get("ok") is True and receipt.get("status") == "completed"

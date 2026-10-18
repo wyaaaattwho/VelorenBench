@@ -164,15 +164,34 @@ class Journal:
         self.stream.close()
 
 
+async def signal_owned(process: asyncio.subprocess.Process, start: int, sig: int) -> bool:
+    """Signal a verified live child, or reap an already vanished owned child."""
+    if process.returncode is not None:
+        return False
+    try:
+        lifecycle.assert_owned(process.pid, start)
+    except FileNotFoundError as error:
+        # Only absence of this child's stat is an exit race. Missing protection
+        # metadata, permission errors and live/recycled identity refusal propagate.
+        if error.filename != f"/proc/{process.pid}/stat":
+            raise
+        await process.wait()
+        return False
+    try:
+        process.send_signal(sig)
+    except ProcessLookupError:
+        await process.wait()
+        return False
+    return True
+
+
 async def stop_owned(process: asyncio.subprocess.Process, start: int, record: dict) -> None:
     if process.returncode is None:
-        lifecycle.assert_owned(process.pid, start)
-        process.send_signal(signal.SIGTERM)
+        await signal_owned(process, start, signal.SIGTERM)
         try:
             await asyncio.wait_for(process.wait(), 15)
         except TimeoutError:
-            lifecycle.assert_owned(process.pid, start)
-            process.kill()
+            await signal_owned(process, start, signal.SIGKILL)
             await process.wait()
     record.update(pid=process.pid, start_ticks=start, exit_code=process.returncode,
                   stopped=process.returncode is not None)

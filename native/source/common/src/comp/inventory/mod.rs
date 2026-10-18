@@ -462,6 +462,11 @@ impl Inventory {
         self.loadout.empty_slot_for(item)
     }
 
+    /// Read-only selection made by ordinary inventory item use (including swaps).
+    pub fn use_equip_slot(&self, item: &Item) -> Option<EquipSlot> {
+        self.loadout.get_slot_to_equip_into(item)
+    }
+
     pub fn populated_slots(&self) -> usize { self.slots().filter_map(|slot| slot.as_ref()).count() }
 
     pub fn free_slots(&self) -> usize { self.slots().filter(|slot| slot.is_none()).count() }

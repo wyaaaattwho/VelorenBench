@@ -127,6 +127,70 @@ pub enum Event<K> {
     // {Shift,Ctrl}-clicked
     Request { slot: K, auto_quantity: bool },
 }
+
+#[cfg(test)]
+mod native_quantity_tests {
+    use super::*;
+    use crate::hud::Hud;
+    use conrod_core::{Ui, UiBuilder, input::Key};
+
+    #[derive(Clone, Copy, PartialEq)]
+    struct TestSlot(u8);
+    impl SumSlot for TestSlot {
+        fn drag_size(&self) -> Option<[f64; 2]> { None }
+    }
+
+    fn draw(ui: &mut Ui, manager: &mut SlotManager<TestSlot>, id: widget::Id) -> Vec<Event<TestSlot>> {
+        let mut cell = ui.set_widgets();
+        widget::Rectangle::fill([80.0, 80.0]).xy([0.0, 0.0]).set(id, &mut cell);
+        manager.update(id, TestSlot(0), &cell, Some(Vec::new()), Some(10));
+        manager.maintain(&mut cell)
+    }
+
+    #[test]
+    fn native_pointer_modifiers_drive_real_stock_slot_quantity_requests() {
+        for (key, automatic) in [(Key::LShift, false), (Key::LCtrl, true)] {
+            let mut ui = UiBuilder::new([960.0, 540.0]).build();
+            let id = ui.widget_id_generator().next();
+            let mut manager = SlotManager::new(ui.widget_id_generator(), Vec2::new(40.0,40.0), false, 1000);
+            assert!(draw(&mut ui, &mut manager, id).is_empty());
+            for event in Hud::native_pointer_events(480.0,270.0,[960,540],"left_click",None,Some(key)) {
+                ui.handle_event(event);
+            }
+            let events = draw(&mut ui, &mut manager, id);
+            assert_eq!(events.len(), 1, "modified stock click must issue exactly one quantity request");
+            let Event::Request { slot: TestSlot(0), auto_quantity } = events[0] else {
+                panic!("genuine stock slot must emit a quantity Request");
+            };
+            assert_eq!(auto_quantity, automatic);
+            let quantity = Hud::trade_request_quantity(auto_quantity, 10, || {
+                assert!(automatic, "individual request must not run the automatic price calculation");
+                23
+            });
+            assert_eq!(quantity, if automatic { 10 } else { 1 });
+            assert!(ui.global_input().current.modifiers.is_empty(), "modifier must never stay held");
+            for event in Hud::native_pointer_events(480.0,270.0,[960,540],"left_click",None,None) {
+                ui.handle_event(event);
+            }
+            assert!(draw(&mut ui, &mut manager, id).is_empty(),
+                    "next unmodified click must select, not reuse a quantity modifier");
+            assert!(manager.selected() == Some(TestSlot(0)));
+        }
+    }
+
+    #[test]
+    fn stock_trade_quantity_boundaries_and_absent_modifier_behavior_are_preserved() {
+        for available in [0, 1, 10, u32::MAX] {
+            assert_eq!(Hud::trade_request_quantity(false, available, || panic!("not an automatic request")), 1);
+            for automatic in [0, 1, 10, u32::MAX] {
+                assert_eq!(Hud::trade_request_quantity(true, available, || automatic), automatic.min(available));
+            }
+        }
+        let events = Hud::native_pointer_events(480.0,270.0,[960,540],"left_click",None,None);
+        assert_eq!(events.len(), 3, "absent modifier retains cursor/press/release");
+    }
+}
+
 // Handles interactions with slots
 pub struct SlotManager<S: SumSlot> {
     state: ManagerState<S>,

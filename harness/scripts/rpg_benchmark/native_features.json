@@ -1,0 +1,7 @@
+{
+  "schema": "velorenbench-native-features/1",
+  "implementation_revision": "generic-release-3",
+  "platform": "Linux/aarch64",
+  "renderer": ["movement", "combat", "inventory", "pickup", "crafting", "equipment", "dialogue", "trade", "skills", "map", "coordinate_goal", "terrain_event"],
+  "status": "source implementation declaration; execution qualification is separate"
+}

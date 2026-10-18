@@ -32,6 +32,8 @@ def main():
                         help="Legally obtained external assets; the compile-time resource is hash-checked.")
     parser.add_argument("--cargo-sources", type=Path,
                         help="Optional predownloaded CARGO_HOME registry/git sources only; no target cache.")
+    parser.add_argument("--target-cache", type=Path,
+                        help="Optional owned Cargo target copied independently; normal Cargo invalidation still runs.")
     parser.add_argument("--fetch", action="store_true",
                         help="Explicitly allow cargo fetch --locked for the selected target before offline builds.")
     parser.add_argument("--cargo", type=Path,
@@ -49,6 +51,10 @@ def main():
     inputs = [source, manifest.parent, assets, local(args.rustup_home)]
     if args.cargo_sources:
         inputs.append(local(args.cargo_sources))
+    if args.target_cache:
+        inputs.append(local(args.target_cache))
+        if not args.target_cache.is_dir():
+            parser.error("--target-cache must be an existing owned directory")
     out = disjoint(args.out, *inputs)
     if out.exists():
         parser.error("--out must not exist")
@@ -69,6 +75,8 @@ def main():
         (out / name).mkdir()
     copy_source(paths, out / "source")
     shutil.copy2(manifest, out / "source.json")
+    if args.target_cache:
+        shutil.copytree(args.target_cache, out / "target", dirs_exist_ok=True)
     if args.cargo_sources:
         for name in ("registry", "git"):
             path = local(args.cargo_sources / name)
@@ -92,9 +100,11 @@ def main():
         "platform": "aarch64-unknown-linux-gnu", "environment": env,
         "source_manifest_sha256": sha(manifest),
         "source_tree_sha256": identity["source_tree_sha256"],
-        "compiler_artifacts_inherited": False, "commands": [],
+        "compiler_artifacts_inherited": bool(args.target_cache),
+        "compiler_cache": str(local(args.target_cache)) if args.target_cache else None, "commands": [],
         "build_commands": [" ".join(command[1:]) for command in build_commands],
-        "scope": "empty compiler target; external dependency sources/toolchain/system; not clean-machine",
+        "scope": ("independent copied compiler cache; all selected Cargo builds revalidated"
+                  if args.target_cache else "empty compiler target") + "; external sources/toolchain/system; not clean-machine",
     }
     write(out / "receipt.json", receipt)
     for index, command in enumerate(commands):

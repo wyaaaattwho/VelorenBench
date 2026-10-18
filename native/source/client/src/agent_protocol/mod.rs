@@ -37,7 +37,6 @@ use common::{
         find_dist::{self, FindDist},
     },
     vol::ReadVol,
-    volumes::vol_grid_2d::VolGrid2dError,
 };
 use serde::Deserialize;
 use serde_json::{Value, json};
@@ -625,6 +624,7 @@ fn record_event(state: &mut BridgeState, event: &str, data: Value) {
         "session_id": state.session_id,
         "tick": state.tick,
         "seq": seq,
+        "sequence_domain": {"kind": "client-update-counter", "session_id": state.session_id},
         "event": event,
         "data": data,
     });
@@ -1223,6 +1223,8 @@ fn survival_snapshot(client: &Client, state: &BridgeState) -> Value {
     json!({
         "session_id": state.session_id,
         "tick": state.tick,
+        "sequence_domain": {"kind": "client-update-counter", "session_id": state.session_id},
+        "event_cursor": state.next_event_seq - 1,
         "self_identity": self_identity(client),
         "position": client.position().map(|p| [p.x, p.y, p.z]),
         "health": client.current::<comp::Health>().map(|health| json!({
@@ -1555,12 +1557,57 @@ fn terrain_clearance_json(
     })
 }
 
+// Proposed-pose certificate, not a motion command or current-pose observation.
+// The AABB and intersecting columns are the same native geometry used by local
+// motion and the terrain physics collider. Exact contact is not penetration.
+fn terrain_body_clearance(
+    position: Vec3<f32>,
+    shape: Option<(f32, f32, f32)>,
+    sample_cell: &mut impl FnMut(Vec3<i32>) -> TerrainCellSample,
+) -> Value {
+    let Some((radius, z_min, z_max)) = shape else {
+        return json!({"known": false, "clear": false, "status": "actor_shape_unavailable"});
+    };
+    let actor = local_motion::actor_aabb(position, radius, z_min, z_max);
+    let low = (actor.min.z - TERRAIN_QUERY_MAX_SUPPORT_HEIGHT_METRES).floor() as i32;
+    let high = actor.max.z.ceil() as i32 - 1;
+    let mut known = true;
+    let mut clear = true;
+    let mut cells = Vec::new();
+    for column in local_motion::footprint_columns(position.xy(), radius) {
+        for z in low..=high {
+            let voxel = Vec3::new(column.x, column.y, z);
+            let sample = sample_cell(voxel);
+            match sample {
+                TerrainCellSample::Loaded(block) => {
+                    let solid = local_motion::terrain_block_aabb(voxel, block);
+                    if (block.is_solid() && actor.collides_with_aabb(solid))
+                        || terrain_block_overlaps_span(z, block, actor.min.z, actor.max.z)
+                            && (block.is_liquid() || terrain_block_is_hazardous(block))
+                    {
+                        clear = false;
+                    }
+                },
+                TerrainCellSample::Unloaded | TerrainCellSample::Unknown => {
+                    known = false;
+                    clear = false;
+                },
+            }
+            cells.push(terrain_cell_json(voxel, sample));
+        }
+    }
+    json!({"known": known, "clear": clear, "position": [position.x, position.y, position.z],
+           "radius_m": radius, "z_min_m": z_min, "z_max_m": z_max, "cells": cells,
+           "scope": "proposed native actor terrain AABB; not route, support or future NPC geometry"})
+}
+
 fn loaded_terrain_support_query(
     state: &BridgeState,
     actor_position: Vec3<f32>,
     self_identity: Value,
     readiness: Value,
     target_position: Vec3<f32>,
+    actor_shape: Option<(f32, f32, f32)>,
     mut sample_cell: impl FnMut(Vec3<i32>) -> TerrainCellSample,
 ) -> Value {
     let column = target_position.xy().map(|value| value.floor() as i32);
@@ -1612,6 +1659,12 @@ fn loaded_terrain_support_query(
             && head_clearance["known"] == json!(true);
         let clearance_clear = foot_clearance["clear"] == json!(true)
             && head_clearance["clear"] == json!(true);
+        let body_clearance = terrain_body_clearance(
+            Vec3::new(target_position.x, target_position.y, standing_height),
+            actor_shape, &mut sample_cell,
+        );
+        let body_clear = body_clearance["known"] == json!(true)
+            && body_clearance["clear"] == json!(true);
         support_candidates.push(json!({
             "standing_position": [
                 target_position.x,
@@ -1628,7 +1681,8 @@ fn loaded_terrain_support_query(
             "head_clearance": head_clearance,
             "known_clearance": known_clearance,
             "clearance_clear": clearance_clear,
-            "occupiable": support_usable && known_clearance && clearance_clear,
+            "body_clearance": body_clearance,
+            "occupiable": support_usable && known_clearance && clearance_clear && body_clear,
         }));
     }
 
@@ -1668,6 +1722,8 @@ fn loaded_terrain_support_query(
             "observation_schema_version": OBSERVATION_SCHEMA_VERSION,
             "session_id": state.session_id,
             "tick": state.tick,
+            "sequence_domain": {"kind": "client-update-counter", "session_id": state.session_id},
+            "event_cursor": state.next_event_seq - 1,
             "coordinate_frame": {
                 "position": "world_xyz_meters",
                 "movement": "world_xy",
@@ -1713,7 +1769,7 @@ fn loaded_terrain_support_query(
         "support_candidates": support_candidates,
         "non_loaded_cells": non_loaded_cells,
         "semantics": {
-            "scope": "one avatar-local loaded-terrain voxel column",
+            "scope": "one avatar-local support column plus proposed actor terrain AABB clearance",
             "voxel_position": "integer lower corner in Veloren world_xyz coordinates",
             "standing_position": "continuous target x/y with z equal to support voxel z plus the block or sprite solid height",
             "clearance": "two one-metre vertical spans above each support surface, each with the complete lower-voxel contributor search range",
@@ -1756,6 +1812,17 @@ fn terrain_query_target(
     Ok(target_position)
 }
 
+fn real_terrain_block(
+    terrain: &common::terrain::TerrainGrid, position: Vec3<i32>,
+) -> Result<Option<Block>, &'static str> {
+    let key = common::terrain::TerrainGrid::chunk_key(position);
+    if !terrain.map_size_lg().contains_chunk(key) {
+        return Err("terrain_position_out_of_world_bounds");
+    }
+    if !terrain.contains_key_real(key) { return Ok(None); }
+    Ok(terrain.get(position).ok().copied())
+}
+
 fn inspect_terrain(
     client: &Client,
     state: &BridgeState,
@@ -1779,20 +1846,32 @@ fn inspect_terrain(
         "character_state": current_observation["character_state"],
         "held_input": current_observation["held_input"],
         "current_action": current_observation["current_action"],
+        "fixture_authoring": current_observation["character_controls"]["fixture_authoring"],
     });
     let terrain = client.state().terrain();
-    Ok(loaded_terrain_support_query(
+    let target_voxel = target_position.map(|value| value.floor() as i32);
+    real_terrain_block(&terrain, target_voxel).map_err(|code| (
+        code, "target column is outside the actual world; synthetic Air is not writable terrain".into(),
+    ))?;
+    let mut query = loaded_terrain_support_query(
         state,
         actor_position,
         identity,
         readiness,
         target_position,
-        |position| match terrain.get(position) {
-            Ok(block) => TerrainCellSample::Loaded(*block),
-            Err(VolGrid2dError::NoSuchChunk) => TerrainCellSample::Unloaded,
+        local_motion::actor_shape(client).ok(),
+        |position| match real_terrain_block(&terrain, position) {
+            Ok(Some(block)) => TerrainCellSample::Loaded(block),
+            Ok(None) => TerrainCellSample::Unloaded,
             Err(_) => TerrainCellSample::Unknown,
         },
-    ))
+    );
+    query["binding"]["terrain_region"] = json!({
+        "in_world": true,
+        "real_client_chunk": terrain.contains_key_real(common::terrain::TerrainGrid::chunk_key(target_voxel)),
+        "server_write_confirmation": null,
+    });
+    Ok(query)
 }
 
 fn aimed_block(client: &Client, position: Vec3<f32>, look_dir: Dir) -> Option<Value> {
@@ -2598,7 +2677,10 @@ fn parse_equip_slot(name: &str) -> Option<EquipSlot> {
     })
 }
 
-fn voxel_arg(action: &serde_json::Map<String, Value>, field: &str) -> Result<Vec3<i32>, String> {
+/// Shared protocol vocabulary for native HUD event normalization.
+pub fn equip_slot_for_name(name: &str) -> Option<EquipSlot> { parse_equip_slot(name) }
+
+pub fn voxel_arg(action: &serde_json::Map<String, Value>, field: &str) -> Result<Vec3<i32>, String> {
     let values = action
         .get(field)
         .and_then(Value::as_array)
@@ -2642,6 +2724,13 @@ fn integer_voxel_arg(
         components[index] = number as i32;
     }
     Ok(Vec3::new(components[0], components[1], components[2]))
+}
+
+/// The craft dispatcher's optional station, using its existing strict parser.
+pub fn craft_station_arg(
+    action: &serde_json::Map<String, Value>,
+) -> Result<Option<Vec3<i32>>, String> {
+    action.get("station").map(|_| integer_voxel_arg(action, "station")).transpose()
 }
 
 fn build_request(
@@ -2745,6 +2834,34 @@ fn sit_pending(state: &BridgeState) -> bool {
         state.active.as_ref().map(|active| &active.kind),
         Some(ActiveKind::InteractWait { mode: InteractWait::Sit })
     )
+}
+
+/// Canonical private map action parser, shared with native HUD interop tests.
+/// Keep the wire format strict: vectors are integer arrays, never serde objects.
+pub fn map_marker_request(action: &serde_json::Map<String, Value>)
+    -> Result<comp::MapMarkerChange, &'static str>
+{
+    let change = match action.get("operation").and_then(Value::as_str) {
+        Some("remove") if !action.contains_key("world_xy") => comp::MapMarkerChange::Remove,
+        Some("update") => {
+            let point = action.get("world_xy").and_then(Value::as_array);
+            if let Some([x, y]) = point.map(Vec::as_slice)
+                && let (Some(x), Some(y)) = (x.as_i64(), y.as_i64())
+                && let (Ok(x), Ok(y)) = (i32::try_from(x), i32::try_from(y))
+            {
+                comp::MapMarkerChange::Update(Vec2::new(x, y))
+            } else {
+                return Err("map marker world_xy must contain two signed 32-bit integers");
+            }
+        },
+        _ => return Err("map marker requires update with world_xy or remove without coordinates"),
+    };
+    if action.keys().any(|key| !matches!(key.as_str(),
+        "type" | "action_id" | "operation" | "world_xy"))
+    {
+        return Err("unknown map marker field");
+    }
+    Ok(change)
 }
 
 fn sit_action_has_no_parameters(action: &serde_json::Map<String, Value>) -> bool {
@@ -2965,6 +3082,14 @@ pub fn observation(client: &Client, state: &BridgeState) -> Value {
                         "target_area_membership": null,
                         "scope": "sampled_permission_only_server_checks_exact_area",
                     })),
+                "fixture_authoring": client.current::<comp::FixtureAuthoring>()
+                    .map(|hold| json!({
+                        "owner": hold.owner,
+                        "position": [hold.position.0.x, hold.position.0.y, hold.position.0.z],
+                        "restore_position": [hold.restore_position.0.x, hold.restore_position.0.y, hold.restore_position.0.z],
+                        "restore_velocity": [hold.restore_velocity.0.x, hold.restore_velocity.0.y, hold.restore_velocity.0.z],
+                        "scope": "server_authorized_fixture_administrator_only_not_grounded_evidence",
+                    })),
             },
             "personal_map_marker": client.current::<comp::MapMarker>()
                 .map(|marker| json!({"world_xy": [marker.0.x, marker.0.y],
@@ -2995,6 +3120,8 @@ pub fn observation(client: &Client, state: &BridgeState) -> Value {
         }),
         physics.as_ref(),
     );
+    snapshot["sequence_domain"] = json!({"kind": "client-update-counter", "session_id": state.session_id});
+    snapshot["event_cursor"] = json!(state.next_event_seq - 1);
     snapshot["known_site_total"] = local["known_site_total"].clone();
     snapshot["known_map_cave_total"] = local["known_map_cave_total"].clone();
     snapshot["skill_tree"] = skill_snapshot(client);
@@ -3442,6 +3569,15 @@ pub fn cancel_active(client: &mut Client, state: &mut BridgeState, reason: &str)
 fn ground_distance(target: Vec3<f32>, position: Vec3<f32>) -> f32 {
     let delta = target - position;
     delta.xy().magnitude()
+}
+
+/// Ranged aim combines controller pitch with body heading (basic_ranged uses
+/// the same merge_z). Upright wielding bodies deliberately never pitch toward
+/// the requested point; comparing Ori directly with a steep 3D target can
+/// therefore time out forever despite the correct applied look input.
+fn applied_look_aligned(target: Dir, input: Dir, body: Dir) -> bool {
+    input.dot(target.to_vec()) >= 0.95
+        && input.merge_z(body).dot(target.to_vec()) >= 0.95
 }
 
 /// How far the ground may drop or rise under a target before it is treated as
@@ -4198,15 +4334,12 @@ fn begin_step(client: &mut Client, state: &mut BridgeState, request: Request) {
                 return;
             }
 
-            let supplied_station = match action.get("station") {
-                Some(_) => match integer_voxel_arg(action, "station") {
-                    Ok(station) => Some(station),
-                    Err(message) => {
-                        error_response(state, request.id, "invalid_action", message);
-                        return;
-                    },
+            let supplied_station = match craft_station_arg(action) {
+                Ok(station) => station,
+                Err(message) => {
+                    error_response(state, request.id, "invalid_action", message);
+                    return;
                 },
-                None => None,
             };
             let required_sprite = recipe.craft_sprite;
             let station = if let Some(required_sprite) = required_sprite {
@@ -5607,34 +5740,13 @@ fn begin_step(client: &mut Client, state: &mut BridgeState, request: Request) {
         },
         "map_marker" => {
             let operation = action.get("operation").and_then(Value::as_str);
-            let change = match operation {
-                Some("remove") if !action.contains_key("world_xy") =>
-                    comp::MapMarkerChange::Remove,
-                Some("update") => {
-                    let point = action.get("world_xy").and_then(Value::as_array);
-                    if let Some([x, y]) = point.map(Vec::as_slice)
-                        && let (Some(x), Some(y)) = (x.as_i64(), y.as_i64())
-                        && let (Ok(x), Ok(y)) = (i32::try_from(x), i32::try_from(y))
-                    {
-                        comp::MapMarkerChange::Update(Vec2::new(x, y))
-                    } else {
-                        error_response(state, request.id, "invalid_action",
-                            "map marker world_xy must contain two signed 32-bit integers");
-                        return;
-                    }
-                },
-                _ => {
-                    error_response(state, request.id, "invalid_action",
-                        "map marker requires update with world_xy or remove without coordinates");
+            let change = match map_marker_request(action) {
+                Ok(change) => change,
+                Err(message) => {
+                    error_response(state, request.id, "invalid_action", message);
                     return;
                 },
             };
-            if action.keys().any(|key| !matches!(key.as_str(),
-                "type" | "action_id" | "operation" | "world_xy"))
-            {
-                error_response(state, request.id, "invalid_action", "unknown map marker field");
-                return;
-            }
             client.map_marker_event(change);
             immediate_action(
                 client, state, request.id, action_id, action_type, signature,
@@ -5661,7 +5773,14 @@ fn begin_step(client: &mut Client, state: &mut BridgeState, request: Request) {
             }
             let permission = client.current::<comp::CanBuild>()
                 .map(|value| (value.enabled, value.build_areas.len()));
-            let current = client.state().terrain().get(pos).ok().copied();
+            let current = match real_terrain_block(&client.state().terrain(), pos) {
+                Ok(current) => current,
+                Err(code) => {
+                    error_response(state, request.id, code,
+                        "cannot build outside the actual world; synthetic Air is not writable terrain");
+                    return;
+                },
+            };
             let new_block = match build_request(action, permission, current) {
                 Ok(block) => block,
                 Err(message) => {
@@ -6608,9 +6727,12 @@ pub fn update_active(client: &mut Client, state: &mut BridgeState) {
                     }
                 },
                 ActiveKind::Look { target } => {
-                    let aligned = client.current::<comp::Ori>().is_some_and(|orientation| {
-                        orientation.look_dir().dot(target.to_vec()) >= 0.95
-                    });
+                    let aligned = client.current::<comp::Controller>()
+                        .zip(client.current::<comp::Ori>())
+                        .is_some_and(|(controller, orientation)| {
+                            applied_look_aligned(*target, controller.inputs.look_dir,
+                                                 orientation.look_dir())
+                        });
                     if aligned {
                         let look = target.to_vec();
                         Some(("completed", json!({ "look": [look.x, look.y, look.z] })))
@@ -7434,6 +7556,50 @@ pub fn run() -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     #[test]
+    fn applied_look_uses_controller_pitch_and_body_heading() {
+        use super::{Dir, Vec3, applied_look_aligned};
+        // Exact failing T08 displacement: actual feet are a metre above the
+        // authored start after body contact. Horizontal Ori can never pass the
+        // old full-3D dot product, no matter how many ticks are allowed.
+        let target = Dir::from_unnormalized(Vec3::new(5.0, -0.1123, -2.2)).unwrap();
+        let body = target.to_horizontal().unwrap();
+        assert!(body.dot(target.to_vec()) < 0.95);
+        assert!(applied_look_aligned(target, target, body));
+        assert!(!applied_look_aligned(target, body, body)); // Pitch not applied.
+        assert!(!applied_look_aligned(target, target, -body)); // Heading not applied.
+        for z in [-10.0, 0.0, 10.0] {
+            let look = Dir::from_unnormalized(Vec3::new(1.0, 0.0, z)).unwrap();
+            assert!(applied_look_aligned(look, look, Dir::right()));
+            assert!(!applied_look_aligned(look, -look, Dir::right()));
+        }
+        for z in [-1.0, 1.0] {
+            let vertical = Dir::from_unnormalized(Vec3::new(0.0, 0.0, z)).unwrap();
+            assert!(applied_look_aligned(vertical, vertical, Dir::forward()));
+        }
+    }
+
+    #[test]
+    fn fixture_authoring_terrain_rejects_synthetic_out_of_world_air_even_when_cached() {
+        use common::{terrain::{MapSizeLg, TerrainChunk, TerrainChunkMeta, TerrainGrid},
+                     vol::{ReadVol, WriteVol}};
+        use std::sync::Arc;
+        let air = super::Block::air(super::SpriteKind::Empty);
+        let empty = Arc::new(TerrainChunk::new(0, air, air, TerrainChunkMeta::void()));
+        let mut terrain = TerrainGrid::new(MapSizeLg::new(vek::Vec2::new(7,7)).unwrap(), empty.clone()).unwrap();
+        let outside = vek::Vec3::new(18700,10800,500);
+        assert!(terrain.get(outside).unwrap().kind().is_air());
+        assert!(terrain.set(outside, super::Block::new(super::BlockKind::Rock, vek::Rgb::new(1,2,3))).is_err());
+        // Reproduce load_chunks inserting a clone of its synthetic default.
+        terrain.insert(TerrainGrid::chunk_key(outside), empty.clone());
+        assert!(terrain.contains_key_real(TerrainGrid::chunk_key(outside)));
+        assert_eq!(super::real_terrain_block(&terrain, outside).unwrap_err(),
+                   "terrain_position_out_of_world_bounds");
+        let inside = vek::Vec3::new(64,64,500);
+        assert!(super::real_terrain_block(&terrain, inside).unwrap().is_none());
+        terrain.insert(TerrainGrid::chunk_key(inside), empty);
+        assert!(super::real_terrain_block(&terrain, inside).unwrap().unwrap().kind().is_air());
+    }
+    #[test]
     fn server_outcomes_preserve_independent_events_even_with_same_instance() {
         use common::{
             DamageSource,
@@ -7847,6 +8013,9 @@ mod tests {
             assert_eq!(state.events[index], json!({
                 "type": "event", "protocol_version": PROTOCOL_VERSION,
                 "session_id": "test-session", "tick": 42, "seq": index + 1,
+                "sequence_domain": {
+                    "kind": "client-update-counter", "session_id": "test-session",
+                },
                 "event": "waypoint_saved", "data": { "location_name": name },
             }));
         }
@@ -8127,6 +8296,7 @@ mod tests {
                 "current_action": null,
             }),
             target_position,
+            Some((0.45, 0.0, 1.8)),
             |position| {
                 cells
                     .get(&(position.x, position.y, position.z))
@@ -8156,6 +8326,83 @@ mod tests {
             actor,
         )
         .is_err());
+    }
+
+    #[test]
+    fn terrain_query_body_clearance_rejects_recorded001_neighbor_not_just_rounding() {
+        let rock = TerrainCellSample::Loaded(Block::new(
+            BlockKind::Rock, vek::Rgb::new(1, 1, 1)));
+        let cells = BTreeMap::from([
+            ((26583, 4892, 143), rock),
+            ((26582, 4892, 143), rock),
+            ((26582, 4893, 144), rock),
+        ]);
+        // The submitted Python point rounds to this native f32 coordinate.
+        let rounded = 26582.999808624492_f64 as f32;
+        assert_eq!(rounded, 26583.0);
+        // A representable point immediately below the boundary still overlaps.
+        for x in [rounded, f32::from_bits(rounded.to_bits() - 1)] {
+            let query = terrain_query_with(
+                Vec3::new(x, 4892.8154296875, 144.0),
+                Vec3::new(x, 4892.8154296875, 144.0), &cells);
+            let candidate = &query["support_candidates"][0];
+            assert_eq!(candidate["foot_clearance"]["clear"], true);
+            assert_eq!(candidate["head_clearance"]["clear"], true);
+            assert_eq!(candidate["body_clearance"]["known"], true);
+            assert_eq!(candidate["body_clearance"]["clear"], false);
+            assert_eq!(candidate["occupiable"], false);
+        }
+    }
+
+    #[test]
+    fn terrain_query_body_clearance_preserves_recorded006_007_valid_edge_controls() {
+        // Exact recorded targets; a controlled level Rock support environment.
+        // This is a geometry regression, not a replay of the entire old world.
+        for point in [
+            Vec3::<f32>::new(26577.490234375, 4915.50439453125, 144.0),
+            Vec3::new(26584.587890625, 4935.21435546875, 144.0),
+            Vec3::new(26572.28125, 4900.9892578125, 144.0),
+            Vec3::new(26552.3984375, 4898.10986328125, 144.0),
+        ] {
+            let column = point.xy().map(|v| v.floor() as i32);
+            let cells = BTreeMap::from([((column.x, column.y, 143),
+                TerrainCellSample::Loaded(Block::new(BlockKind::Rock, vek::Rgb::new(1, 1, 1))))]);
+            let query = terrain_query_with(point, point, &cells);
+            assert_eq!(query["support_candidates"][0]["occupiable"], true, "{point:?}");
+            assert_eq!(query["support_candidates"][0]["body_clearance"]["clear"], true);
+        }
+    }
+
+    #[test]
+    fn terrain_query_body_clearance_preserves_valid_elevated_fountain() {
+        let fountain = Block::empty().with_sprite(SpriteKind::FountainArabic);
+        assert_eq!(fountain.solid_height(), 2.4);
+        let cells = BTreeMap::from([((26586, 4904, 144),
+            TerrainCellSample::Loaded(fountain))]);
+        let point = Vec3::new(26586.94140625, 4904.61767578125, 146.39999389648438);
+        let query = terrain_query_with(point, point, &cells);
+        assert_eq!(query["support_candidates"][0]["standing_position"],
+                   json!([point.x, point.y, point.z]));
+        assert_eq!(query["support_candidates"][0]["occupiable"], true);
+    }
+
+    #[test]
+    fn terrain_query_body_clearance_requires_neighbor_load_and_actual_actor_height() {
+        let rock = TerrainCellSample::Loaded(Block::new(
+            BlockKind::Rock, vek::Rgb::new(1, 1, 1)));
+        for sample in [TerrainCellSample::Unloaded, TerrainCellSample::Unknown, rock] {
+            let cells = BTreeMap::from([((0, 0, 0), rock), ((-1, 0, 2), sample)]);
+            let query = terrain_query_with(
+                Vec3::new(0.1, 0.5, 1.0), Vec3::new(0.1, 0.5, 1.0), &cells);
+            assert_eq!(query["support_candidates"][0]["occupiable"], false);
+        }
+        let mut sample = |_: Vec3<i32>| TerrainCellSample::Loaded(Block::empty());
+        assert_eq!(terrain_body_clearance(Vec3::zero(), None, &mut sample)["clear"], false);
+        let mut sample = |p: Vec3<i32>| if p == Vec3::new(-1, 0, 3) {
+            rock
+        } else { TerrainCellSample::Loaded(Block::empty()) };
+        assert_eq!(terrain_body_clearance(Vec3::new(0.1, 0.5, 1.0),
+            Some((0.45, 0.0, 2.95)), &mut sample)["clear"], false);
     }
 
     #[test]

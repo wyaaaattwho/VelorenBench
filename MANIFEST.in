@@ -1,6 +1,8 @@
 include LICENSE README.md NOTICE.md BENCHMARK_CARD.md API.md TASKS.md SUPPORT.md BUILD.md
 include PROVENANCE.md TESTING.md CONTRIBUTING.md requirements-build.lock requirements-test.lock
 include requirements-test-sdk.lock
+include VISUALIZATION.md
+recursive-include harness/scripts/rpg_benchmark *.html *.js
 recursive-include config *.json
 recursive-include tools *.py
 recursive-include harness/scripts *.py *.json *.md

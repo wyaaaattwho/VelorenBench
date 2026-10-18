@@ -1,6 +1,7 @@
 //! Ordinary-player protocol host. It owns no Client and never connects to a server.
 use client::{Client, agent_protocol::{self as protocol, BridgeState, Request}};
 use common::comp;
+use crate::session::interactable::Interactables;
 use serde::Deserialize;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -110,6 +111,25 @@ pub fn frame_fence(args: &Value, session: &str, actor: &Value) -> Result<(), &'s
     Ok(())
 }
 
+fn renderer_ready(session: &str, identity: &Value, observation: &str) -> Value {
+    json!({
+        "type": "event", "event": "native_renderer_ready",
+        "protocol_version": protocol::PROTOCOL_VERSION, "session_id": session,
+        "data": {
+            "frame_schema_version": FRAME_SCHEMA,
+            "actor": identity["actor"], "actuator": identity,
+            "client_type": "game", "same_client": true,
+            "observation_profile": observation,
+            "camera_profile": "ordinary-player", "hud_profile": "normal-voxygen",
+            "native_tick": null, "tick_semantics": "client-update-counter-not-server-tick",
+            "ui_panels": ["world", "inventory", "equipment", "map", "crafting", "skills", "trade"],
+            "visual_target_addressing": "native-visual-ui/1",
+            "visual_ui": visual_ui::capabilities(),
+            "dialogue_trade_addressing": "ordinary native HUD pixels; task qualification separate",
+        },
+    })
+}
+
 impl NativeAgent {
     pub fn attach(client: &Client, args: &crate::cli::Args) -> Result<Self, String> {
         if !matches!(client.client_type(), client::ClientType::Game)
@@ -143,22 +163,7 @@ impl NativeAgent {
         });
         protocol::emit_ready_with_uid(&state.session_id, state.tick, alias.as_deref().unwrap_or("unknown"),
                                       client.uid().map(|uid| uid.0.get()));
-        protocol::emit(&json!({
-            "type": "event", "event": "native_renderer_ready",
-            "protocol_version": protocol::PROTOCOL_VERSION, "session_id": state.session_id,
-            "data": {
-                "frame_schema_version": FRAME_SCHEMA,
-                "actor": identity["actor"], "actuator": identity,
-                "client_type": "game", "same_client": true,
-                "observation_profile": args.agent_observation,
-                "camera_profile": "ordinary-player", "hud_profile": "normal-voxygen",
-                "native_tick": null, "tick_semantics": "client-update-counter-not-server-tick",
-                "ui_panels": ["world", "inventory", "equipment", "map"],
-                "visual_target_addressing": "native-visual-ui/1",
-                "visual_ui": {"schema":"native-visual-ui/1", "action_profile":"visual-ui-v1"},
-                "dialogue_trade_addressing": "dialogue-native-pixels-only; trade-unsupported",
-            },
-        }));
+        protocol::emit(&renderer_ready(&state.session_id, &identity, &args.agent_observation));
         Ok(Self {
             state, receiver, frame_dir, pending_frame: None,
             in_flight: Arc::new(AtomicBool::new(false)), frame_sequence: 0,
@@ -179,7 +184,7 @@ impl NativeAgent {
 
     /// Returns false only on explicit close, input failure or EOF.
     pub fn poll(&mut self, client: &mut Client, hud: &mut crate::hud::Hud,
-                talk: Option<specs::Entity>) -> bool {
+                talk: &Interactables) -> bool {
         while let Ok(input) = self.receiver.try_recv() {
             let line = match input {
                 Input::Line(line) => line,
@@ -270,7 +275,7 @@ impl NativeAgent {
 
     pub fn prepare_frame(&mut self, client: &Client, hud: &crate::hud::Hud,
                          camera: &crate::scene::camera::Camera,
-                         renderer: &mut crate::render::Renderer, talk: Option<specs::Entity>) {
+                         renderer: &mut crate::render::Renderer, talk: &Interactables) {
         let Some(id) = self.pending_frame.take() else { return };
         let begin = match host_ns() {
             Ok(begin) => begin,
@@ -325,7 +330,7 @@ impl NativeAgent {
     }
 
     pub fn finish_ui(&mut self, client: &mut Client, hud: &crate::hud::Hud,
-                     events: &mut Vec<crate::hud::Event>, talk: Option<specs::Entity>) {
+                     events: &mut Vec<crate::hud::Event>, talk: &Interactables) {
         self.visual.finish(client, hud, &mut self.state, events, talk);
     }
 }
@@ -356,6 +361,34 @@ pub fn save_png(path: &Path, image: image::RgbImage) -> Result<Value, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn production_ready_and_frame_capabilities_reach_public_schema() {
+        let identity = json!({"actor": {"uid":1,"lifecycle":"life"}, "active_action_id":null,
+            "control":{"owner":"","generation":0,"sequence":0,"retired":false,"protection_generation":0}});
+        // These are the actual builders used by attach and frame capture.
+        let ready = renderer_ready("s", &identity, "image");
+        let frame = visual_ui::frame_metadata("frame");
+        if let Some(path) = std::env::var_os("VELORENBENCH_VISUAL_CAPABILITY_EVIDENCE") {
+            let bytes = serde_json::to_vec_pretty(&json!({
+                "ready_event":ready, "frame_visual_ui":frame,
+                "scope":"production builders; not native task/effect qualification",
+            })).unwrap();
+            OpenOptions::new().write(true).create_new(true).open(path).unwrap()
+                .write_all(&bytes).unwrap();
+        }
+        assert_eq!(ready["data"]["visual_ui"]["modifiers"]["left_click"], json!(["shift","ctrl"]));
+        for field in ["schema", "action_profile", "gestures", "modifiers", "modifier_scope"] {
+            assert_eq!(ready["data"]["visual_ui"][field], frame[field]);
+        }
+        assert!(ready["data"]["visual_ui"].get("ui_state_id").is_none());
+        assert_eq!(frame["ui_state_id"], "frame");
+        for field in ["state", "inventory", "dialogue", "position", "actor"] {
+            assert!(ready["data"]["visual_ui"].get(field).is_none());
+            assert!(frame.get(field).is_none());
+        }
+        assert_eq!(project_image_output(&ready)["data"]["visual_ui"], ready["data"]["visual_ui"]);
+    }
 
     #[test]
     fn frame_fences_exact_session_actor_lifecycle_and_schema() {

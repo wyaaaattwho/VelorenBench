@@ -22,6 +22,9 @@ class RendererTools:
         if self.action_profile == "visual-ui-v1" and (mode != "image" or not visual):
             raise ValueError("visual-ui-v1 requires image mode and matching native visual UI capability")
         self.visual = visual and (mode != "image" or self.action_profile == "visual-ui-v1")
+        declared = native.ready.get("renderer", {})
+        self.visual_features = set(declared.get("benchmark_features", ["inventory", "equipment", "dialogue"]))
+        self.visual_modifiers = []
         self.pending = {}
         self.sequence, self.previous_capture = 0, None
         self.frame_lock = asyncio.Lock()
@@ -41,6 +44,28 @@ class RendererTools:
             action for action in actions if action["properties"]["type"]["enum"][0] != "chat"
             and (rpg or action["properties"]["type"]["enum"][0] not in NAMES)
             and (mode != "image" or action["properties"]["type"]["enum"][0] in observations.IMAGE_ACTIONS)]
+        if "benchmark_features" not in declared:
+            for entry in self.schemas["step"]["properties"]["action"]["oneOf"]:
+                if entry["properties"]["type"]["enum"][0] == "visual_input":
+                    entry["properties"]["gesture"]["enum"] = ["hover", "left_click", "right_click", "interact"]
+        for entry in self.schemas["step"]["properties"]["action"]["oneOf"]:
+            if entry["properties"]["type"]["enum"][0] == "visual_input":
+                gestures = entry["properties"]["gesture"]["enum"]
+                advertised = declared.get("visual_ui", {}).get("gestures")
+                # Older pinned implementations have no middle-button capability.
+                entry["properties"]["gesture"]["enum"] = [
+                    gesture for gesture in gestures
+                    if gesture in advertised] if advertised is not None else [
+                        gesture for gesture in gestures if gesture != "middle_click"]
+                modifiers = declared.get("visual_ui", {}).get("modifiers", {}).get("left_click", [])
+                if (not isinstance(modifiers, list)
+                        or any(modifier not in {"shift", "ctrl"} for modifier in modifiers)):
+                    raise ValueError("unsupported native visual modifier capability")
+                self.visual_modifiers = list(modifiers)
+                if modifiers:
+                    entry["properties"]["modifiers"]["items"]["enum"] = modifiers
+                else:
+                    entry["properties"].pop("modifiers", None)
         if mode == "image":
             properties = self.schemas["set_control_state"]["properties"]
             for key in ("movement_intent", "destination"):
@@ -52,7 +77,10 @@ class RendererTools:
         self.schemas["ui"] = common.object_schema(
             "Open a normal UI view, then request a fresh frame before any visual gesture.",
             required=["panel"], properties={"panel": {
-                "type": "string", "enum": ["world", "inventory", "equipment", "map"]}})
+                "type": "string", "enum": ["world", "inventory", "equipment", "map",
+                                         "crafting", "skills", "trade"]}})
+        self.schemas["ui"]["properties"]["panel"]["enum"] = declared.get(
+            "ui_panels", ["world", "inventory", "equipment", "map"])
         self.schemas["contract"] = empty
         self.schemas["result"] = common.object_schema(
             "Collect the original asynchronous receipt; pending is not native success.",
@@ -64,7 +92,7 @@ class RendererTools:
     def description(self, name: str) -> str:
         return {
             "frame": "Read the real same-player world/HUD as an image block. Not a synchronized state pair.",
-            "ui": "Open world, bag/equipment or map; no hidden item or entity lookup.",
+            "ui": "Open an advertised normal native panel; no hidden item or entity lookup.",
             "contract": "Read static interface rules and public session/actor/control tokens.",
             "step": self.schemas["step"]["description"],
             "result": "Get the unchanged receipt for one prior local submission; never executes an action.",
@@ -106,18 +134,26 @@ class RendererTools:
             "action_effect_ordering": "unconfirmed", "headless_timing_equivalent": False,
             "structured_visibility": (None if self.mode == "image" else
                                      "native observation; may include non-line-of-sight entities/positions"),
-            "ui_views": ["world", "inventory", "equipment", "map"],
+            "ui_views": self.schemas["ui"]["properties"]["panel"]["enum"],
             "coordinate_ui": (
                 "Debug coordinates are disabled in the native agent renderer; no coordinate tool "
                 "exists in image mode. Use the task's public visual goal description and normal "
                 "frames/UI. Movement vectors use native horizontal [X,Y], with X east and Y north."),
             "visual_addressing": {
                 "items": self.visual, "inventory_equip_selection": self.visual,
-                "entities": "native visible Talk prompt only" if self.visual else False,
-                "map_markers": False, "dialogue_choices": self.visual, "trade_offers": False,
+                "entities": "ordinary visible native context prompts only" if self.visual else False,
+                "map_markers": self.visual and "map" in self.visual_features,
+                "dialogue_choices": self.visual, "trade_offers": self.visual and "trade" in self.visual_features,
+                "crafting": self.visual and "crafting" in self.visual_features,
+                "skills": self.visual and "skills" in self.visual_features,
+                "drag": self.visual and "benchmark_features" in renderer,
+                "modifiers": {"left_click": self.visual_modifiers} if self.visual else {},
+                "unequip": self.visual and "benchmark_features" in renderer,
+                "pickup": self.visual and "pickup" in self.visual_features,
                 "schema": "native-visual-ui/1" if self.visual else None,
                 "overlay": "none; stock native HUD pixels",
-                "unsupported": ["crafting", "trade", "skills", "map targeting", "drag", "unequip"]},
+                "qualification": "implementation only; task/native/profile qualification is separate",
+                "unsupported": ["hidden-target addressing", "automatic task solutions"]},
             "unknown_effect_policy": "do not resubmit; collect original request receipt",
             "judge_state": "private; never available to a model tool",
         }

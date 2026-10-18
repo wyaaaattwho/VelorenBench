@@ -7,6 +7,26 @@ from uuid import uuid4
 from scripts.rpg_benchmark import setup as native
 from scripts.rpg_benchmark.scene import counts, item_id
 
+LEGACY_TEMPLATES = {name: "single_creature" for name in ("B1", "B2", "B3")}
+TEMPLATES = {"single_creature": {
+    "requires": ["movement", "combat", "inventory"],
+    "required": ["asset", "body", "consumables", "loadout_provenance"],
+}}
+
+
+def validate_definition(definition):
+    if (not isinstance(definition["body"], dict) or not definition["body"]
+            or not isinstance(definition["asset"], str)
+            or not definition["asset"].startswith("common.entity.")
+            or not isinstance(definition["consumables"], dict)
+            or any(type(amount) is not int or amount <= 0
+                   for amount in definition["consumables"].values())):
+        raise ValueError("single_creature: invalid body/asset/consumable parameters")
+
+
+def mechanism_verified(score):
+    return bool(score["enemy_damage_events"])
+
 
 async def setup(admin, actor, definition: dict, terrain: str) -> dict:
     initialization = await native.isolate_initial_spawn(admin, actor)

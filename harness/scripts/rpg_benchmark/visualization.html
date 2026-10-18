@@ -1,0 +1,47 @@
+<!doctype html>
+<!-- Adapted from the experiment observer dashboard: read-only preview,
+     state polling, explicit recording lifecycle and registered downloads.
+     No game/camera controls, external assets, or control-workspace imports. -->
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VelorenBench public frame viewer</title>
+<style>
+body {background:#151922;color:#eee;font:16px system-ui;margin:2rem auto;max-width:1100px;padding:0 1rem}
+button,select,a {margin:.4rem;padding:.5rem} a {color:#9df}
+img {max-width:100%;border:1px solid #678} pre {white-space:pre-wrap;overflow-wrap:anywhere}
+#connection,#feed,#error {color:#ffd086} [hidden] {display:none}
+</style>
+<h1>VelorenBench public renderer viewer</h1>
+<p>Read-only. Selected agent-requested frames or explicitly enabled passive X11
+samples of the registered same-run renderer. No second camera, game controls,
+model calls, native frame/UI requests, private judge data or fallback view.</p>
+<p id="connection">Connecting — no live claim yet</p>
+<p id="feed"></p>
+<p id="identity"></p>
+<button id="latest">Follow selected source</button>
+<button id="history">Browse saved frames</button>
+<button id="previous" hidden>Previous page</button>
+<button id="next" hidden>Next page</button>
+<select id="frames" hidden aria-label="Saved frame"></select>
+<p id="display"></p>
+<img id="preview" alt="Actual public renderer PNG" hidden>
+<div>
+<button id="screenshot" disabled>Export displayed PNG (not a new capture)</button>
+<a id="shotDownload" hidden>Download PNG</a><a id="shotMetadata" hidden>PNG provenance</a>
+</div>
+<div>
+<button id="start" disabled>Start live source recording</button>
+<button id="stop" disabled>Stop and encode MP4</button>
+<a id="download" hidden>Download validated MP4</a><a id="metadata" hidden>MP4 provenance</a>
+</div>
+<p id="recording"></p><p id="error"></p>
+<p>Live recording includes persisted source frames from start's current frame through
+stop's current frame, not every rendered screen refresh. Passive X11 samples have
+independent capture IDs, never native frame/UI fence identities. Stale/ended feeds cannot
+produce a successful live recording. Saved MP4 export:
+<code>rpg-benchmark visualize export --source /absolute/frames --out /absolute/new-clip</code>.
+MP4 uses capture times with explicit frame holds/CFR resampling; PNG preserves original pixels.</p>
+<details><summary>Displayed frame provenance</summary><pre id="provenance"></pre></details>
+<script src="/app.js"></script>
+</html>

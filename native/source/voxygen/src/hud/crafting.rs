@@ -129,6 +129,7 @@ pub enum Event {
     MoveCrafting(Vec2<f64>),
 }
 
+#[derive(Debug)]
 pub struct CraftingShow {
     pub crafting_tab: CraftingTab,
     pub crafting_search_key: Option<String>,

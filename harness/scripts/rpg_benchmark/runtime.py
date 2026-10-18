@@ -97,7 +97,7 @@ def load_runtime(path: Path, digest: str, *, backend: str = "headless") -> dict:
         raise ValueError("runtime requires rpg-runtime/1; migrate legacy pins explicitly")
     if set(config) - {"schema", "content", "output_root", "native", "python",
                       "sources", "external_adapters", "protected_processes", "renderer",
-                      "renderer_fixture_helper", "native_interactions"}:
+                      "renderer_fixture_helper", "native_interactions", "task_manifest"}:
         raise ValueError("unknown runtime configuration field")
     try:
         reference = object_field(config, "content")
@@ -108,12 +108,20 @@ def load_runtime(path: Path, digest: str, *, backend: str = "headless") -> dict:
         admit_package(content["package_files"])
         paths, identities = (admit_headless(path.parent, config, content)
                              if backend == "headless" else ({}, {}))
-        scenes = read_json(Path(__file__).with_name("scenes.json"))
+        scene_path = Path(__file__).with_name("scenes.json")
+        if ("task_manifest" in config) != ("task_manifest" in content):
+            raise ValueError("task manifest requires both path binding and content hash")
+        if "task_manifest" in config:
+            scene_path = local_path(path.parent, config["task_manifest"])
+            read_json(scene_path, content["task_manifest"])
+        from . import suite
+        suite.load(scene_path)  # Reject unknown templates/requirements before allocation.
+        scenes = read_json(scene_path)
         python = local_path(path.parent, config.get("python", sys.executable), python=True)
         if not python.is_file() or not os.path.samefile(python, sys.executable):
             raise ValueError("runtime python must identify the executing installation interpreter")
         sources = {}
-        protected = [PACKAGE, path, content_path, python, *paths.values()]
+        protected = [PACKAGE, path, content_path, scene_path, python, *paths.values()]
         bindings, frozen = object_field(config, "sources"), object_field(content, "sources")
         if set(bindings) != set(frozen):
             raise ValueError("source bindings do not match content identities")
@@ -186,7 +194,7 @@ def load_runtime(path: Path, digest: str, *, backend: str = "headless") -> dict:
                 if lifecycle.sha(source_path) != checksum:
                     raise ValueError("renderer fixture helper corresponding source changed: " + name)
             protected.extend(helper_paths.values())
-            helper = {key: str(value) for key, value in helper_paths.items()}
+            helper = {**frozen, **{key: str(value) for key, value in helper_paths.items()}}
         if backend == "renderer":
             if renderer is None or helper is None:
                 raise ValueError("renderer backend requires verified renderer and matching-source fixture helper")
@@ -228,7 +236,7 @@ def load_runtime(path: Path, digest: str, *, backend: str = "headless") -> dict:
         raise ValueError(f"missing required runtime/content field: {error.args[0]}") from error
     dependencies = {key: {"path": str(paths[key]), "sha256": identities[key]}
                     for key in ("server", "bridge", "build_receipt")}
-    for key, file in (("scene_manifest", Path(__file__).with_name("scenes.json")),
+    for key, file in (("scene_manifest", scene_path),
                       ("sdk", PACKAGE / "rpg_sdk_agent.py")):
         dependencies[key] = {"path": str(file), "sha256": lifecycle.sha(file)}
     dependencies["python"] = {"path": str(python), "sha256": lifecycle.sha(python)}

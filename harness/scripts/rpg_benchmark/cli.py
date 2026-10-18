@@ -15,8 +15,21 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("identity", help="Installed package/interpreter identity; not native readiness.")
-    sub.add_parser("tasks", help="List 29 definitions: original17 plus T01-T12; inspect support for exact task/modality admission.")
-    sub.add_parser("support", help="Explicit task/mode/action-profile support and qualification boundaries.")
+    tasks = sub.add_parser("tasks", help="List the packaged catalog, or an explicitly selected author manifest.")
+    tasks.add_argument("--manifest", type=Path)
+    support_parser = sub.add_parser("support", help="Generated implementation/profile/admission/qualification matrix.")
+    support_parser.add_argument("--manifest", type=Path)
+    support_parser.add_argument("--config", type=Path, help="Verify and bind support to this renderer selection; no launch.")
+    support_parser.add_argument("--config-sha256")
+    support_parser.add_argument("--observation-mode", choices=("structured", "image", "hybrid"))
+    support_parser.add_argument("--action-profile")
+    qualification_parser = sub.add_parser(
+        "validate-qualification", help="Validate engineering record structure/identity, not gameplay truth or acceptance.")
+    qualification_parser.add_argument("--records", type=Path, help="Default: packaged current records.")
+    keys = sub.add_parser("qualification-keys",
+                          help="Generate exact variant/profile keys; no evidence, native launch or qualification.")
+    keys.add_argument("--config", type=Path)
+    keys.add_argument("--config-sha256")
     native = sub.add_parser("bind-native", help="Create a relocatable renderer binding from an exact local native bundle; no launch.")
     native.add_argument("--native", required=True, type=Path, help="Explicit bundle.json; no implicit source/cache discovery.")
     native.add_argument("--native-sha256", required=True)
@@ -40,6 +53,11 @@ def main() -> None:
     bind.add_argument("--renderer-sha256", required=True)
     bind.add_argument("--out", required=True, type=Path)
     sub.add_parser("run", help="Native episode; use run --help for explicit config and run arguments.")
+    sub.add_parser("visualize", help="Optional read-only renderer viewer, PNG screenshots and MP4 exports.")
+    if len(sys.argv) > 1 and sys.argv[1] == "visualize":
+        from .visualization import main as visualization_main
+        visualization_main(sys.argv[2:])
+        return
     if len(sys.argv) > 1 and sys.argv[1] == "run":
         from .run import main as run_main
         del sys.argv[1]
@@ -54,12 +72,33 @@ def main() -> None:
                      "python_sha256": lifecycle.sha(Path(sys.executable)),
                      "package_files": runtime.package_files(), "native_validated": False}
         elif args.command == "support":
-            from .renderer_support import support_matrix
-            value = support_matrix()
+            from . import support
+            if bool(args.config) != bool(args.config_sha256) or (args.manifest and args.config):
+                raise ValueError("use --manifest OR both --config and --config-sha256")
+            selected = pins.load(args.config, args.config_sha256, backend="renderer") if args.config else None
+            manifest = (Path(selected["dependencies"]["scene_manifest"]["path"])
+                        if selected is not None else args.manifest)
+            value = support.matrix(suite.load(manifest) if manifest else None, selected=selected,
+                                   mode=args.observation_mode, profile=args.action_profile,
+                                   task_manifest_sha256=lifecycle.sha(manifest) if manifest else None)
+        elif args.command == "qualification-keys":
+            from . import qualification
+            if bool(args.config) != bool(args.config_sha256):
+                raise ValueError("use both --config and --config-sha256")
+            selected = pins.load(args.config, args.config_sha256, backend="renderer") if args.config else None
+            value = qualification.selections(selected)
+        elif args.command == "validate-qualification":
+            from . import qualification
+            document = qualification.load(args.records)
+            value = {"schema": document["schema"], "records": len(document["records"]),
+                     "status": "structure-and-identity-validated-only",
+                     "gameplay_evidence_verified": False, "accepted": False,
+                     "model_success": "not-inferred"}
         elif args.command == "tasks":
-            definitions = suite.load(Path(suite.__file__).with_name("scenes.json"))
+            manifest = args.manifest or Path(suite.__file__).with_name("scenes.json")
+            definitions = suite.load(manifest)
             value = {"task_count": len(definitions), "tasks": list(definitions),
-                     "scene_manifest_sha256": lifecycle.sha(Path(suite.__file__).with_name("scenes.json"))}
+                     "scene_manifest_sha256": lifecycle.sha(manifest)}
         elif args.command == "check":
             selected = pins.load(args.config, args.config_sha256, backend=args.backend)
             value = {key: selected[key] for key in (

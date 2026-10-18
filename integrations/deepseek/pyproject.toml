@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "velorenbench-official-dsh"
-version = "0.1.0"
+version = "1.1.0"
 description = "VelorenBench adapter for the separately installed official DeepSeek Harness"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = ["aiohttp==3.13.3", "rpg-benchmark-harness==1.0.1"]
+dependencies = ["aiohttp==3.13.3", "rpg-benchmark-harness==1.1.0"]
 license = "MIT"
 license-files = ["LICENSE"]
 classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3.13"]

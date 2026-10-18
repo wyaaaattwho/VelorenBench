@@ -298,12 +298,7 @@ impl SessionState {
         }
 
         let inputs = if let Some(agent) = &mut self.native_agent {
-            let talk = self.interactables.input_map.get(&GameInput::Interact).and_then(|(_, target)| {
-                if let Interactable::Entity { entity, interaction: EntityInteraction::Talk, .. } = target {
-                    Some(*entity)
-                } else { None }
-            });
-            if !agent.poll(&mut client, &mut self.hud, talk) {
+            if !agent.poll(&mut client, &mut self.hud, &self.interactables) {
                 return Ok(TickAction::Disconnect);
             }
             let inputs = client::agent_protocol::inputs_for_tick(&mut client, &mut agent.state);
@@ -1854,16 +1849,12 @@ impl PlayState for SessionState {
             let mut has_repaired = false;
             let sfx_triggers = self.scene.sfx_mgr.triggers.read();
             if let Some(agent) = &mut self.native_agent {
-                let talk = self.interactables.input_map.get(&GameInput::Interact).and_then(|(_, target)| {
-                    if let Interactable::Entity { entity, interaction: EntityInteraction::Talk, .. } = target {
-                        Some(*entity)
-                    } else { None }
-                });
-                agent.finish_ui(&mut self.client.borrow_mut(), &self.hud, &mut hud_events, talk);
+                agent.finish_ui(&mut self.client.borrow_mut(), &self.hud, &mut hud_events, &self.interactables);
             }
             // Maintain the UI.
-            for event in hud_events {
+            for event in hud_events.into_iter().filter_map(HudEvent::into_stock_event) {
                 match event {
+                    HudEvent::PromptDialogOutcome(..) => unreachable!("unwrapped stock HUD event"),
                     HudEvent::SendMessage(msg) => {
                         // TODO: Handle result
                         self.client.borrow_mut().send_chat(msg);
@@ -2386,13 +2377,8 @@ impl PlayState for SessionState {
 
     fn prepare_render(&mut self, global_state: &mut GlobalState) {
         if let Some(agent) = &mut self.native_agent {
-            let talk = self.interactables.input_map.get(&GameInput::Interact).and_then(|(_, target)| {
-                if let Interactable::Entity { entity, interaction: EntityInteraction::Talk, .. } = target {
-                    Some(*entity)
-                } else { None }
-            });
             agent.prepare_frame(&self.client.borrow(), &self.hud, self.scene.camera(),
-                                global_state.window.renderer_mut(), talk);
+                                global_state.window.renderer_mut(), &self.interactables);
         }
     }
 

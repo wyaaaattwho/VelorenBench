@@ -1,13 +1,71 @@
 # VelorenBench
 
+Optional installed read-only renderer viewer, MP4 export and original-PNG
+screenshots: see [VISUALIZATION.md](VISUALIZATION.md)
+(`rpg-benchmark visualize --help`). Ordinary benchmark runs do not start the UI.
+
+> **Untagged release candidate: 1.1.0.** This modified candidate is based on
+> v1.0.1 commit `2e3aa071417a31173726b785689eeb6ec0548273`, not that frozen
+> distribution and not a new Git release. Generic family/templates, generated
+> support/admission, real native HUD controls and startup/error contracts are
+> accompanied by 125 packaged evidence-backed engineering qualifications for
+> the selected native/code/task/profile keys; 35 legacy-image combinations
+> remain explicitly unsupported. This is not final release acceptance, external
+> publication, a model-win campaign or cross-platform certification.
+> See CONTRIBUTING.md and the generated current sections in TASKS.md/SUPPORT.md.
+> Historical release claims and receipts below retain their original identities.
+
+The successor intentionally changes the ordinary renderer/image default to
+**`visual-ui-v1`**. Omitted CLI profiles, ordinary Responses declarations and
+`rpg-benchmark support` share that default. Explicit `visual-motor-v1` remains
+narrow; external adapters retain their own declared defaults and are admitted
+using the effective negotiated mode/profile, without an upgrade or fallback.
+Structured/hybrid retain `ordinary-renderer-native-v1`; legacy headless retains
+`raw-native-v2`. Current-native readiness is derived from the packaged evidence
+registry and the exact selected binary, code, task, profile and variant.
+Source-only support reports implementation declarations, not certification of a
+later binary. See [CONTRIBUTING.md](CONTRIBUTING.md) for native-bound records and
+the validation-only workflow; the historical scored cells below are audit data,
+not successor capability admission. Run `validate-qualification` and bound
+`support --config PATH --config-sha256 SHA` rather than inferring readiness from
+the version string. T05/image retains its existing task-engineering-only policy.
+
 **An external-agent benchmark harness for long-horizon RPG tasks in
 [Veloren](https://veloren.net/).** VelorenBench evaluates navigation, resource
 use, crafting, combat, support, and NPC interactions against native game
 effects—not an agent's claim that it succeeded.
 
-## Status and scope
+## Current 1.1.0 candidate and portable delivery
 
-This is **VelorenBench v1.0.1, a source-only release**. Use the `v1.0.1`
+The packaged registry qualifies all125 implemented selections on the selected
+native identity:40 structured,40 hybrid and45 image (40 full-UI plus5 motor).
+All29 original definitions/37 terrain cells remain. The35 exclusions are
+restricted legacy `visual-motor-v1` combinations, each with a full-UI counterpart.
+T05/image remains task-engineering only. Engineering admission is neither
+task success nor valid model-performance evidence.
+
+The final local delivery contains core/adapter1.1.0 distributions, verified
+source, the unchanged native bundle and its complete corresponding source, and
+a byte-closed `evidence/` sidecar. It contains397 original evidence objects with
+2213 relative citations. Citations resolve against that sidecar, not
+site-packages or historical host paths inside raw artifacts. From a relocated
+delivery root, run:
+
+```sh
+python3.13 -I -B verify_evidence.py --root evidence \
+  --native native-bundle/bundle.json --source-manifest source/source-manifest.json
+```
+
+Use `--registry /absolute/installed/scripts/rpg_benchmark/current-qualification.json`
+to check installed registry bytes as well. Verify the externally supplied
+manifest/hash from the final handoff before relying on a relocated tree.
+No venv, live binding, credential or external asset tree is delivered.
+Original game PNG evidence and MIT/GPL/upstream notices remain; future
+authorized external distribution must comply with their terms.
+
+### Historical source-release scope (v1.0.1)
+
+The earlier **VelorenBench v1.0.1 was a source-only release**. Its `v1.0.1`
 Git tag and its resolved commit to identify release source; `504f3f2` is the
 historical initial-source baseline, not the v1.0.1 release commit.
 Benchmark semantics are preserved from the local **1.0.0/build001** freeze.
@@ -54,12 +112,28 @@ distribution. See
 Total: **29 definitions**. T06's sword/bow/staff/sceptre conditions are not
 four separate tasks. Exact goals are in the [task catalog](TASKS.md);
 [support](SUPPORT.md) lists backend, terrain, modality and run-mode limits.
-Renderer structured/hybrid support comprises 26 scored cells; image-only
+Historically, renderer structured/hybrid support comprised 26 scored cells; image-only
 scored support is N1/flat. T05 image has an engineering-only scored path, not
 capability admission. Original headless compatibility is inherited; the
 portable native assembly in this release is **renderer-only**.
 
-## Quickstart: Python source checkout
+## Quickstart: current local candidate
+
+Create a new absolute environment and install the delivered1.1.0 core wheel.
+Do not select a historical Git tag to identify this untagged candidate.
+
+```sh
+python3.13 -m venv --copies /absolute/new-env
+/absolute/new-env/bin/python -I -m pip install --no-deps /absolute/delivery/core-dist/rpg_benchmark_harness-1.1.0-py3-none-any.whl
+/absolute/new-env/bin/rpg-benchmark identity
+/absolute/new-env/bin/rpg-benchmark validate-qualification
+```
+
+Rebind the delivered native descriptor with separately obtained exact assets,
+then inspect bound `support`. Qualified exact-key ordinary admission does not
+need `--unqualified-engineering`; new/changed author selections still do.
+
+### Historical v1.0.1 source checkout
 
 Clone and check out the release tag, then verify the source inventory before
 installing. Native binaries, game assets and model access are separate:
@@ -90,7 +164,9 @@ for hash-locked build/test environments and offline installation.
 Read [BUILD.md](BUILD.md) first. Native execution requires the selected
 Linux/aarch64 Rust toolchain, system libraries, a working GPU/Vulkan path,
 Xvfb, and **separately and legally obtained Veloren assets** matching the
-asset manifest. Assets, native binaries and compiler caches are not included.
+asset manifest. Assets and compiler caches are not included. The final local1.1.0 delivery
+separately includes the selected native bundle; the historical source checkout
+does not.
 The build and assembly tools work from this source checkout; they do not
 require an internal prebuilt bundle.
 
@@ -190,7 +266,8 @@ portable identity metadata, not historical runs or a fabricated results table.
   are unverified. Earlier local setup refusals remain a reliability limit.
 - Native variable-dt simulation, frame/action ordering and same-host clock
   mapping have uncertainty. Renderer and headless timing/worlds are not
-  asserted equivalent. Broad image-only task coverage is not established.
+  asserted equivalent. Current full-UI engineering coverage is evidence-backed;
+  broad model performance and clean-machine/platform reliability are not established.
 - Source/package tests do not establish model ability, full build closure,
   deterministic replay, asset rights or cross-platform support.
 
@@ -222,6 +299,8 @@ Thanks to the Veloren project and its contributors, and to the GameAgent
 codebase from which parts of the harness were adapted. This is an independent
 benchmark project, not an official Veloren release.
 
-For now, cite the **VelorenBench repository**, `v1.0.1` and the exact commit
-used: <https://github.com/wyaaaattwho/VelorenBench>. Include access date and
-configuration in research reports. No associated paper or DOI is claimed.
+For this untagged1.1.0 candidate, cite its exact source/package/native/evidence
+hashes and configuration from the final handoff, not a nonexistent release tag.
+For historical v1.0.1 work, cite that tag and its resolved commit in the
+**VelorenBench repository**: <https://github.com/wyaaaattwho/VelorenBench>.
+Include access date. No associated paper or DOI is claimed.

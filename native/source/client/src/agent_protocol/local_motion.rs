@@ -93,6 +93,23 @@ pub(super) fn footprint_columns(position: Vec2<f32>, radius: f32) -> Vec<Vec2<i3
     points
 }
 
+pub(super) fn actor_aabb(
+    position: Vec3<f32>, radius: f32, z_min: f32, z_max: f32,
+) -> Aabb<f32> {
+    Aabb {
+        min: Vec3::new(position.x - radius, position.y - radius, position.z + z_min),
+        max: Vec3::new(position.x + radius, position.y + radius, position.z + z_max),
+    }
+}
+
+pub(super) fn terrain_block_aabb(position: Vec3<i32>, block: Block) -> Aabb<f32> {
+    Aabb {
+        min: position.map(|v| v as f32),
+        max: Vec3::new(position.x as f32 + 1.0, position.y as f32 + 1.0,
+                       position.z as f32 + block.solid_height()),
+    }
+}
+
 fn sampled_columns(position: Vec3<f32>, direction: Vec2<f32>, radius: f32) -> Vec<Vec2<i32>> {
     let mut sampled: std::collections::BTreeSet<_> = columns(position, direction, radius)
         .into_iter().map(|p| (p.x, p.y)).collect();
@@ -259,10 +276,7 @@ fn check_segment_cells_with_medium(
         let pos = from + delta * (step as f32 / steps as f32);
         let bottom = pos.z + z_min;
         let top = pos.z + z_max;
-        let actor = Aabb {
-            min: Vec3::new(pos.x - radius, pos.y - radius, bottom),
-            max: Vec3::new(pos.x + radius, pos.y + radius, top),
-        };
+        let actor = actor_aabb(pos, radius, z_min, z_max);
         let low = (bottom - TERRAIN_QUERY_MAX_SUPPORT_HEIGHT_METRES).floor() as i32;
         let high = top.ceil() as i32;
         for column in footprint_columns(pos.xy(), radius) {
@@ -270,11 +284,7 @@ fn check_segment_cells_with_medium(
             for z in low..=high {
                 let block = cell(Vec3::new(x, y, z))
                     .ok_or("control_motion_terrain_unavailable")?;
-                let block_aabb = Aabb {
-                    min: Vec3::new(x as f32, y as f32, z as f32),
-                    max: Vec3::new(x as f32 + 1.0, y as f32 + 1.0,
-                                   z as f32 + block.solid_height()),
-                };
+                let block_aabb = terrain_block_aabb(Vec3::new(x, y, z), block);
                 if block.kind() == BlockKind::Lava
                     || block.get_sprite().is_some_and(terrain_sprite_has_on_ground_debuff)
                 {

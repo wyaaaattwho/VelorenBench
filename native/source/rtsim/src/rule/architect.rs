@@ -223,22 +223,7 @@ fn architect_tick(ctx: EventCtx<Architect, OnTick>) {
     // @perf: Could reuse previous allocation here.
     let mut failed_spawn = Vec::new();
 
-    while count_to_spawn > 0
-        && let Some(death) = data.architect.deaths.pop_front()
-    {
-        if data.architect.population.of_death(&death)
-            > data.architect.wanted_population.of_death(&death)
-        {
-            data.architect.population.on_death(&death);
-            // If we have more than enough of this npc, we skip spawning a new one.
-            continue;
-        }
-
-        if death.time.0 + MIN_SPAWN_DELAY > tod.0 {
-            data.architect.deaths.push_front(death);
-            break;
-        }
-
+    while count_to_spawn > 0 && let Some(death) = next_spawn(&mut data.architect, tod) {
         if spawn_npc(data, ctx.world, ctx.index, &death) {
             count_to_spawn -= 1;
         } else {
@@ -248,6 +233,149 @@ fn architect_tick(ctx: EventCtx<Architect, OnTick>) {
 
     for death in failed_spawn.into_iter().rev() {
         data.architect.deaths.push_front(death);
+    }
+    data.architect.last_maintenance_tick = Some(ctx.event.tick);
+}
+
+fn waiting_for_respawn(death: &Death, now: TimeOfDay) -> bool {
+    // Initial entries are backdated using this exact cutoff. Adding the delay
+    // back can round above now and strand the otherwise immediately due queue.
+    death.time.0 > now.0 - MIN_SPAWN_DELAY
+}
+
+fn next_spawn(architect: &mut crate::data::architect::Architect, now: TimeOfDay) -> Option<Death> {
+    while let Some(death) = architect.deaths.pop_front() {
+        if architect.population.of_death(&death) > architect.wanted_population.of_death(&death) {
+            architect.population.on_death(&death);
+            continue;
+        }
+        if waiting_for_respawn(&death, now) {
+            architect.deaths.push_front(death);
+            return None;
+        }
+        return Some(death);
+    }
+    None
+}
+
+#[cfg(test)]
+mod population_bootstrap_tests {
+    use super::*;
+    use rand::SeedableRng;
+    use crate::data::architect::Architect as PopulationArchitect;
+
+    fn death(time: f64) -> Death {
+        Death {
+            time: TimeOfDay(time),
+            body: Body::Humanoid(comp::humanoid::Body::random_with(
+                &mut rand::rngs::StdRng::seed_from_u64(0), &comp::humanoid::Species::Human)),
+            role: Role::Civilised(Some(Profession::Farmer)), faction: None,
+        }
+    }
+
+    fn allocated(entry: Death) -> PopulationArchitect {
+        let mut architect = PopulationArchitect::default();
+        architect.wanted_population.add(TrackedPopulation::OtherTownNpcs, 1);
+        architect.population.on_spawn(&entry);
+        architect.deaths.push_front(entry);
+        architect
+    }
+
+    #[test]
+    fn generated_immediately_eligible_entry_reaches_real_queue_drain() {
+        assert_eq!(MIN_SPAWN_DELAY, 86400.0);
+        let now = TimeOfDay(f64::from_bits(0x40dfaa6666666667));
+        let entry = death(now.0 - MIN_SPAWN_DELAY);
+        // The observed arithmetic risk is not a native-world frequency claim.
+        assert!(entry.time.0 + MIN_SPAWN_DELAY > now.0);
+        let mut architect = allocated(entry);
+        assert_eq!(architect.population.total(), 1);
+        assert_eq!(architect.wanted_population.total(), 1);
+        assert!(next_spawn(&mut architect, now).is_some(),
+                "optimistic population allocation must not strand the generated queue entry");
+        assert!(architect.deaths.is_empty());
+    }
+
+    #[test]
+    fn real_cutoff_queue_boundary_is_before_equal_after_without_epsilon() {
+        let now = TimeOfDay(f64::from_bits(0x40dfaa6666666667));
+        let cutoff = now.0 - MIN_SPAWN_DELAY;
+        for (time, due) in [(cutoff.next_down(), true), (cutoff, true), (cutoff.next_up(), false)] {
+            let mut architect = allocated(death(time));
+            assert_eq!(next_spawn(&mut architect, now).is_some(), due);
+            assert_eq!(architect.deaths.len(), usize::from(!due));
+            assert_eq!(architect.population.total(), 1);
+        }
+    }
+
+    #[test]
+    fn allocated_counts_are_not_bootstrap_completion_and_failed_spawns_remain_pending() {
+        let now = TimeOfDay(f64::from_bits(0x40dfaa6666666667));
+        let mut architect = allocated(death(now.0 - MIN_SPAWN_DELAY));
+        assert!(!settlement_population_readiness(&architect, now).ready);
+        architect.last_maintenance_tick = Some(32);
+        let pending = settlement_population_readiness(&architect, now);
+        assert_eq!(pending.allocated_deficit, 0);
+        assert_eq!(pending.eligible_pending, 1);
+        assert!(!pending.ready);
+        let entry = next_spawn(&mut architect, now).unwrap();
+        // Same queue restoration used by architect_tick after spawn_npc fails.
+        architect.deaths.push_front(entry);
+        assert!(!settlement_population_readiness(&architect, now).ready);
+        assert!(next_spawn(&mut architect, now).is_some());
+        assert!(settlement_population_readiness(&architect, now).ready);
+        architect.on_death(&Npc::new(1, vek::Vec3::zero(), death(0.0).body,
+                                    Role::Civilised(Some(Profession::Farmer))), now);
+        assert!(settlement_population_readiness(&architect, now).ready,
+                "an ordinary future respawn must retain its native delay");
+        assert!(next_spawn(&mut architect, now).is_none());
+    }
+
+    #[test]
+    fn first_maintenance_and_actual_population_deficit_are_required() {
+        let now = TimeOfDay(32400.0);
+        let mut architect = PopulationArchitect::default();
+        assert!(!settlement_population_readiness(&architect, now).ready);
+        architect.last_maintenance_tick = Some(32);
+        architect.wanted_population.add(TrackedPopulation::OtherTownNpcs, 1);
+        assert_eq!(settlement_population_readiness(&architect, now).allocated_deficit, 1);
+        assert!(!settlement_population_readiness(&architect, now).ready);
+        let entry = death(now.0 - MIN_SPAWN_DELAY);
+        architect.population.on_spawn(&entry);
+        architect.deaths.push_front(entry);
+        architect.population.on_spawn(&death(0.0)); // Existing excess-population discard.
+        assert!(next_spawn(&mut architect, now).is_none());
+        assert_eq!(architect.population.total(), 1);
+        assert!(settlement_population_readiness(&architect, now).ready);
+    }
+}
+
+/// Opt-in owner evidence can distinguish allocated counts from actual spawning.
+/// This says nothing about a particular NPC's later footing or interaction range.
+#[derive(serde::Serialize)]
+pub struct SettlementPopulationReadiness {
+    pub last_maintenance_tick: Option<u64>,
+    pub allocated_deficit: u32,
+    pub eligible_pending: usize,
+    pub ready: bool,
+}
+
+pub fn settlement_population_readiness(
+    architect: &crate::data::architect::Architect, now: TimeOfDay,
+) -> SettlementPopulationReadiness {
+    let settlement = |kind: &TrackedPopulation| matches!(kind, TrackedPopulation::Adventurers
+        | TrackedPopulation::Merchants | TrackedPopulation::Guards
+        | TrackedPopulation::Captains | TrackedPopulation::OtherTownNpcs);
+    let allocated_deficit = architect.population.iter().zip(architect.wanted_population.iter())
+        .filter(|((kind, _), _)| settlement(kind))
+        .map(|((_, current), (_, wanted))| wanted.saturating_sub(current)).sum();
+    let eligible_pending = architect.deaths.iter().filter(|death|
+        settlement(&TrackedPopulation::from_body_and_role(&death.body, &death.role))
+        && !waiting_for_respawn(death, now)).count();
+    SettlementPopulationReadiness {
+        last_maintenance_tick: architect.last_maintenance_tick,
+        allocated_deficit, eligible_pending,
+        ready: architect.last_maintenance_tick.is_some() && allocated_deficit == 0 && eligible_pending == 0,
     }
 }
 

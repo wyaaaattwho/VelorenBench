@@ -19,7 +19,8 @@ def assemble(fresh_build, metadata, assets, out):
         raise ValueError("assembly output must not exist")
     fresh = json.loads((fresh_build / "receipt.json").read_text())
     identity, paths = inspect_source(fresh_build / "source", metadata / "source.json")
-    if (fresh["status"] != "built" or fresh["compiler_artifacts_inherited"] is not False
+    if (fresh["status"] != "built" or type(fresh["compiler_artifacts_inherited"]) is not bool
+            or (fresh["compiler_artifacts_inherited"] and not fresh.get("compiler_cache"))
             or fresh["source_manifest_sha256"] != sha(metadata / "source.json")
             or fresh["source_tree_sha256"] != SELECTED_TREE):
         raise ValueError("fresh build does not match selected source")
@@ -63,9 +64,10 @@ def assemble(fresh_build, metadata, assets, out):
                        for kind, row in zip(("server", "helper", "renderer"), builds, strict=True)},
         "rustc": (fresh_build / fresh["commands"][0]["log"]).read_text(),
         "build_provenance": {
-            "compiler_artifacts_inherited": False, "clean_machine_build": False,
+            "compiler_artifacts_inherited": fresh["compiler_artifacts_inherited"],
+            "compiler_cache": fresh.get("compiler_cache"), "clean_machine_build": False,
             "fresh_build_receipt_sha256": sha(fresh_build / "receipt.json"),
-            "meaning": "public source checkout, empty compiler target; external system/toolchain/assets",
+            "meaning": "public source checkout; selected Cargo builds and exact source/binary/log hashes verified; external system/toolchain/assets",
         },
     })
     files = {str(path.relative_to(out)): sha(path) for path in sorted(out.rglob("*"))

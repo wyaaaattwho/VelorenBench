@@ -52,30 +52,41 @@ class Adapter:
         self.frames = args.recordings
         self.context = None
 
-    async def preflight(self, *, backend, frames=None):
+    async def preflight(self, *, backend, frames=None, detail_storage=None):
         capabilities.admit_backend(self.configuration, self.capabilities, backend)
+        from . import startup, runtime
+        construction = startup.context(self.configuration, backend, frames, detail_storage)
         # The bundled stdlib-only entry is installed with the evaluator.
         process = await asyncio.create_subprocess_exec(
-            sys.executable, "-I", "-m", "scripts.rpg_benchmark.responses_entry", "--help",
-            stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.PIPE)
-        _, stderr = await process.communicate()
+            sys.executable, "-I", "-m", "scripts.rpg_benchmark.responses_entry", "--startup-check",
+            stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        stdout, stderr = await process.communicate(json.dumps(construction).encode())
         if process.returncode:
             raise ValueError("Bundled adapter is not installed in the evaluator interpreter: "
                              + stderr.decode(errors="replace"))
+        receipt = json.loads(stdout)
+        startup.validate_receipt(receipt, construction)
+        if receipt.get("player_package_files") != runtime.package_files():
+            raise ValueError("bundled adapter installed content differs from candidate")
+        self.frames = frames
         return {"command": [sys.executable, "-I", "-m",
-                            "scripts.rpg_benchmark.responses_entry", "--help"], "exit_code": 0}
+                            "scripts.rpg_benchmark.responses_entry", "--startup-check"],
+                "exit_code": 0, "receipt": receipt}
 
     def launch(self, *, task, socket, output, output_root, python, common_interface):
         self.context = {"output": str(output), "task": task, "configuration": self.configuration,
-                        "public_context_only": True, "frames": str(self.frames)}
+                        "public_context_only": True,
+                        "frames": str(self.frames) if self.frames is not None else None}
         self.output = output
         command = (python, "-I", "-B", "-m", "scripts.rpg_benchmark.responses_entry",
                    "--episode-socket", str(socket), "--task", task, "--out", str(output),
-                   "--output-root", str(output_root), "--frames", str(self.frames),
+                   "--output-root", str(output_root),
                    "--episode-id", output.parent.name,
                    "--observation-mode", self.configuration["observation_mode"],
                    "--configuration", json.dumps(self.configuration),
                    "--provider-declaration", json.dumps(self.provider))
+        if self.frames is not None:
+            command += ("--frames", str(self.frames))
         if self.mock:
             command += ("--mock-provider", self.mock)
         elif self.config.get("route") == "existing-luna":

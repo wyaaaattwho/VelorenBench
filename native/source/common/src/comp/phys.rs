@@ -188,6 +188,27 @@ impl Component for Immovable {
     type Storage = DerefFlaggedStorage<Self, NullStorage<Self>>;
 }
 
+/// Server-authorized, owner-scoped fixture administrator hold. Never installed
+/// by ordinary movement/teleport or by a measured player's input.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct FixtureAuthoring {
+    pub owner: String,
+    pub position: Pos,
+    pub restore_position: Pos,
+    pub restore_velocity: Vel,
+}
+
+impl FixtureAuthoring {
+    pub fn anchor(&self, position: &mut Pos, velocity: &mut Vel) {
+        *position = self.position;
+        *velocity = Vel::zero();
+    }
+}
+
+impl Component for FixtureAuthoring {
+    type Storage = DerefFlaggedStorage<Self, VecStorage<Self>>;
+}
+
 // PhysicsState
 #[derive(Clone, Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct PhysicsState {

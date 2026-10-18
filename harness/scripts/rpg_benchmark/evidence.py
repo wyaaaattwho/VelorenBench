@@ -5,7 +5,6 @@ import json
 import hashlib
 import math
 from collections import Counter
-from datetime import datetime
 from pathlib import Path
 
 
@@ -48,7 +47,9 @@ def select(root: Path) -> dict:
                         error_observations.append({
                             "source": "provider", "phase": "jev_provider",
                             "host_recorded_at": row.get("host_recorded_at"),
-                            "wall_monotonic": None, "error": errors[-1]})
+                            "wall_monotonic": None, "error": errors[-1],
+                            **{key: row[key] for key in ("occurrence", "category", "caused_by", "wall_monotonic")
+                               if key in row}})
                 elif kind == "async_stale_choice":
                     current_choice = None
                 elif kind == "async_effect_handoff":
@@ -77,14 +78,15 @@ def select(root: Path) -> dict:
                     error = row.get("error") or {}
                     if error.get("type") == "CancelledError":
                         cancellations += 1
-                        cancellation_events.append({"host_recorded_at": row.get("host_recorded_at"),
-                                                    "error": error})
+                        cancellation_events.append(dict(row))
                     else:
                         errors.append(error)
                         error_observations.append({
                             "source": "provider", "phase": "brain_provider",
                             "host_recorded_at": row.get("host_recorded_at"),
-                            "wall_monotonic": None, "error": error})
+                            "wall_monotonic": None, "error": error,
+                            **{key: row[key] for key in ("occurrence", "category", "caused_by", "wall_monotonic")
+                               if key in row}})
     final_path = root / "final.json"
     final = json.loads(final_path.read_text()) if final_path.is_file() else None
     return {
@@ -155,19 +157,19 @@ def observed_jev_choice(request: dict | None, response: dict) -> dict | None:
 
 
 def gameagent_success(selected: dict, opening: dict, receipts: list[dict], score: dict,
-                      *, stop_reason: str, stop_requested_at: str) -> dict:
+                      *, stop_reason: str, stop_requested_at: str,
+                      stop_signal=None, terminal_monotonic=None) -> dict:
+    from . import results
     entry = selected.get("entry") or {}
     normal = (selected["entry_receipt_present"] and entry.get("runtime_mode") == "async"
               and entry.get("brain_direct_only") is False)
     errors = selected["provider_errors_excluding_cancellation"]
     primary = entry.get("primary_error") or {}
     cancellations = selected["provider_cancellation_events"]
-    causal_stop = stop_reason == "native_goal_success"
-    cutoff = datetime.fromisoformat(stop_requested_at)
-    for event in cancellations:
-        stamp = event["host_recorded_at"]
-        if not isinstance(stamp, str) or datetime.fromisoformat(stamp) < cutoff:
-            causal_stop = False
+    normalized = results.observations({"error_observations": [
+        {"source": "provider", **row} for row in cancellations]}, terminal_monotonic, stop_signal)
+    causal_stop = (stop_reason == "native_goal_success" and bool(normalized)
+                   and all(row.get("evaluator_terminal_cancellation") for row in normalized))
     if primary.get("type") not in (None, "CancelledError"):
         normal = False
     if (cancellations or primary.get("type") == "CancelledError") and not causal_stop:
@@ -220,19 +222,19 @@ def gameagent_success(selected: dict, opening: dict, receipts: list[dict], score
             "normal_async_entry": normal, "genuine_provider_errors": errors}
 
 
-def gameagent_evaluation(selected, *, stop_reason, stop_signal, stop_requested_at):
+def gameagent_evaluation(selected, *, stop_reason, stop_signal, stop_requested_at,
+                         terminal_monotonic=None):
     """Preserve legacy success proof; independently qualify negative measurements."""
     from scripts.rpg_benchmark import results
 
     entry = dict(selected.get("entry") or {})
     counts = selected["record_counts"]
     cancellations = selected.get("provider_cancellation_events", [])
-    cutoff = datetime.fromisoformat(stop_requested_at)
-    causal_cancel = (
-        stop_reason in results.NATIVE_REASONS and stop_signal.get("sent") is True
-        and bool(cancellations)
-        and all(isinstance(row.get("host_recorded_at"), str)
-                and datetime.fromisoformat(row["host_recorded_at"]) >= cutoff for row in cancellations))
+    terminal = terminal_monotonic if terminal_monotonic is not None else stop_signal.get("terminal_monotonic")
+    normalized = results.observations({"error_observations": [
+        {"source": "provider", **row} for row in cancellations]}, terminal, stop_signal)
+    causal_cancel = (stop_reason in results.NATIVE_REASONS and bool(normalized)
+                     and all(row.get("evaluator_terminal_cancellation") for row in normalized))
     if (entry.get("primary_error") or {}).get("type") == "CancelledError" and causal_cancel:
         entry.update(status="idle", primary_error=None)
     facts = {
@@ -243,13 +245,8 @@ def gameagent_evaluation(selected, *, stop_reason, stop_signal, stop_requested_a
             {"source": "provider", "error": error, "wall_monotonic": None}
             for error in selected["provider_errors_excluding_cancellation"]],
     }
-    errors = results.observations(facts)
-    errors.extend({
-        "source": "provider", "phase": "brain_provider", "wall_monotonic": None,
-        "host_recorded_at": row["host_recorded_at"], "ordering": "wall_post_terminal" if causal_cancel else "unknown",
-        "error": row["error"], "error_detail": row["error"],
-        "evaluator_terminal_cancellation": causal_cancel,
-    } for row in cancellations)
+    errors = results.observations(facts, terminal, stop_signal)
+    errors.extend(normalized)
     return {"accepted": False, "evaluation_validity": results.validity(facts, errors),
             "error_observations": errors}
 
@@ -269,7 +266,7 @@ def select_sdk(root: Path) -> dict:
                 sdk_types[row["event"]["type"]] += 1
             elif row.get("kind") in ("adapter_error", "transport_error"):
                 errors = adapter_errors if row["kind"] == "adapter_error" else transport_errors
-                errors.append({"wall_monotonic": row["wall_monotonic"], "error": row["error"]})
+                errors.append(dict(row))
     result = root / "result.json"
     entry = json.loads(result.read_text()) if result.is_file() else None
     return {
@@ -331,12 +328,11 @@ def sdk_terminal_cancellation(selected: dict, *, stop_reason: str, native_succes
         return False
     cutoff = stop_signal.get("requested_monotonic")
     errors = selected.get("adapter_error_events", [])
-    return (type(cutoff) in (int, float) and math.isfinite(cutoff) and cutoff > 0
-            and bool(errors) and all(
-                row["error"].get("type") == "CancelledError"
-                and type(row["wall_monotonic"]) in (int, float)
-                and math.isfinite(row["wall_monotonic"])
-                and row["wall_monotonic"] >= cutoff for row in errors))
+    from . import results
+    normalized = results.observations({"error_observations": [
+        {"source": "adapter", **row} for row in errors]},
+        stop_signal.get("terminal_monotonic"), stop_signal)
+    return bool(normalized) and all(row.get("evaluator_terminal_cancellation") for row in normalized)
 
 
 def sdk_classification(selected: dict, classification: str, *,

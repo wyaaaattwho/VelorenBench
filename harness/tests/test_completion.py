@@ -7,6 +7,7 @@ from scripts.rpg_benchmark import setup
 from unittest.mock import AsyncMock, Mock, patch
 from tests.test_rpg_benchmark import observation
 from tests.test_rpg_scenes import craft_receipt
+from tests.authoring import Administrator
 
 
 class CompletionTests(unittest.TestCase):
@@ -104,30 +105,37 @@ class ExplicitAuthoringTests(unittest.IsolatedAsyncioTestCase):
         admin = Mock()
         pose = {"position": [1.5, 2.5, 4], "velocity": [0, 0, 0], "on_ground": True,
                 "tick": 3, "session_id": "setup", "self_identity": {"uid": 1}}
-        terrain = {"support_candidates": [{
+        terrain = {"status": "complete", "vertical_scan": {"all_cells_loaded": True}, "support_candidates": [{
             "occupiable": True, "support": {"position": [1, 2, 3], "kind": "Rock", "solid": True}}]}
-        async def wait(actor, predicate, reason):
-            self.assertIs(actor, admin)
-            self.assertTrue(predicate({"character_controls": {"can_build": {"enabled": True}}}))
-        with patch.object(setup, "command", new=AsyncMock()) as command, patch.object(
-                setup, "wait_observation", side_effect=wait), patch.object(
+        state = Administrator(admin, delay=2)
+        async def read(*args):
+            return state.readback(terrain, [1, 2, 3])
+        with patch.object(setup, "command", new=state.command) as command, patch.object(
+                setup, "wait_observation", side_effect=state.wait), patch.object(
                 setup, "goto", new=AsyncMock()), patch.object(
                 setup, "action", new=AsyncMock(return_value={"submitted_to_server": True})) as action, patch.object(
-                setup, "ready_observation", new=AsyncMock(return_value=pose)), patch.object(
-                setup, "terrain", new=AsyncMock(return_value=terrain)):
+                setup, "ready_observation", new=state.ready), patch.object(
+                setup, "terrain", new=read):
             result = await setup.author_voxels(admin, [[1, 2, 3]])
         self.assertEqual(len(result), 1)
         self.assertEqual(action.await_args.args, (admin, "build_block"))
         self.assertEqual(action.await_args.kwargs["position"], [1, 2, 3])
-        self.assertEqual([entry.args[1] for entry in command.await_args_list],
+        self.assertEqual([entry.args[1] for entry in command.await_args_list][:3],
                          ["area_add", "permit_build", "build"])
+        self.assertIsNone(state.hold)
+        self.assertFalse(state.enabled)
         terrain["support_candidates"][0]["support"]["position"] = [1, 2, 2]
-        with patch.object(setup, "command", new=AsyncMock()), patch.object(
-                setup, "wait_observation", new=AsyncMock()), patch.object(
+        from functools import partial
+        # Bound only this synthetic negative fixture's polling; retain the actual
+        # loaded-input gate, mutation submission, and exact-effect rejection.
+        bounded_readback = partial(setup.construction_readback, timeout=.001)
+        with patch.object(setup, "command", new=state.command), patch.object(
+                setup, "construction_readback", new=bounded_readback), patch.object(
+                setup, "wait_observation", side_effect=state.wait), patch.object(
                 setup, "goto", new=AsyncMock()), patch.object(
                 setup, "action", new=AsyncMock(return_value={"submitted_to_server": True})), patch.object(
-                setup, "ready_observation", new=AsyncMock(return_value=pose)), patch.object(
-                setup, "terrain", new=AsyncMock(return_value=terrain)):
+                setup, "ready_observation", new=state.ready), patch.object(
+                setup, "terrain", new=read):
             with self.assertRaisesRegex(RuntimeError, "exact native Rock readback"):
                 await setup.author_voxels(admin, [[1, 2, 3]])
 

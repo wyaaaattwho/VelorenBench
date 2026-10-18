@@ -9,6 +9,29 @@ from pathlib import Path
 from . import capabilities, external
 
 
+def configuration(args, selected):
+    """Negotiate the effective public surface BEFORE task admission/allocation."""
+    requested = {key: getattr(args, key, None) for key in (
+        "model", "reasoning_effort", "observation_mode", "action_profile")}
+    if args.harness == "external":
+        from . import runtime
+        declaration = selected.get("external_adapters", {}).get(args.adapter)
+        if declaration is None:
+            raise ValueError("External adapter is not registered in selected pins")
+        manifest = runtime.read_json(Path(declaration["path"]), declaration["sha256"])
+        config, declared, _ = capabilities.negotiate(manifest, requested)
+        capabilities.admit_backend(config, declared, args.backend)
+        return config
+    if args.harness == "responses" and args.mode not in {"setup", "mechanism"}:
+        from .responses_adapter import Adapter
+        adapter = Adapter(args)
+        capabilities.admit_backend(adapter.configuration, adapter.capabilities, args.backend)
+        return adapter.configuration
+    mode = requested["observation_mode"] or "structured"
+    return {"observation_mode": mode,
+            "action_profile": requested["action_profile"] or capabilities.default_profile(args.backend, mode)}
+
+
 def builtin_python(args, selected):
     config = json.loads(args.adapter_config)
     if not isinstance(config, dict) or set(config) - {"python"}:

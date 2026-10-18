@@ -77,4 +77,6 @@ def admit(base: Path, bindings: dict, identity: dict) -> tuple[dict, list[Path]]
         "observation_support_enabled": False,
         "build_closure": "unqualified", "redistribution_license_closure": "unresolved",
         "source_inventory_scope": "all declared source files; generated build outputs are not source closure",
+        **({"benchmark_features": contract["benchmark_features"]}
+           if "benchmark_features" in contract else {}),
     }, list(paths.values())

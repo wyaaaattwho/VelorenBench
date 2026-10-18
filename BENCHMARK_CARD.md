@@ -1,5 +1,12 @@
 # VelorenBench benchmark card
 
+Current local candidate is untagged1.1.0:125 evidence-backed exact-key engineering
+qualifications,35 real legacy-image exclusions, all29 definitions/37 terrain
+cells and40 full-UI image selections. T05/image remains task-engineering only.
+This is neither final release acceptance nor model-performance evidence.
+Use the current README, bound support and portable evidence verifier; historical
+source-release descriptions below keep their original scope and identities.
+
 ## Purpose and release
 
 Evaluate external agents' decisions and tool use in native RPG tasks:

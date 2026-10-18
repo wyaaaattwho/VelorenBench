@@ -926,7 +926,19 @@ async def run(args: argparse.Namespace) -> dict[str, Any]:
         primary = error
         metadata["status"] = "interrupted" if isinstance(error, asyncio.CancelledError) else "failed"
         metadata["error"] = error_record(error)
-        evidence.write("adapter_error", error=metadata["error"])
+        if __package__:
+            from .rpg_benchmark import results
+        else:
+            from rpg_benchmark import results
+        detail = results.error_event(error, source="adapter", category="adapter_failure")
+        if (isinstance(error, asyncio.CancelledError) and error.args
+                and isinstance(error.args[0], dict)
+                and error.args[0].get("kind") == "evaluator_stop"
+                and error.args[0].get("stop_id") == os.environ.get("RPG_EVALUATOR_STOP_ID")):
+            detail.update(category="evaluator_cancellation", caused_by=error.args[0])
+        metadata.update({key: detail[key] for key in ("occurrence", "category", "caused_by")
+                         if key in detail})
+        evidence.write("adapter_error", **{key: value for key, value in detail.items() if key != "source"})
     finally:
         async def cleanup(name: str, operation) -> None:
             try:
@@ -1014,11 +1026,18 @@ async def run_with_signals(args: argparse.Namespace) -> dict[str, Any]:
     owner = asyncio.current_task()
     if owner is None:
         raise RuntimeError("signal handling requires an owned asyncio task")
-    loop.add_signal_handler(signal.SIGTERM, owner.cancel)
+    def stopped(sig):
+        owner.cancel({"kind": "evaluator_stop", "signal": sig.name,
+                      "stop_id": os.environ.get("RPG_EVALUATOR_STOP_ID")})
+    registered = []
     try:
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            loop.add_signal_handler(sig, stopped, sig)
+            registered.append(sig)
         return await run(args)
     finally:
-        loop.remove_signal_handler(signal.SIGTERM)
+        for sig in registered:
+            loop.remove_signal_handler(sig)
 
 
 def main() -> None:

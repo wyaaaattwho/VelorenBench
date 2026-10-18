@@ -1,5 +1,20 @@
 from __future__ import annotations
 
+LEGACY_TEMPLATES = {
+    "N1": "wall_rendezvous", "N2": "supply_rendezvous", "N3": "terrain_rendezvous",
+    "N4": "terrain_rendezvous", "N5": "pickup_rendezvous", "N6": "terrain_rendezvous",
+    "N7": "named_site",
+}
+TEMPLATES = {
+    "wall_rendezvous": {"legacy_case": "N1", "requires": ["movement", "coordinate_goal"]},
+    # The legacy name is public compatibility, not an extra pickup objective:
+    # this authored rendezvous returns supplies=[] and scores arrival only.
+    "supply_rendezvous": {"legacy_case": "N2", "requires": ["movement", "coordinate_goal"]},
+    "terrain_rendezvous": {"requires": ["movement", "coordinate_goal"]},
+    "pickup_rendezvous": {"requires": ["movement", "coordinate_goal", "pickup"]},
+    "named_site": {"requires": ["movement", "map"], "runtime": {"deferred_actor": True}},
+}
+
 import asyncio
 import math
 import time
@@ -10,6 +25,27 @@ from scripts.rpg_benchmark import setup as native
 from scripts.rpg_benchmark.scene import counts
 from scripts.rpg_benchmark.oracles import pickup_actions
 from scripts.rpg_benchmark.native import NativeRefusal
+
+# Layouts select actual setup/scorer mechanics independently of a task's ID.
+# Equivalent supply-free template names remain compatible, but an explicit
+# template must not omit (or invent) a dependency of the selected layout.
+LAYOUT_TEMPLATES = {
+    **{name: "terrain_rendezvous" for name in layouts.CASES},
+    "recovery": "terrain_rendezvous",
+    "natural_long": "pickup_rendezvous",
+    "named_site_long": "named_site",
+}
+
+
+def validate_definition(definition):
+    layout = definition.get("layout")
+    if layout not in LAYOUT_TEMPLATES:
+        raise ValueError(f"navigation: unknown layout {layout!r}")
+    name = definition.get("template", LEGACY_TEMPLATES.get(definition["id"]))
+    expected = TEMPLATES[LAYOUT_TEMPLATES[layout]]["requires"]
+    if set(TEMPLATES[name]["requires"]) != set(expected):
+        raise ValueError(f"{name}: template requirements do not match navigation layout {layout!r}")
+
 
 APPLE = "common.items.food.apple"
 RECOVERABLE_ROUTE_REFUSALS = {

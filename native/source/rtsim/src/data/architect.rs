@@ -136,6 +136,10 @@ impl Population {
 pub struct Architect {
     pub deaths: VecDeque<Death>,
 
+    /// Runtime maintenance witness, not persisted simulation state.
+    #[serde(skip)]
+    pub last_maintenance_tick: Option<u64>,
+
     /// This is calculated on startup. And includes both dead and alive.
     #[serde(skip)]
     pub population: Population,

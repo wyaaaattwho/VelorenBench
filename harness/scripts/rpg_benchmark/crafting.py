@@ -11,6 +11,17 @@ DISTRACTORS = {"common.items.food.apple": 1, "common.items.crafting_ing.hide.tou
 DEFAULT_RECIPE = {"key": scene.RECIPE, "output": scene.OUTPUT, "inputs": scene.INPUTS,
                   "missing_item": "common.items.food.mushroom"}
 
+LEGACY_TEMPLATES = {"C1": "starter_food", "C2": "gather_food", "C3": "known_food",
+                    "C3U": "learn_food", "C4": "leather_chain"}
+TEMPLATES = {
+    name: {"legacy_case": case, "requires": ["movement", "inventory", "crafting"] + extra,
+           **({"runtime": {"small_world": True}} if case == "C1" else {})}
+    for case, name, extra in (
+        ("C1", "starter_food", []), ("C2", "gather_food", ["pickup"]),
+        ("C3", "known_food", []), ("C3U", "learn_food", []),
+        ("C4", "leather_chain", []))
+}
+
 
 def discovery_evidence(opening: dict, query: dict, spec: dict) -> dict:
     matches = [row for row in query.get("items", []) if row.get("recipe") == spec["key"]]

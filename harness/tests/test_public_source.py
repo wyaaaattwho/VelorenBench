@@ -112,6 +112,13 @@ def test_installed_distribution_has_no_internal_materials_or_raw_fixtures():
     assert len(runtime.package_files()) > 20
 
 
+def test_package_local_public_usage_recipe_is_available():
+    from importlib.resources import files
+    recipe = files("scripts.rpg_benchmark").joinpath("README.md")
+    assert recipe.is_file()
+    assert recipe.read_text(encoding="utf-8").strip()
+
+
 def test_selected_missing_or_changed_historical_data_is_failure_not_skip(tmp_path, monkeypatch):
     monkeypatch.setenv("VELORENBENCH_HISTORICAL_FIXTURES", str(tmp_path))
     with pytest.raises(FileNotFoundError):
@@ -121,7 +128,8 @@ def test_selected_missing_or_changed_historical_data_is_failure_not_skip(tmp_pat
         historical_fixture("accepted-contracts.json")
 
 
-def test_source_assembly_emits_existing_bundle_schema_with_exact_fresh_identities(tmp_path, monkeypatch):
+@pytest.mark.parametrize("inherited", [False, True])
+def test_source_assembly_emits_existing_bundle_schema_with_exact_fresh_identities(tmp_path, monkeypatch, inherited):
     # Fake compiler products test packaging only; never launch or call them
     # native success. Real selected-source hashes are checked independently.
     tools, source, assets, manifest = tiny_native(tmp_path)
@@ -160,7 +168,8 @@ def test_source_assembly_emits_existing_bundle_schema_with_exact_fresh_identitie
         path.write_text("synthetic compiler product, never executable native evidence\n")
         binaries[name] = tools.sha(path)
     tools.write(fresh / "receipt.json", {
-        "status": "built", "compiler_artifacts_inherited": False,
+        "status": "built", "compiler_artifacts_inherited": inherited,
+        "compiler_cache": "/synthetic-owned-cache" if inherited else None,
         "source_manifest_sha256": tools.sha(manifest),
         "source_tree_sha256": identity["source_tree_sha256"],
         "commands": commands, "binaries": binaries})
@@ -173,6 +182,7 @@ def test_source_assembly_emits_existing_bundle_schema_with_exact_fresh_identitie
     assert set(bundle["files_sha256"]) == release.FILES
     assert all(tools.sha(out / name) == value for name, value in bundle["files_sha256"].items())
     assert tools.inventory(out / "source") == identity["files_sha256"]
+    assert json.loads((out / "build.json").read_text())["build_provenance"]["compiler_artifacts_inherited"] is inherited
     assert not (out / "assets").exists()
     (fresh / "target/debug/veloren-voxygen").write_text("changed")
     with pytest.raises(ValueError, match="native host changed"):

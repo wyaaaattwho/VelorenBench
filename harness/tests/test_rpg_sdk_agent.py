@@ -670,15 +670,20 @@ class SdkEventTests(unittest.IsolatedAsyncioTestCase):
         loop = asyncio.get_running_loop()
 
         async def waiting(args):
-            callbacks["cancel"]()
+            callbacks[adapter.signal.SIGTERM]()
             await asyncio.Future()
 
         with patch.object(adapter, "run", side_effect=waiting), \
-                patch.object(loop, "add_signal_handler", side_effect=lambda signum, callback: callbacks.update(cancel=callback)), \
+                patch.object(loop, "add_signal_handler", side_effect=lambda signum, callback, *args:
+                             callbacks.update({signum: lambda: callback(*args)})), \
                 patch.object(loop, "remove_signal_handler") as remove:
-            with self.assertRaises(asyncio.CancelledError):
+            with self.assertRaises(asyncio.CancelledError) as cancelled:
                 await adapter.run_with_signals(None)
-            remove.assert_called_once_with(adapter.signal.SIGTERM)
+            self.assertEqual(cancelled.exception.args[0]["signal"], "SIGTERM")
+            self.assertEqual(cancelled.exception.args[0]["kind"], "evaluator_stop")
+            remove.assert_any_call(adapter.signal.SIGTERM)
+            remove.assert_any_call(adapter.signal.SIGINT)
+            self.assertEqual(remove.call_count, 2)
 
 
 class ConfigurationTests(unittest.TestCase):

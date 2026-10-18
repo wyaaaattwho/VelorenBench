@@ -317,6 +317,7 @@ impl State {
         ecs.register::<comp::Collider>();
         ecs.register::<comp::Sticky>();
         ecs.register::<comp::Immovable>();
+        ecs.register::<comp::FixtureAuthoring>();
         ecs.register::<comp::CharacterState>();
         ecs.register::<comp::CharacterActivity>();
         ecs.register::<comp::Object>();

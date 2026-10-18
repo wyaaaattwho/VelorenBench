@@ -12,7 +12,7 @@ use common::{
     event::{CreateNpcEvent, CreateShipEvent, DeleteEvent, EventBus, NpcBuilder},
     generation::{BodyBuilder, EntityConfig, EntityInfo},
     resources::{DeltaTime, Time, TimeOfDay},
-    rtsim::{Actor, NpcId, RtSimEntity},
+    rtsim::{Actor, NpcId, Role, RtSimEntity},
     slowjob::SlowJobPool,
     terrain::CoordinateConversions,
     trade::{Good, SiteInformation},
@@ -471,7 +471,8 @@ impl<'a> System<'a> for Sys {
         ReadExpect<'a, comp::tool::AbilityMap>,
         ReadExpect<'a, comp::item::MaterialStatManifest>,
         (ReadStorage<'a, comp::Body>, ReadStorage<'a, comp::Health>,
-         ReadStorage<'a, comp::Alignment>, ReadStorage<'a, comp::Group>),
+         ReadStorage<'a, comp::Alignment>, ReadStorage<'a, comp::Group>,
+         ReadStorage<'a, comp::PhysicsState>),
     );
 
     const NAME: &'static str = "rtsim::tick";
@@ -505,7 +506,7 @@ impl<'a> System<'a> for Sys {
             rtsim_gizmos,
             ability_map,
             msm,
-            (bodies, healths, alignments, groups),
+            (bodies, healths, alignments, groups, physics),
         ): Self::SystemData,
     ) {
         let mut create_ship_emitter = create_ship_events.emitter();
@@ -580,6 +581,21 @@ impl<'a> System<'a> for Sys {
         let chunk_states = rtsim.state.resource::<ChunkStates>();
         let data = &mut *rtsim.state.data_mut();
         if crate::private_oracle::enabled() {
+            if data.architect.last_maintenance_tick.is_none()
+                || data.architect.last_maintenance_tick == Some(data.tick)
+            {
+                crate::private_oracle::snapshot("rtsim_population", serde_json::json!({
+                    "rtsim_tick": data.tick,
+                    "clock": "server RTSim tick/time-of-day; not a client-update counter",
+                    "time_of_day": data.time_of_day.0,
+                    "allocated_population": data.architect.population.total(),
+                    "wanted_population": data.architect.wanted_population.total(),
+                    "queued_respawns": data.architect.deaths.len(),
+                    "settlement_bootstrap": rtsim::rule::architect::settlement_population_readiness(
+                        &data.architect, data.time_of_day),
+                    "scope": "private initialization evidence; not NPC eligibility or model information",
+                }));
+            }
             let mut loaded = (&entities, &rtsim_entities, &uids).join().map(|(entity, npc, uid)| {
                 serde_json::json!({
                     "actor": Actor::Npc(*npc), "uid": uid.0.get(),
@@ -587,6 +603,10 @@ impl<'a> System<'a> for Sys {
                     "rtsim_uid": data.npcs.get(*npc).map(|npc| npc.uid),
                     "server_position": positions.get(entity).map(|pos| pos.0),
                     "rtsim_position": data.npcs.get(*npc).map(|npc| npc.wpos),
+                    "civilised": data.npcs.get(*npc).map(|npc| matches!(&npc.role, Role::Civilised(_))),
+                    "body": bodies.get(entity).map(|body| body.to_string()),
+                    "alive": healths.get(entity).is_some_and(|health| !health.is_dead && health.current() > 0.0),
+                    "on_ground": physics.get(entity).map(|state| state.on_ground.is_some()),
                     "existence": "loaded;not_death_evidence",
                 })
             }).collect::<Vec<_>>();

@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 
 
 def main():
@@ -19,8 +20,8 @@ def main():
     if importlib.metadata.version("aiohttp") != "3.13.3":
         raise ValueError("Install the adapter requirements.lock in this interpreter")
     runtime = absolute(args.runtime)
-    if importlib.metadata.version("rpg-benchmark-harness") != "1.0.1":
-        raise ValueError("Install the same pinned core artifact in both environments")
+    # Exact package files below, not an unrelated distribution-version constant,
+    # bind this adapter's player API to the executing evaluator.
     cli = runtime / "node_modules/.bin/dsh"
     if not cli.is_file() or not os.access(cli, os.X_OK):
         raise ValueError("Official dsh executable is missing from selected runtime")
@@ -58,13 +59,40 @@ def main():
     subprocess.run(["node", "--input-type=module", "-e",
                     "await import(process.argv[1])", (root / "game-plugin.mjs").as_uri()],
                    env=environment, check=True)
+    construction = {}
+    if os.environ.get("RPG_ADAPTER_STARTUP") == "1":
+        from scripts.rpg_benchmark import startup
+        from types import SimpleNamespace
+        selected = json.loads(sys.stdin.read())
+        expected = startup.context(selected["configuration"], selected["backend"],
+                                   selected["frames"], selected["detail_storage"])
+        if selected != expected:
+            raise ValueError("unknown or changed startup context")
+        class Evidence:
+            def write(self, *args, **kwargs):
+                pass
+        # The real consumer constructor, without connecting to native or a model.
+        ready = {"session_id": "construction-only"}
+        if selected["backend"] == "renderer":
+            ready["renderer"] = {"actor": {}, "control": {},
+                                  "visual_ui": {"schema": "native-visual-ui/1"}}
+        player = dsh_tools.PlayerTools(
+            SimpleNamespace(ready=ready, evidence=Evidence()), selected["configuration"],
+            frames=Path(selected["frames"]) if selected["frames"] is not None else None,
+            episode="construction-only")
+        if not player.definitions():
+            raise ValueError("actual player constructor produced no tools")
+        storage = Path(selected["detail_storage"])
+        storage.mkdir(parents=True, exist_ok=False)
+        construction = {"schema": startup.PREFLIGHT, "startup": selected,
+                        "construction_checked": True}
     print(json.dumps({"schema": "rpg-adapter-preflight/1",
                       "player_package_files": player_runtime.package_files(),
                       "status": "ready", "model_calls": 0, "native_worlds": 0,
                       "runtime": str(runtime), "dsh": package["version"],
                       "entry": entry.__file__, "sdk_optional": True,
                       "adapter_root": str(root),
-                      "adapter_package_files": package_inventory(root)}))
+                      "adapter_package_files": package_inventory(root), **construction}))
 
 
 if __name__ == "__main__":
