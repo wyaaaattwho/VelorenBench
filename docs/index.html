@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b26">
+  <meta name="description" content="VelorenBench — 29 native open-world fantasy RPG tasks for autonomous multimodal and tool-using agents. Explore the bilingual quest compendium, interfaces and real gameplay.">
+  <meta property="og:title" content="VelorenBench · A world worth reasoning about">
+  <meta property="og:description" content="29 native RPG tasks. Three observation modalities. Genuine world effects.">
+  <meta property="og:image" content="https://wyaaaattwho.github.io/VelorenBench/assets/tasks/N7.png">
+  <title>VelorenBench · A World Worth Reasoning About</title>
+  <link rel="icon" type="image/svg+xml" href="assets/rune.svg">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="tasks_data.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+  <canvas id="motes" aria-hidden="true"></canvas>
+  <header class="site-header">
+    <a class="brand" href="#home" aria-label="VelorenBench home"><span class="brand-rune">◇</span> Veloren<span>Bench</span><small>1.1.0</small></a>
+    <nav aria-label="Main navigation">
+      <a href="#quests" data-i18n="navQuests">Quests</a>
+      <a href="#architecture" data-i18n="navInterface">Interface</a>
+      <a href="#validation" data-i18n="navEvidence">Evidence</a>
+      <a href="#start" data-i18n="navStart">Begin</a>
+    </nav>
+    <button id="language" class="language" type="button" aria-label="Switch to Chinese">中文 / EN</button>
+    <a class="github-link" href="https://github.com/wyaaaattwho/VelorenBench" aria-label="GitHub repository">GitHub ↗</a>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="home">
+      <div class="hero-landscape" aria-hidden="true"></div>
+      <div class="hero-content">
+        <p class="eyebrow" data-i18n="heroEyebrow">OPEN WORLDS. REAL CONSEQUENCES.</p>
+        <h1>Veloren<span>Bench</span></h1>
+        <p class="hero-title" data-i18n="heroTitle">A world worth reasoning about.</p>
+        <p class="hero-description" data-i18n="heroDescription">An open-world 3D fantasy RPG benchmark for autonomous multimodal & tool-using agents. Observe like a player. Act through the game. Prove effects in the world.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#quests"><span data-i18n="explore">Enter the quest board</span> <span aria-hidden="true">↗</span></a>
+          <a class="button secondary" href="https://github.com/wyaaaattwho/VelorenBench" data-i18n="viewSource">Explore the source</a>
+        </div>
+        <p class="hero-footnote"><span class="live-dot"></span><span data-i18n="heroNote">Native Veloren renderer · Not a simulated text world</span></p>
+      </div>
+      <div class="scene-caption"><span>N7 / TOWARD SPAUSALM</span><span data-i18n="nativeCapture">REAL NATIVE ENVIRONMENT</span></div>
+      <a class="scroll-hint" href="#overview" aria-label="Scroll to overview">↓</a>
+    </section>
+
+    <section class="stats" aria-label="Benchmark scope">
+      <div><strong data-count="29">29</strong><span data-i18n="statTasks">Tasks</span></div>
+      <div><strong data-count="37">37</strong><span data-i18n="statTerrain">Terrain cells</span></div>
+      <div><strong data-count="125">125</strong><span data-i18n="statQualified">Qualified selections</span></div>
+      <div><strong data-count="3">3</strong><span data-i18n="statModalities">Modalities</span></div>
+      <div><strong data-count="2">2</strong><span data-i18n="statHarnesses">External harnesses in E261</span></div>
+      <div><strong data-count="72">72</strong><span data-i18n="statVideo">Min encoded E261 video*</span></div>
+    </section>
+
+    <section id="overview" class="section reveal">
+      <div class="section-heading"><p class="eyebrow" data-i18n="overviewEyebrow">MORE THAN A TOOL CALL</p><h2 data-i18n="overviewTitle">From intention to world effect.</h2><p data-i18n="overviewText">A useful agent must do more than narrate. It must find a workshop, make a meal, survive an encounter, or keep a promise to a real NPC.</p></div>
+      <div class="feature-grid">
+        <article class="arcane-panel"><span class="feature-icon">⌖</span><h3 data-i18n="featureWorld">A native world</h3><p data-i18n="featureWorldText">Real terrain, collision, inventories, equipment and autonomous enemies—not a textual imitation of game state.</p></article>
+        <article class="arcane-panel"><span class="feature-icon">⚖</span><h3 data-i18n="featureBoundary">A strict boundary</h3><p data-i18n="featureBoundaryText">Player-legal observations and owned tools on one side. Evaluator-owned ECS evidence and attribution on the other.</p></article>
+        <article class="arcane-panel"><span class="feature-icon">❧</span><h3 data-i18n="featureHorizon">Connected decisions</h3><p data-i18n="featureHorizonText">Gather, craft, navigate, fight, heal and trade while retaining the ingredients, equipment and goals that still matter.</p></article>
+      </div>
+      <aside class="scope-note" data-i18n="scopeNote">125 exact engineering selections ≠ 125 tasks or model victories. T05/Image is engineering-only; 35 legacy motor combinations are unsupported. No full-catalog leaderboard is claimed.</aside>
+    </section>
+
+    <section id="quests" class="section reveal">
+      <div class="section-heading"><p class="eyebrow" data-i18n="questEyebrow">THE GUILD QUEST BOARD</p><h2 data-i18n="questTitle">Twenty-nine ways to meet the world.</h2><p data-i18n="questDescription">Every quest has a real native screenshot, an unchanged public goal and explicit world-effect verification. Open a scroll to inspect its initial state and oracle.</p></div>
+      <form id="filters" class="filters" role="search">
+        <label class="search-label"><span data-i18n="searchLabel">Search quests</span><input id="search" type="search" placeholder="Search a task, skill, or story…" autocomplete="off"></label>
+        <label><span data-i18n="familyLabel">Family</span><select id="family"></select></label>
+        <label><span data-i18n="terrainLabel">Terrain</span><select id="terrain"></select></label>
+        <label><span data-i18n="modalityLabel">Modality</span><select id="modality"></select></label>
+        <button id="reset" class="text-button" type="reset" data-i18n="reset">Reset</button>
+      </form>
+      <div class="quest-meta"><p id="task-count" role="status" aria-live="polite"></p><span data-i18n="imageDisclaimer">Native environment illustrations, not success claims</span></div>
+      <div id="quest-grid" class="quest-grid"></div>
+      <p id="no-results" class="empty-state" hidden data-i18n="noResults">No quests match. Try another trail.</p>
+      <noscript><p>This compendium requires JavaScript. The <a href="https://github.com/wyaaaattwho/VelorenBench#the-complete-29-task-compendium">README contains all29 illustrated tasks</a> without JavaScript.</p></noscript>
+    </section>
+
+    <section id="architecture" class="section reveal">
+      <div class="section-heading"><p class="eyebrow" data-i18n="architectureEyebrow">THREE WINDOWS. ONE MEDIATED WORLD.</p><h2 data-i18n="architectureTitle">Choose how an agent sees.</h2><p data-i18n="architectureDescription">Observation and action profiles are explicit. An image-only agent never receives a hidden structured world-state fallback.</p></div>
+      <div class="modality-tabs" role="tablist" aria-label="Observation modality">
+        <button type="button" id="tab-structured" role="tab" aria-controls="modality-panel" aria-selected="true" data-mode="structured">Structured</button>
+        <button type="button" id="tab-hybrid" role="tab" aria-controls="modality-panel" aria-selected="false" tabindex="-1" data-mode="hybrid">Hybrid</button>
+        <button type="button" id="tab-image" role="tab" aria-controls="modality-panel" aria-selected="false" tabindex="-1" data-mode="image">Image</button>
+      </div>
+      <div class="architecture-grid">
+        <article id="modality-panel" class="arcane-panel observation-panel" role="tabpanel" tabindex="0" aria-labelledby="tab-structured"></article>
+        <div class="boundary-diagram arcane-panel">
+          <div class="diagram-node"><span>Responses API · dsh · GameAgent</span><strong data-i18n="diagramAgent">External agent</strong></div>
+          <div class="diagram-arrow" aria-hidden="true">↕</div>
+          <div class="diagram-node public"><strong data-i18n="diagramPublic">Player-legal interface</strong><span data-i18n="diagramTools">Public goal · Observations · Owned actions</span></div>
+          <div class="boundary"><span data-i18n="boundaryLabel">PUBLIC / PRIVATE MEDIATION BOUNDARY</span></div>
+          <div class="diagram-node"><strong>Native Veloren</strong><span data-i18n="diagramNative">Renderer · HUD · World effects</span></div>
+          <div class="diagram-arrow" aria-hidden="true">↓</div>
+          <div class="diagram-node private"><strong data-i18n="diagramOracle">Private native oracle</strong><span data-i18n="diagramVerify">Actor/session joins · Effects · Validity · Cleanup</span></div>
+          <p class="tiny" data-i18n="diagramNote">Private judge data and administrator setup are never player tools.</p>
+        </div>
+      </div>
+      <div class="harness-strip"><div><b>Responses API</b><p data-i18n="responsesText">Standard tool loop and declared image transport</p></div><div><b>DeepSeek Harness · dsh</b><p data-i18n="dshText">Official external runtime with a dedicated adapter</p></div><div><b>GameAgent</b><p data-i18n="gameagentText">Asynchronous Brain + Jev executive; separately supplied</p></div></div>
+    </section>
+
+    <section id="validation" class="section reveal">
+      <div class="section-heading"><p class="eyebrow">E261 / MULTI-HARNESS VALIDATION</p><h2 data-i18n="validationTitle">Watch the interface meet reality.</h2><p data-i18n="validationDescription">Six sampled tasks × two external harnesses × three modalities. Explore all36 cells, including original failures and independent retries—not a leaderboard.</p></div>
+      <div class="validation-legend"><span class="legend-dot success"></span><span data-i18n="legendSuccess">Native success classification</span><span class="legend-dot horizon"></span><span data-i18n="legendHorizon">Horizon without success</span><span class="legend-dot other"></span><span data-i18n="legendOther">Other / inspect details</span></div>
+      <div class="table-scroll"><table class="validation-table"><caption data-i18n="validationCaption">Select a cell to inspect original/effective evidence and video policy.</caption><thead><tr><th scope="col" data-i18n="taskLabel">Task</th><th scope="col">GameAgent<br><small>Structured</small></th><th scope="col">GameAgent<br><small>Hybrid</small></th><th scope="col">GameAgent<br><small>Image</small></th><th scope="col">dsh<br><small>Structured</small></th><th scope="col">dsh<br><small>Hybrid</small></th><th scope="col">dsh<br><small>Image</small></th></tr></thead><tbody id="validation-body"></tbody></table></div>
+      <div id="cell-detail" class="cell-detail arcane-panel" role="status" aria-live="polite"></div>
+      <aside class="scope-note" data-i18n="videoCaveat">*72.014 minutes is encoded duration:27 full live videos and9 with labelled terminal holds, plus6 independent retry aliases. It is not72 minutes of active gameplay. Runtime model metadata is unknown. Original attempts are not rewritten.</aside>
+      <div class="showcase-heading"><h3 data-i18n="showcaseTitle">Glimpses from the journey</h3><p data-i18n="showcaseDescription">Four silent14-second real-time excerpts. All windows precede terminal holds; resolution/frame rate are reduced for the web.</p></div>
+      <div class="video-grid">
+        <figure><video controls playsinline preload="none" poster="assets/tasks/N1.png" aria-label="GameAgent image N1 native gameplay"><source src="assets/videos/n1-gameagent-image.mp4" type='video/mp4; codecs="avc1.64001E"'><source src="assets/videos/n1-gameagent-image.webm" type='video/webm; codecs="vp9"'></video><figcaption><b>GameAgent / Image</b><span>N1 · 00:08–00:22</span></figcaption></figure>
+        <figure><video controls playsinline preload="none" poster="assets/tasks/N5.png" aria-label="GameAgent hybrid N5 native gameplay"><source src="assets/videos/n5-gameagent-hybrid.mp4" type='video/mp4; codecs="avc1.64001E"'><source src="assets/videos/n5-gameagent-hybrid.webm" type='video/webm; codecs="vp9"'></video><figcaption><b>GameAgent / Hybrid</b><span>N5 · 00:08–00:22</span></figcaption></figure>
+        <figure><video controls playsinline preload="none" poster="assets/tasks/N1.png" aria-label="DeepSeek Harness hybrid N1 native gameplay"><source src="assets/videos/n1-dsh-hybrid.mp4" type='video/mp4; codecs="avc1.64001E"'><source src="assets/videos/n1-dsh-hybrid.webm" type='video/webm; codecs="vp9"'></video><figcaption><b>DeepSeek Harness / Hybrid</b><span>N1 · 00:08–00:22</span></figcaption></figure>
+        <figure><video controls playsinline preload="none" poster="assets/tasks/T02.png" aria-label="DeepSeek Harness image T02 native gameplay"><source src="assets/videos/t02-dsh-image.mp4" type='video/mp4; codecs="avc1.64001E"'><source src="assets/videos/t02-dsh-image.webm" type='video/webm; codecs="vp9"'></video><figcaption><b>DeepSeek Harness / Image</b><span>T02 · 00:08–00:22 · retry3</span></figcaption></figure>
+      </div>
+      <p class="source-links"><a href="validation.json" data-i18n="validationSource">Public validation snapshot ↗</a><a href="assets/media-provenance.json" data-i18n="mediaSource">Media hashes & transformations ↗</a></p>
+    </section>
+
+    <section id="start" class="section reveal">
+      <div class="section-heading"><p class="eyebrow" data-i18n="startEyebrow">YOUR NEXT ADVENTURE</p><h2 data-i18n="startTitle">Bring your own agent.</h2><p data-i18n="startDescription">Start with the dependency-free Python core. Native execution needs the pinned build, exact legally obtained assets, a supported GPU/X11 environment and an explicitly bound runtime.</p></div>
+      <div class="start-grid">
+        <article class="arcane-panel"><div class="code-heading"><h3 data-i18n="installTitle">01 / Inspect the harness</h3><button type="button" class="copy-button" data-copy="install-code" data-i18n="copy">Copy</button></div><pre><code id="install-code">git clone https://github.com/wyaaaattwho/VelorenBench.git
+cd VelorenBench
+git checkout release/1.1.0
+python3.13 -B tools/package_source.py --check
+python3.13 -m venv --copies .venv
+.venv/bin/python -m pip install .
+.venv/bin/rpg-benchmark identity
+.venv/bin/rpg-benchmark tasks
+.venv/bin/rpg-benchmark support</code></pre><p class="tiny" data-i18n="installNote">Inspection only: these commands do not obtain game assets, start a world or call a model.</p></article>
+        <article class="arcane-panel"><h3 data-i18n="pathTitle">02 / Follow the source trail</h3><div class="resource-list"><a href="https://github.com/wyaaaattwho/VelorenBench/blob/main/BUILD.md"><span data-i18n="buildLink">Native build & binding</span><span>↗</span></a><a href="https://github.com/wyaaaattwho/VelorenBench/blob/main/API.md"><span data-i18n="apiLink">Agent & provider API</span><span>↗</span></a><a href="https://github.com/wyaaaattwho/VelorenBench/blob/main/SUPPORT.md"><span data-i18n="supportLink">Exact support & admission</span><span>↗</span></a><a href="https://github.com/wyaaaattwho/VelorenBench/blob/main/VISUALIZATION.md"><span data-i18n="viewerLink">Read-only viewer & passive MP4</span><span>↗</span></a><a href="https://github.com/wyaaaattwho/VelorenBench/blob/main/BENCHMARK_CARD.md"><span data-i18n="cardLink">Benchmark card & limitations</span><span>↗</span></a></div><p class="tiny" data-i18n="platformNote">Selected native platform:Linux/aarch64. Other platforms and clean-machine reliability remain unverified. No bundled native binaries, game assets, provider access or GameAgent runtime.</p></article>
+      </div>
+      <article class="citation arcane-panel"><div class="code-heading"><div><p class="eyebrow" data-i18n="citationEyebrow">LEAVE A SCHOLAR’S MARK</p><h3 data-i18n="citationTitle">Cite the world you evaluated.</h3></div><button type="button" class="copy-button" data-copy="bibtex" data-i18n="copyBibtex">Copy BibTeX</button></div><pre><code id="bibtex">@misc{velorenbench2026,
+  title = {VelorenBench: An Open-World 3D Fantasy RPG Benchmark
+           for Autonomous Multimodal and Tool-Using Agents},
+  year = {2026},
+  howpublished = {\url{https://github.com/wyaaaattwho/VelorenBench}},
+  note = {Engineering source 1.1.0; cite the exact commit and configuration}
+}</code></pre><p class="tiny" data-i18n="citationNote">Repository citation, not an invented paper or DOI. Record the exact code/native/profile identities and runtime configuration used.</p></article>
+      <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer><div class="footer-brand">◇ VelorenBench</div><p data-i18n="footerText">Built on the worlds of Veloren and the work of its contributors. Independent research tooling; no official Veloren endorsement.</p><p>MIT harness · GPL-3.0-or-later native source · <a href="assets/NOTICE.md" data-i18n="mediaNotices">Upstream media notices</a> · <a href="https://github.com/wyaaaattwho/VelorenBench">GitHub ↗</a></p></footer>
+
+  <dialog id="quest-dialog" aria-labelledby="quest-dialog-title">
+    <div class="scroll-topline"><span data-i18n="questScroll">GUILD ARCHIVE / QUEST SCROLL</span><button id="close-dialog" type="button" aria-label="Close quest detail">✕</button></div>
+    <div id="quest-detail"></div>
+  </dialog>
+</body>
+</html>

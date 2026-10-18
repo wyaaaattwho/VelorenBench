@@ -3,6 +3,14 @@
 This repository is a source release of independently scoped components,
 not a blanket license for Veloren, its assets or external providers.
 
+The project-site documentation adds real rendered gameplay PNGs and silent
+MP4 excerpts under `docs/assets/`, not a raw asset tree. These images retain
+their upstream art/font terms, **not MIT**. The pinned credits, attribution,
+transformations and source hashes are in [docs/assets/NOTICE.md](docs/assets/NOTICE.md)
+and `docs/assets/media-provenance.json`. Historical source-package exclusions
+below refer to raw assets/binaries, not this later documentation-media addition.
+The local seal and its original evidence objects are unchanged.
+
 The local1.1.0 delivery additionally contains the selected native bundle with
 complete corresponding source and a separate hashed evidence sidecar. Its18
 original game PNGs retain their upstream asset terms; they are evidence, not
@@ -10,7 +18,8 @@ MIT-relicensed art. The GPL Rust evidence object links to the exact included
 native source and build instructions. The source-checkout/Python-package
 asset exclusions below do not describe that separate complete native source
 bundle's already-pinned compile-time resource. No external asset tree, credential
-or official DSH runtime is added. No external publication is authorized here.
+or official DSH runtime is added. That historical local-seal description is not
+a publication authorization.
 
 | Component | Terms and boundary |
 | --- | --- |

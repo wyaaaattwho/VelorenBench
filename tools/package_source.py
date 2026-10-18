@@ -26,7 +26,7 @@ def sha(path):
 
 def source_inventory(root):
     selected = [root / name for name in TOP]
-    for name in ("harness/scripts", "harness/tests", "config", "tools", "native"):
+    for name in ("harness/scripts", "harness/tests", "config", "tools", "native", "docs"):
         selected.extend(path for path in (root / name).rglob("*") if path.is_file()
                         and "__pycache__" not in path.parts
                         and not path.name.endswith((".pyc", ".pyo")))

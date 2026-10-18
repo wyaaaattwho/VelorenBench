@@ -1,0 +1,176 @@
+{
+  "T01": {
+    "title": ["The Resident’s Workshop", "居民指引下的工坊"],
+    "initial": ["Start in Liron without workshop coordinates. A real resident and a real CraftingBench facility provide the missing information through ordinary dialogue and a persistent map marker.", "从 Liron 出发，开局不给工坊坐标。通过真实居民的常规对话与持久地图标记获取真实 CraftingBench 工坊的位置。"],
+    "challenge": ["Ground the offered workshop response in the resident’s dialogue, interpret the marker, choose a route and enter the facility rather than merely reaching town.", "理解居民实际提供的工坊选项，结合标记规划路线，真正进入工坊，而不是只到达城镇。"],
+    "oracle": ["Same actor/session; correlated talk and offered workshop response; received marker for the selected facility with separate private recipient validation; alive, grounded arrival within 1 m horizontal / 0.5 m vertical of the floor point 2 m north of the bench, speed ≤0.1 m/s in two fresh observations ≥0.25 s apart. Missing private marker attribution is unknown, not a clean success.", "要求同一角色与会话；交谈及工坊选项响应可关联；收到所选工坊标记，且有独立私有接收方证据；存活并在工作台北侧 2 米的地面点附近稳定落地：水平≤1米、垂直≤0.5米、速度≤0.1米/秒，两次新鲜观测间隔≥0.25秒。缺少私有标记归因时为未知，不计为干净成功。"]
+  },
+  "T02": {
+    "title": ["The Changing Passage", "骤变的通道"],
+    "initial": ["An authored flat-world route has a central staircase and a lawful north-side alternative. A designated loose apple is available; confirmed pickup triggers real stone collision blocks across the central passage.", "平地场景包含中央阶梯与合法北侧绕行路线。拾取指定散落苹果后，基准编排事件会以真实石块碰撞关闭中央通道。"],
+    "challenge": ["Collect the apple and deliver it while retaining it. Reconcile the changed geometry with the goal; an early alternative route is legal. This is an authored event, not a natural game collapse.", "收集并保留苹果，将其带到目标点。根据变化的地形完成任务；提前选择替代路线也合法。这是基准编排事件，并非游戏自然坍塌。"],
+    "oracle": ["Correlated pickup of the designated supply, ≥1 apple retained, same living actor, and two grounded settled observations at the destination (1 m horizontal, 0.5 m vertical, ≤0.1 m/s, ≥0.25 s apart). The once-only terrain event and legal alternative must qualify. No required collision, particular path or inferred subjective replanning.", "指定补给的拾取可关联，保留≥1个苹果，同一角色存活；目的地两次稳定落地观测满足水平≤1米、垂直≤0.5米、速度≤0.1米/秒、间隔≥0.25秒。一次性地形事件与合法替代路线必须通过环境资格检查。不要求撞墙、特定路线或主观意义上的重新规划。"]
+  },
+  "T03": {
+    "title": ["Food for Now, Reserves for Later", "制作食物，保留储备"],
+    "initial": ["Start with an unlearned food recipe collection, 1 mushroom, 2 twigs and 1 apple. A nearby designated loose supply holds 2 more mushrooms; alternative food recipes share ingredients.", "开局拥有未学习的食物配方集、1个蘑菇、2根树枝与1个苹果。附近指定散落补给含2个蘑菇；备选食谱共享部分原料。"],
+    "challenge": ["Learn recipes, acquire missing mushrooms and craft one mushroom stick without exhausting the backup ingredients.", "学习配方、获取缺少的蘑菇，制作蘑菇串，同时避免耗尽备用原料。"],
+    "oracle": ["Alive same actor/session; actual recipe-group use and unknown→known transition; designated 2-mushroom pickup; own native mushroom_stick craft with output +≥1 and ingredient consumption (2 mushrooms +1 twig); final bag retains ≥1 mushroom stick, ≥1 raw mushroom, ≥1 twig and ≥1 apple simultaneously.", "同一角色与会话存活；实际使用配方集并完成未知→已知转换；拾取指定2个蘑菇；原生 mushroom_stick 制作产生≥1个成品并消耗2个蘑菇与1根树枝；最终背包同时保留≥1个蘑菇串、≥1个生蘑菇、≥1根树枝及≥1个苹果。"]
+  },
+  "T04": {
+    "title": ["A New Coat, an Old Shirt", "新甲与旧衣"],
+    "initial": ["Begin wearing a worker shirt, with 5 raw animal hides and no leather or premade chest armor. A TanningRack and CraftingBench are nearby.", "穿着工人衬衫开局，背包有5张生兽皮，没有皮革或现成胸甲；附近设有鞣皮架与工作台。"],
+    "challenge": ["Discover and execute the hide→leather→rawhide chest chain, wear the result and retain the replaced shirt.", "发现并完成兽皮→皮革→生皮胸甲的工序，穿上新甲并保留换下的衬衫。"],
+    "oracle": ["Own correlated simple_leather transactions consume ≥5 hides and yield ≥5 leather; rawhide_chest transactions consume ≥5 leather and yield ≥1 chest. Actual chest-slot equip must match common.items.armor.hide.rawhide.chest; old worker shirt retained in bag; no hides/leather left; same actor alive throughout sampled history. Unlike C4, wearing the armor is required.", "可关联的 simple_leather 事务消耗≥5张兽皮并产出≥5份皮革；rawhide_chest 事务消耗≥5份皮革并产出≥1件胸甲。实际胸部装备栏为 common.items.armor.hide.rawhide.chest；旧工人衬衫留在背包；兽皮与皮革余量为0；同一角色在采样历史中存活。不同于C4，本任务必须穿上胸甲。"]
+  },
+  "T05": {
+    "title": ["A Measured Recovery", "有节制的恢复"],
+    "initial": ["Safe injured start: exactly 35/100 HP, no residual buffs, and 3 minor potions. Delayed effects and returned containers must be observed, not assumed.", "安全区域受伤开局：恰好35/100生命、无残留增益、3瓶小型药水。需观察延迟效果与返还容器，不能仅凭调用成功推断恢复。"],
+    "challenge": ["Recover to at least 80/100 HP while preserving at least 2 minor potions. Monitor the native health state and finite stock.", "恢复至至少80/100生命，同时保留至少2瓶小型药水；持续监测原生生命状态与有限库存。"],
+    "oracle": ["Correlated consumable use with a negative potion count delta; final HP ≥80 and maximum HP exactly100, health increased from35, ≥2 minor potions retained, same actor/session living with no sampled death. Consumption and later HP are joined; not all net HP is exclusively attributed to one item. Image is task-engineering-only, not capability admission.", "可关联的消耗品使用导致药水数量减少；最终生命≥80、最大生命恰好100，生命高于开局35；保留≥2瓶小型药水；同一角色与会话存活，采样中无死亡。消耗与随后生命变化分别验证，不将全部净生命增长独占归因于单个物品。图像模式仅限task-engineering，不允许capability评测。"]
+  },
+  "C1": {
+    "title": ["The First Mushroom Stick", "第一根蘑菇串"],
+    "initial": ["The character already knows the food recipe and has all ingredients: 2 mushrooms and 1 twig. Flat and natural fixtures are separate terrain cells.", "角色已知食物配方，材料齐备：2个蘑菇与1根树枝。平地与自然地形是分别定义的地形单元。"],
+    "challenge": ["Find the legal craft interface and produce a mushroom stick, keeping rather than eating the product.", "使用合法制作接口产出蘑菇串，并保留而不是吃掉成品。"],
+    "oracle": ["Same living actor/session; no product at opening; own completed native mushroom_stick craft, observed output +≥1 and input deltas ≤−2 mushrooms / ≤−1 twig; matching final inventory consumption and ≥1 product retained.", "同一角色与会话存活；开局无成品；自己的原生 mushroom_stick 制作完成，产出≥1且原料变化为蘑菇≤−2、树枝≤−1；最终背包消耗量对应，并保留≥1个成品。"]
+  },
+  "C2": {
+    "title": ["The Missing Ingredient", "缺失的原料"],
+    "initial": ["Food recipes are known, but only1 mushroom and1 twig are supplied: one mushroom short of the recipe. Nearby loose supplies include the required mushroom and distractors.", "已知食物配方，但只提供1个蘑菇与1根树枝：比配方少1个蘑菇。附近散落补给含必需蘑菇及干扰物。"],
+    "challenge": ["Inspect the recipe and world, select the missing supply, collect it and craft the retained meal.", "检查配方与环境，找到缺少的补给，拾取后制作并保留食物。"],
+    "oracle": ["Same living actor/session; pickup attributed to the exact required supply UID/item; own native craft transactions consume the recipe inputs and yield ≥1 mushroom stick; product absent at opening and retained in the final bag.", "同一角色与会话存活；拾取归属于指定补给UID及物品；自己的原生制作事务消耗食谱原料并产出≥1个蘑菇串；开局无成品，最终背包保留成品。"]
+  },
+  "C3": {
+    "title": ["Read the Recipe", "读懂食物配方"],
+    "initial": ["The character’s food recipes are already known and2 mushrooms plus1 twig are supplied. The public goal does not spell out the recipe procedure. This is not a recipe-unlock task.", "角色已知食物配方，提供2个蘑菇与1根树枝，但公开目标不详细指导工序。本任务并非解锁配方任务。"],
+    "challenge": ["Use normal game information to connect the desired food to its recipe and legal crafting action.", "通过正常游戏信息，将目标食物与对应配方和合法制作动作联系起来。"],
+    "oracle": ["The same native craft/inventory predicate as C1: own completed craft consumes 2 mushrooms and 1 twig, output increases by≥1, product starts absent and remains in inventory, same actor/session alive. No C3U unlock predicate is silently added.", "使用与C1相同的原生制作和背包判据：自己的制作消耗2个蘑菇与1根树枝，成品增长≥1；开局无成品、结束时留在背包；同一角色与会话存活。不会偷偷加入C3U的解锁判据。"]
+  },
+  "C3U": {
+    "title": ["Knowledge Before Craft", "先学习，再制作"],
+    "initial": ["Ingredients and a food recipe collection are supplied, but the character has not learned the recipe group. Future-option discovery is read-only and does not itself unlock anything.", "提供原料与食物配方集，但角色尚未学习该配方组。未来选项查询只读，不会自动解锁配方。"],
+    "challenge": ["Recognize the knowledge gate, use the recipe collection, then craft and retain the mushroom stick.", "识别知识门槛，实际使用配方集，再制作并保留蘑菇串。"],
+    "oracle": ["C1’s own native craft, ingredient consumption, retained product and survival predicates, plus a correlated recipe-collection use action with definition count delta −1. Opening knowledge is fixture-validated as unlearned. Model ignorance is not inferred from character ignorance.", "满足C1的原生制作、原料消耗、成品保留与存活判据，另外需要可关联的配方集使用动作，物品数量变化为−1。夹具验证开局配方未学习。角色未知不等于模型知识未知。"]
+  },
+  "C4": {
+    "title": ["Hide to Leather to Armor", "从兽皮到胸甲"],
+    "initial": ["Start with 5 raw animal hides, no leather and no rawhide chest. Nearby stations provide the multi-stage native production chain.", "开局拥有5张生兽皮，没有皮革或生皮胸甲；附近工作站支持原生多工序制作链。"],
+    "challenge": ["Find the appropriate stations and recipes, produce leather and turn it into a chest armor. Keep the finished chest in the bag; equipping is not the C4 goal.", "寻找合适工作站与配方，先制皮再做胸甲。成品必须留在背包；C4目标不是穿戴。"],
+    "oracle": ["Own correlated craft transactions consume≥5 hides / yield≥5 leather, then consume≥5 leather / yield≥1 rawhide chest. Final bag retains≥1 chest with zero hides and zero leather; same actor/session alive. No pre-created intermediate/product at opening.", "自己的可关联制作事务先消耗≥5张兽皮、产出≥5份皮革，再消耗≥5份皮革、产出≥1件生皮胸甲。最终背包保留≥1件胸甲，兽皮与皮革余量为0；同一角色与会话存活；开局不存在预制中间产物或成品。"]
+  },
+  "B1": {
+    "title": ["The Green Legoom", "绿蘑菇人遭遇战"],
+    "initial": ["A designated hostile male Green Legoom uses its unchanged native loadout. The player has starter equipment and 2 minor potions; native enemy AI remains autonomous.", "指定敌对雄性绿蘑菇人使用未改变的原生装备。玩家有初始装备及2瓶小型药水，敌方原生AI保持自主运行。"],
+    "challenge": ["Choose attacks, spacing and recovery to defeat the exact enemy and survive; disappearance alone is not death.", "自主选择攻击、距离与恢复方式，击败指定敌人并存活；敌人消失本身不算死亡。"],
+    "oracle": ["Exact target UID/control lifecycle, own server-attributed Attack damage, observed native target HP=0/dead, and player alive in the same session. B1–B3 additionally require the player to be the last observed damaging contributor; this is not an explicit death-transaction proof and differs from T06–T08.", "目标UID及控制生命周期精确匹配；存在服务器归因于玩家的Attack伤害；观测到目标原生生命为0或死亡；同一会话玩家存活。B1–B3还要求玩家是最后一次观测到的伤害贡献者；这不是独立死亡事务证明，且不同于T06–T08。"]
+  },
+  "B2": {
+    "title": ["The Wolf", "原野上的狼"],
+    "initial": ["A designated hostile male Wolf with native FromBody loadout is spawned in a flat or natural fixture. Starter gear and 2 minor potions are available.", "在平地或自然地形中生成指定敌对雄性狼，使用原生FromBody装备；玩家拥有初始装备与2瓶小型药水。"],
+    "challenge": ["Track the moving native enemy, manage contact and recovery, and resolve the encounter without dying.", "追踪移动的原生敌人，控制接敌与恢复，在不死亡的前提下解决遭遇战。"],
+    "oracle": ["Same living actor/session; exact Wolf lifecycle; own server-attributed Attack damage; target death directly observed; player is last observed damaging contributor. Despawn or lost visibility is not success; the engine exposes no explicit death transaction ID for this original family.", "同一角色与会话存活；精确匹配狼的生命周期；存在服务器归因的玩家Attack伤害；直接观测目标死亡；玩家是最后观测伤害贡献者。实体卸载或离开视野不算成功；原始任务族无独立死亡事务ID。"]
+  },
+  "B3": {
+    "title": ["The Ogre", "食人魔之战"],
+    "initial": ["The designated hostile male Ogre retains its native loadout. The player uses starter gear and finite recovery stock in a flat or natural fixture; difficulty is not model-calibrated.", "指定敌对雄性食人魔保留原生装备。玩家使用初始装备与有限恢复库存，场景可为平地或自然地形；难度未通过模型表现校准。"],
+    "challenge": ["Select positioning, attack opportunities and consumable use against the native Ogre while preserving survival.", "面对原生食人魔选择站位、攻击窗口与消耗品使用时机，保持存活。"],
+    "oracle": ["Exact Ogre lifecycle, own server-attributed Attack damage, observed HP=0/dead target, last observed damaging contribution by the player, and same actor/session alive. This bounded attribution rule is not an unobserved last-blow claim.", "食人魔生命周期匹配；服务器归因的玩家Attack伤害；观测目标生命为0或死亡；玩家为最后观测伤害贡献者；同一角色与会话存活。该有限归因规则不等价于未观测到的最后一击断言。"]
+  },
+  "T06": {
+    "title": ["Four Weapons, One Encounter", "四种武器，同一遭遇"],
+    "initial": ["One Green Legoom encounter has sword, bow, staff and sceptre conditions, with finite recovery items. These are four configured variants of one task, not four professions or equally difficult tiers.", "同一绿蘑菇人遭遇战设剑、弓、法杖与权杖条件，并提供有限恢复道具。这是一个任务的四种配置，不是四个职业，也不预设难度相等。"],
+    "challenge": ["Understand the selected build’s real controls, contribute damage and resolve the encounter while surviving. No prescribed attack sequence or last blow.", "理解当前配置的真实操作，造成伤害并在存活前提下解决遭遇战。不限定攻击顺序或最后一击。"],
+    "oracle": ["Private server entity/UID registry valid; designated target native death; own sourced health-damage applications joined to submitted combat intents; living same actor with no native/sampled death. All four weapon conditions are exact separate qualification selections, not separate tasks.", "私有服务器实体与UID注册有效；指定目标发生原生死亡；玩家来源的实际伤害应用与提交的战斗意图关联；同一角色存活且无原生或采样死亡。四种武器配置对应独立资格选择，但不是独立任务。"]
+  },
+  "T07": {
+    "title": ["Forge an Active Sword Build", "构建主动剑技"],
+    "initial": ["Sword group unlocked; 4 finite Sword points, 0 unspent General points, actual native prerequisites, multiple legal active choices and 2 minor potions.", "剑技能组已解锁；有4点有限剑技能点、0点未用通用点数，遵循真实原生前置条件；存在多种合法主动技能选择，并有2瓶小型药水。"],
+    "challenge": ["Learn a legal active build, configure a learned ability in an auxiliary slot, and use that configured learned ability to cause damage before resolving the encounter.", "学习合法主动构筑，将学到的技能配置到辅助栏位，并实际用配置的已学技能造成伤害，最终解决遭遇战。"],
+    "oracle": ["Confirmed native unlock increases a learned skill level by1 and reduces points by its positive expected cost; confirmed auxiliary configuration matches the requested ability. A causally attributed original Sword/MainWeaponAux attack must join the same learned active skill, configured slot, auxiliary-use intent and final learned skill to actual damaging application on the designated Legoom. The target must natively die, the player contribute damage and survive. Missing/ambiguous configured-effect provenance remains unknown; basic attacks alone cannot satisfy the learned-effect gate.", "确认原生解锁使技能等级增加1，并按正的预期费用扣除点数；辅助技能配置确认值必须匹配请求。具有因果归因的原始Sword/MainWeaponAux攻击，必须将同一已学主动技能、配置栏位、辅助使用意图与最终已学技能状态，关联到指定绿蘑菇人的实际伤害。目标必须原生死亡，玩家有伤害贡献并存活。缺失或歧义的技能效果来源保持未知；只有普通攻击不能满足已学技能效果门槛。"]
+  },
+  "T08": {
+    "title": ["Melee, Arrows and Cover", "近战、箭矢与掩体"],
+    "initial": ["Simultaneous Green Legoom and Haniwa Archer threats. The archer keeps native weapon/armor/skills but starts at a disclosed25 HP. Solid rock cover, a raised block and open flanks have real collision; a starter staff is optional.", "同时面对绿蘑菇人与埴轮弓手。弓手保留原生武器、护甲与技能，但开局经公开说明受伤至25生命。岩石掩体、抬高方块及开放侧翼具有真实碰撞；可选用初始法杖。"],
+    "challenge": ["Choose target order, range, flanks and recovery under concurrent melee/ranged pressure. Cover, luring and the extra staff are available, not mandatory tactics.", "在近战与远程压力下选择目标顺序、距离、侧翼和恢复方式。可使用掩体、引诱或额外法杖，但不强制特定战术。"],
+    "oracle": ["Both exact registered targets must have native death events; own server-sourced damaging contribution joined to combat intents for each; same player alive with no sampled/native death. No last blow required, and success alone does not prove cover use or tactical reasoning.", "两个精确注册目标都必须出现原生死亡事件；玩家对每个目标均有服务器来源伤害并与战斗意图关联；同一玩家存活且无采样或原生死亡。不要求最后一击；成功本身不证明使用掩体或战术推理。"]
+  },
+  "T09": {
+    "title": ["A Companion’s Lifeline", "同伴的生命线"],
+    "initial": ["A genuine native-Group companion starts at60/100 HP. The player holds a sceptre and4 finite combo from an expired disclosed setup resource buff. Setup healing never counts.", "真实原生队伍同伴从60/100生命开始。玩家持权杖，并有来自已过期且公开说明的布置增益的4点有限连击资源；布置阶段治疗不计入完成。"],
+    "challenge": ["Use the sceptre to actually heal the other Group member, keep both alive and resolve the Legoom threat. Self-healing and self potions are not companion support.", "使用权杖实际治疗另一位队伍成员，保持双方存活并解决绿蘑菇人威胁。自疗与自用药水不算同伴支援。"],
+    "oracle": ["Submitted secondary-cast intent; source-attributed native Regeneration health application to the distinct same-Group companion; companion reaches≥61/100 HP and remains alive; enemy native death and player survival. No player last blow or player damage contribution is required by this support scorer.", "提交副手施法意图；原生Regeneration治疗应用可归因于玩家并作用于另一位同组同伴；同伴生命达到≥61/100且存活；敌人原生死亡，玩家存活。此支援评分器不要求玩家最后一击或玩家伤害贡献。"]
+  },
+  "N1": {
+    "title": ["Beyond the Wall", "绕过眼前高墙"],
+    "initial": ["A flat authored wall_side_detour layout exposes an explicit player-visible rendezvous. The obstruction is read back as real native solid geometry.", "平地wall_side_detour布局提供玩家可见的明确会合点；障碍经回读确认是真实原生实体几何。"],
+    "challenge": ["Read local geometry and reach the destination around the wall using owned movement rather than a private route or teleport.", "读取局部几何，通过自身移动绕墙到达目的地，不使用私有路线或传送。"],
+    "oracle": ["Same living actor/session plus the original two-fresh-sample settled-arrival predicate: horizontal≤1 m, vertical≤1 m, speed≤0.1 m/s, samples≥0.25 s apart with advancing native ticks. This original navigation family does not add T01/T02’s explicit on_ground gate.", "同一角色与会话存活，并满足原始两次新鲜稳定到达判据：水平≤1米、垂直≤1米、速度≤0.1米/秒，间隔≥0.25秒且原生tick前进。该原始导航族不额外加入T01/T02明确的on_ground门槛。"]
+  },
+  "N2": {
+    "title": ["The Staggered Path", "交错的S形路"],
+    "initial": ["The flat staggered_s_turn authored layout requires several local heading changes. Despite the historical supply_rendezvous template name, this fixture has no required supply pickup.", "平地staggered_s_turn编排布局需要多次局部转向。尽管历史模板名叫supply_rendezvous，该夹具没有必需拾取补给。"],
+    "challenge": ["Maintain the visible coordinate goal across a sequence of staggered obstacles and settle accurately at the rendezvous.", "在连续交错障碍中保持坐标目标，并在会合点精确稳定停下。"],
+    "oracle": ["Original native navigation arrival only: same living actor/session, final two correlated fresh samples with advancing ticks, ≥0.25 s apart, horizontal≤1 m / vertical≤1 m / speed≤0.1 m/s. No pickup success condition is invented from the template name.", "只检查原始原生导航到达：同一角色与会话存活，最后两次关联新鲜采样tick前进、间隔≥0.25秒，水平≤1米、垂直≤1米、速度≤0.1米/秒。不会根据模板名虚构拾取成功条件。"]
+  },
+  "N3": {
+    "title": ["The Side Steps", "踏上侧向阶梯"],
+    "initial": ["A flat-authored elevation_side_steps layout presents real elevated collision geometry and a player-visible goal.", "平地编排的elevation_side_steps布局包含真实高差碰撞几何及玩家可见目标。"],
+    "challenge": ["Reason about elevation and lawful side access rather than stopping at the goal’s horizontal projection.", "理解高差与合法侧向通路，不能只停在目标的水平投影位置。"],
+    "oracle": ["Same living actor/session and original settled two-sample arrival: horizontal≤1 m and vertical≤1 m, speed≤0.1 m/s, advancing ticks, ≥0.25 s apart. Horizontal proximity alone is insufficient.", "同一角色与会话存活，满足原始两次稳定到达采样：水平≤1米且垂直≤1米、速度≤0.1米/秒、tick前进、间隔≥0.25秒。只有水平接近并不够。"]
+  },
+  "N4": {
+    "title": ["A Longer Way Through", "穿越长途障碍"],
+    "initial": ["The flat long_distance_windows layout exposes the destination but requires sustained movement through authored geometry.", "平地long_distance_windows布局公开目的地，但需要持续穿越编排几何障碍。"],
+    "challenge": ["Retain the long-range goal while grounding local movement decisions and avoiding premature arrival claims.", "保留长程目标，以局部观测指导移动，避免过早宣称到达。"],
+    "oracle": ["Same living actor/session and original settled-arrival pair (horizontal≤1 m, vertical≤1 m, speed≤0.1 m/s, fresh advancing ticks, ≥0.25 s separation). Path length or issuing move commands alone is not success.", "同一角色与会话存活，满足原始稳定到达采样对：水平≤1米、垂直≤1米、速度≤0.1米/秒、新鲜tick前进、间隔≥0.25秒。移动距离或仅发出移动指令不算成功。"]
+  },
+  "N5": {
+    "title": ["An Apple at Journey’s End", "旅途终点的苹果"],
+    "initial": ["A natural-world destination is explicitly given in player-visible coordinates about512 m east of the authored origin. A designated native apple drop waits at the endpoint; this is not named-site localization.", "自然地形中以玩家可见坐标明确给出目的地，约在编排起点以东512米。终点有指定原生苹果掉落物；这不是按地名定位任务。"],
+    "challenge": ["Travel across native terrain, settle at the endpoint and collect the exact apple. The drop has its native300-game-second lifetime; expiry is possible, not assumed from a clock alone.", "跨越原生地形，在终点稳定停下并拾取指定苹果。掉落物具有原生300游戏秒寿命；可能过期，但不能仅凭时钟断言已删除。"],
+    "oracle": ["Original two-sample settled arrival (1 m horizontal /1 m vertical /≤0.1 m/s /≥0.25 s with advancing ticks), same player alive, exact supply UID/item pickup attribution and final apple count greater than opening. Arrival and pickup availability are separate evidence; arrival alone is not full success.", "满足原始两次稳定到达：水平≤1米、垂直≤1米、速度≤0.1米/秒、间隔≥0.25秒且tick前进；同一玩家存活，精确补给UID及物品拾取可归因，最终苹果数高于开局。到达与拾取可用性分开举证；仅到达不是完整成功。"]
+  },
+  "N6": {
+    "title": ["Recover the Route", "重新找回路线"],
+    "initial": ["The recovery fixture displaces the actor natively before measurement while preserving the explicit macro destination. This is a setup-only displacement, not an undisclosed mid-run intervention.", "recovery夹具在测量前通过原生方式位移角色，同时保留明确的宏观目的地。这是布置阶段位移，不是未披露的运行中干预。"],
+    "challenge": ["Re-localize from the displaced opening, preserve the overall goal and navigate to a stable arrival.", "从位移后的开局重新定位，保持总体目标并导航至稳定到达。"],
+    "oracle": ["Same living actor/session, original two fresh correlated samples at the preserved goal, horizontal≤1 m /vertical≤1 m /speed≤0.1 m/s, advancing ticks and ≥0.25 s separation. No measured forced perturbation or subjective recovery inference is required.", "同一角色与会话存活，在保留目标处有原始两次新鲜关联采样：水平≤1米、垂直≤1米、速度≤0.1米/秒，tick前进且间隔≥0.25秒。不要求测量期间强制扰动或主观恢复推断。"]
+  },
+  "N7": {
+    "title": ["The Road to Spausalm", "通往Spausalm之路"],
+    "initial": ["The public goal names the real native Town Spausalm, without destination coordinates or route. Native known-sites/map information supplies lawful localization; opening distance is at least320 m.", "公开目标仅给出真实原生城镇Spausalm的名字，不提供目的地坐标或路线。正常已知地点/地图信息提供合法定位线索；开局距离至少320米。"],
+    "challenge": ["Resolve a town label through ordinary map knowledge, plan a long journey and enter the correct loaded native site.", "通过常规地图知识解析城镇名称，规划长程旅行并进入正确的已加载原生地点。"],
+    "oracle": ["Two fresh correlated observations ≥0.25 s apart, advancing ticks, grounded and speed≤0.1 m/s; within32 m horizontal /6 m vertical of the qualified town center; native current-site name exactly matches the destination with loaded_chunk=true; same player alive. A64 m approach region is diagnostic, not the success radius.", "两次新鲜关联观测间隔≥0.25秒、tick前进、落地且速度≤0.1米/秒；距合格城镇中心水平≤32米、垂直≤6米；原生current-site名称精确匹配且loaded_chunk=true；同一玩家存活。64米接近区域仅作诊断，不是成功半径。"]
+  },
+  "X1": {
+    "title": ["A Meal, a Fight, a Rendezvous", "食物、战斗与会合"],
+    "initial": ["A natural fixture composes C2’s partial-supply mushroom-stick crafting, a B1 Green Legoom encounter and a separate rendezvous apple. No strategic ordering is scripted.", "自然场景组合C2的部分补给蘑菇串制作、B1绿蘑菇人遭遇战与独立会合点苹果。不编排策略顺序。"],
+    "challenge": ["Allocate attention and resources among gathering, crafting, combat and travel, retaining all end goals instead of forgetting earlier work.", "在采集、制作、战斗与旅行之间分配注意和资源，保持所有终点条件而不遗忘早先目标。"],
+    "oracle": ["Conjunction of the unchanged component scorers: C2 exact supply pickup, native craft/input effects and retained mushroom stick; B1 exact target death, own damage and last observed damaging contribution with survival; navigation settled arrival plus pickup/retention of the separate rendezvous apple. All must hold for one living actor/session.", "原组件评分器的合取：C2指定补给拾取、原生制作与原料效果、保留蘑菇串；B1指定目标死亡、玩家伤害及最后观测伤害贡献、存活；导航稳定到达并拾取保留独立会合点苹果。所有条件必须由同一存活角色与会话满足。"]
+  },
+  "X2": {
+    "title": ["A Different Recipe, the Same Horizon", "不同食谱，同一长程目标"],
+    "initial": ["The mixed composition swaps in apples_stick (1 apple +1 twig), supply offset[12,8] and rendezvous offset[64,−16]. It uses the same seed130626853, not an unseen seed or necessarily unknown recipe.", "混合任务改用apples_stick配方（1个苹果+1根树枝），补给偏移[12,8]，会合点偏移[64,−16]。仍使用种子130626853，不宣称未见种子或必然未知配方。"],
+    "challenge": ["Adapt resource choices and route to the changed recipe/layout, retain an apple stick and the distinct rendezvous apple, and survive the encounter.", "适应改变的食谱与布局，保留苹果串和独立会合点苹果，并在遭遇战中存活。"],
+    "oracle": ["Same conjunction as X1 with the declared recipe override: required ingredient pickup; actual apples_stick craft with1 apple /1 twig consumed and product retained; B1 native death/own damage/last observed contributor; settled destination arrival and exact rendezvous apple pickup with final apple count above opening. Held-out means composition/layout/recipe, not new seed.", "按声明的食谱覆盖执行与X1相同的合取：必需原料拾取；实际apples_stick制作消耗1个苹果及1根树枝并保留成品；B1原生死亡、玩家伤害和最后观测贡献；稳定到达并精确拾取会合点苹果，最终苹果数高于开局。留出条件指组合、布局及食谱，并非新种子。"]
+  },
+  "T10": {
+    "title": ["The Merchant’s Exchange", "商人的交易"],
+    "initial": ["The player starts at100 HP with10,000 coins and10 twigs. The opening goal identifies the real merchant, stocked rawhide chest and reserves. Native bilateral offers expose stock and prices; legal payment combinations are not hardcoded.", "玩家以100生命、10,000金币与10根树枝开局。开局目标指出真实商人、在售生皮胸甲与储备要求。原生双边报价公开库存与价格，不硬编码付款组合。"],
+    "challenge": ["Sell at least1 surplus twig, buy the specified chest, wear it, and keep at least20 coins and2 twigs while alive.", "卖出至少1根多余树枝，买入指定胸甲并穿戴，同时存活并保留至少20金币及2根树枝。"],
+    "oracle": ["Actual committed merchant exchanges with exact parties/lifecycles/offers and inventory causality; ≥1 purchased target chest absent at opening; ≥1 twig sold with actual payment; correlated chest equip and correct final equipment slot; all reserves retained; same player alive. Native FinishedTrade has no TradeId: this documented attribution limit remains.", "实际提交的商人交易需匹配双方、生命周期、报价与背包因果；购入≥1件开局不存在的目标胸甲；卖出≥1根树枝并有实际支付；胸甲穿戴动作可关联且最终装备栏正确；保留全部储备，同一玩家存活。原生FinishedTrade无TradeId，保留这一已披露归因限制。"]
+  },
+  "T11": {
+    "title": ["A Message for the Right Person", "交给正确收信人的信"],
+    "initial": ["A real NPC offers a fresh, unaccepted native Message courier contract in the seed1337 NPC world. The player starts at100 HP with at least3 free bag slots and no active quest. Identity/place clues and plausible local people must be distinguished; this is not an item-delivery contract.", "种子1337的NPC世界中，真实NPC提供尚未接取的新鲜原生Message信使合同。玩家以100生命、至少3个空背包位且无活动任务开局。需要区分身份、地点线索与当地人物；这不是物品递送合同。"],
+    "challenge": ["Accept through ordinary dialogue, preserve the contract identity, find the correct recipient and deliver for a real inventory reward.", "通过常规对话接取，记住合同身份，找到正确收信人并递送，领取真实背包奖励。"],
+    "oracle": ["Exact offered yes-response acceptance; one new matching unresolved Courier/Message quest with the player as messenger, correct distinct source/target actors and recipient arbiter; native resolution=true and actual reward insertion into the player bag; same actor/session alive with no sampled/private native death.", "精确匹配提供的yes接受响应；出现唯一新的未结算Courier/Message任务，信使为玩家，发件人与收件人身份正确且不同，仲裁者为收件人；原生resolution=true且奖励实际插入玩家背包；同一角色与会话存活，无采样或私有原生死亡。"]
+  },
+  "T12": {
+    "title": ["The Slay Contract", "兑现讨伐合同"],
+    "initial": ["A real giver offers a fresh native Slay contract in the seed1337 NPC world. The player starts at100 HP with an optional basic bow; the actual target begins more than32 and at most96 m away. The offered target is captured consistently during setup; lawful clues/markers identify it, and no post-offer relocation substitutes a different target.", "种子1337的NPC世界中，真实发布者提供新鲜原生Slay合同。玩家以100生命及一把可选基础弓开局，实际目标初始距离大于32米且不超过96米。布置期间一致捕获合同目标；合法线索/标记指向目标，不在报价后通过位移替换成其他目标。"],
+    "challenge": ["Accept, locate and defeat the contracted monster with valid own combat contribution, then return alive to report and obtain the native reward.", "接取任务，找到并以有效自身战斗贡献击败合同怪物，然后活着返回汇报并获得原生奖励。"],
+    "oracle": ["Exact offered acceptance and one new matching Slay quest (player slayer, actual target actor, giver arbiter); target native death and public player contribution after activation with run/actor/tick scope; native resolution=true and actual player reward inserted; same actor alive with no sampled/private death. No prescribed build or last blow. Historical structured replay is not a fresh native success.", "精确接受报价并出现唯一新匹配Slay任务（玩家为讨伐者、目标为实际目标角色、发布者为仲裁者）；激活后在运行/角色/tick范围内出现目标原生死亡及公开玩家贡献；原生resolution=true且奖励实际插入玩家背包；同一角色存活且无采样或私有死亡。不要求特定构筑或最后一击。历史结构化重放不等于新鲜原生成功。"]
+  }
+}
