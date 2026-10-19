@@ -8,6 +8,7 @@ from scripts.rpg_benchmark import setup as native
 from scripts.rpg_benchmark.scene import counts, item_id
 
 LEGACY_TEMPLATES = {name: "single_creature" for name in ("B1", "B2", "B3")}
+PARAMETERS = ("mainhand",)
 TEMPLATES = {"single_creature": {
     "requires": ["movement", "combat", "inventory"],
     "required": ["asset", "body", "consumables", "loadout_provenance"],
@@ -22,6 +23,10 @@ def validate_definition(definition):
             or any(type(amount) is not int or amount <= 0
                    for amount in definition["consumables"].values())):
         raise ValueError("single_creature: invalid body/asset/consumable parameters")
+    if "mainhand" in definition and not (
+            isinstance(definition["mainhand"], str)
+            and definition["mainhand"].startswith("common.items.weapons.")):
+        raise ValueError("single_creature: invalid mainhand")
 
 
 def mechanism_verified(score):
@@ -32,6 +37,11 @@ async def setup(admin, actor, definition: dict, terrain: str) -> dict:
     initialization = await native.isolate_initial_spawn(admin, actor)
     cleanup = await native.clean_inventory(admin, actor)
     placement = await native.site(admin, actor, terrain, definition["placements"], (28, 24))
+    mainhand = definition.get("mainhand", "common.items.weapons.sword.starter")
+    if mainhand != "common.items.weapons.sword.starter":
+        from .combat_support import equip
+        await equip(admin, actor, mainhand)
+        cleanup["replaced_weapon_inventory"] = await native.clean_inventory(admin, actor)
     for item, amount in definition["consumables"].items():
         await native.gift(admin, actor, item, amount)
     start = placement["start"]
@@ -53,12 +63,13 @@ async def setup(admin, actor, definition: dict, terrain: str) -> dict:
     opening = await actor.request("observe")
     if opening["survival"].get("buffs"):
         raise RuntimeError("combat player has residual setup buffs")
-    if item_id(opening["survival"]["equipment"]["active_mainhand"]) != "common.items.weapons.sword.starter":
-        raise RuntimeError("combat player weapon differs from fixed starter sword")
+    expected_equipment = {**definition["player_equipment"], "active_mainhand": mainhand}
+    if item_id(opening["survival"]["equipment"]["active_mainhand"]) != mainhand:
+        raise RuntimeError("combat player weapon differs from declared mainhand")
     if counts(opening) != definition["consumables"]:
         raise RuntimeError("combat consumable inventory differs from manifest")
     equipment = {key: item_id(item) for key, item in opening["survival"]["equipment"].items() if item}
-    if equipment != definition["player_equipment"]:
+    if equipment != expected_equipment:
         raise RuntimeError("combat equipped loadout differs from manifest")
     if any(group["available_points"] != 0 or group["unlockable_now"] for group in opening["skill_tree"]["groups"]):
         raise RuntimeError("combat fixed cleared skill set did not take effect")

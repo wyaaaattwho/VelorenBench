@@ -8,6 +8,7 @@ import pytest
 from scripts.rpg_benchmark import combat_support, crafting, crafting_recovery as family, scene, setup, suite
 from scripts.rpg_benchmark.renderer_support import admit_selection, support_matrix
 from tests.test_rpg_scenes import craft_receipt
+from .test_rpg_b3_upgrade import approved_b3_loadout
 
 
 DEFINITIONS = suite.load(Path(suite.__file__).with_name("scenes.json"))
@@ -80,7 +81,7 @@ def test_exact_additions_and_preserved_catalog_semantics():
     assert len(old["scenes"]) == 17 and len(entries) == 29
     assert set(entries) - {row["id"] for row in old["scenes"]} == {f"T{i:02}" for i in range(1, 13)}
     for entry in old["scenes"]:
-        assert entries[entry["id"]] == entry
+        assert entries[entry["id"]] == approved_b3_loadout(entry)
     for key in ("placements", "player_equipment", "seeds", "schema"):
         assert actual[key] == old[key]
 

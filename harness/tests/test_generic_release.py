@@ -26,8 +26,23 @@ def example_manifest(tmp_path):
     return path, example["id"]
 
 
-def test_original_catalog_and_scorer_provenance_not_rehashed_to_green():
-    assert hashlib.sha256((PACKAGE / "scenes.json").read_bytes()).hexdigest() == (
+def test_only_approved_b3_loadout_changes_catalog_and_preserves_scorer_provenance():
+    # Undo only the explicitly approved B3 fields in memory. Recovering the
+    # original byte hash keeps all other 28 scenes, globals and B3 fields strict;
+    # the current full-file identity is separately pinned in test_candidate054.
+    original = json.loads((PACKAGE / "scenes.json").read_text())
+    assert len(original["scenes"]) == 29
+    b3 = next(row for row in original["scenes"] if row["id"] == "B3")
+    assert b3.pop("mainhand") == "common.items.weapons.sword.frost-1"
+    assert b3["consumables"] == {"common.items.consumable.potion_minor": 3}
+    b3["consumables"]["common.items.consumable.potion_minor"] = 2
+    provenance = (
+        "exact-body derivative of common.entity.wild.aggressive.ogre; native FromBody Male Ogre "
+        "selects common.items.npc_weapons.hammer.ogre_hammer before NPC construction")
+    assert b3["loadout_provenance"] == (
+        provenance + "; player equipped with common.items.weapons.sword.frost-1")
+    b3["loadout_provenance"] = provenance
+    assert hashlib.sha256((json.dumps(original, indent=2) + "\n").encode()).hexdigest() == (
         "a3ebef6fe7120633c23da32cc7610bf65a95b05a079216a4202fde415d24c8be")
     assert hashlib.sha256((PACKAGE / "npc_contracts.py").read_bytes()).hexdigest() == (
         "a991347b287e57fbd4a1ef396cd268a32ec6dba111c547fd9e1708b155654bde")

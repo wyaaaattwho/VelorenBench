@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import pytest
 
 from scripts.rpg_benchmark import combat_support as family, native_outcomes as oracle, providers, renderer, renderer_support, run, suite
+from .test_rpg_b3_upgrade import approved_b3_loadout
 
 
 def event(name, data, sequence=1):
@@ -94,7 +95,7 @@ def test_preserves_all_twenty_definitions_and_legacy_semantic_files():
     actual = {row["id"]: row for row in current["scenes"]}
     assert len(expected) == 20 and len(actual) == 29
     assert set(actual) - set(expected) == family.TASK_IDS | {"T01", "T02", "T10", "T11", "T12"}
-    assert all(actual[key] == value for key, value in expected.items())
+    assert all(actual[key] == approved_b3_loadout(value) for key, value in expected.items())
     assert actual["T06"]["variants"] == ["sword", "bow", "staff", "sceptre"]
 
 

@@ -68,6 +68,15 @@ class SiteContract(unittest.TestCase):
         t05 = next(t for t in data["tasks"] if t["id"] == "T05")
         self.assertEqual(t05["imagePolicy"], "task-engineering-only")
 
+    def test_approved_b3_loadout_is_published_in_both_languages(self):
+        task = next(t for t in payload()["tasks"] if t["id"] == "B3")
+        for lang, stock in (("en", "3 minor potions"), ("zh", "3瓶小型药水")):
+            self.assertIn("common.items.weapons.sword.frost-1", task[lang]["initial"])
+            self.assertIn(stock, task[lang]["initial"])
+        readme = (ROOT / "README.md").read_text()
+        b3 = readme.split('<details id="task-b3">', 1)[1].split("</details>", 1)[0]
+        self.assertIn(task["en"]["initial"], b3)
+
     def test_media_is_complete_native_size_hashed_and_not_task_relabelled(self):
         data = payload()
         media = json.loads((DOCS / "assets/media-provenance.json").read_text())

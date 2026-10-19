@@ -223,10 +223,11 @@
           "body_type": "Male"
         }
       },
+      "mainhand": "common.items.weapons.sword.frost-1",
       "consumables": {
-        "common.items.consumable.potion_minor": 2
+        "common.items.consumable.potion_minor": 3
       },
-      "loadout_provenance": "exact-body derivative of common.entity.wild.aggressive.ogre; native FromBody Male Ogre selects common.items.npc_weapons.hammer.ogre_hammer before NPC construction",
+      "loadout_provenance": "exact-body derivative of common.entity.wild.aggressive.ogre; native FromBody Male Ogre selects common.items.npc_weapons.hammer.ogre_hammer before NPC construction; player equipped with common.items.weapons.sword.frost-1",
       "task": "Defeat the hostile male Ogre in this encounter and survive. Choose your own combat tools, positioning and recovery."
     },
     {

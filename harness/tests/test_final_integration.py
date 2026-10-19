@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, patch
 import pytest
 
 from scripts.rpg_benchmark import npc_contracts, suite
+from .test_rpg_b3_upgrade import approved_b3_loadout
 
 
 def test_release041_catalog_preservation():
@@ -21,7 +22,7 @@ def test_release041_catalog_preservation():
                     key: value for key, value in current.items() if key not in {
                         "fixture_version", "qualification"}}
         else:
-            assert current == original
+            assert current == approved_b3_loadout(original)
     assert {key: value for key, value in before.items() if key != "scenes"} == {
         key: value for key, value in after.items() if key != "scenes"}
 

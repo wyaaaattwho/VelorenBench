@@ -503,13 +503,13 @@ window.VELOREN_DATA = {
       "source": "harness/scripts/rpg_benchmark/combat.py",
       "en": {
         "title": "The Ogre",
-        "initial": "The designated hostile male Ogre retains its native loadout. The player uses starter gear and finite recovery stock in a flat or natural fixture; difficulty is not model-calibrated.",
+        "initial": "The designated hostile male Ogre (320 HP) retains its native Ogre hammer loadout. The player starts with the native Epic two-handed Frost Saw (common.items.weapons.sword.frost-1), otherwise unchanged starter equipment, and 3 minor potions in a flat or natural fixture; difficulty is not model-calibrated.",
         "challenge": "Select positioning, attack opportunities and consumable use against the native Ogre while preserving survival.",
         "oracle": "Exact Ogre lifecycle, own server-attributed Attack damage, observed HP=0/dead target, last observed damaging contribution by the player, and same actor/session alive. This bounded attribution rule is not an unobserved last-blow claim."
       },
       "zh": {
         "title": "食人魔之战",
-        "initial": "指定敌对雄性食人魔保留原生装备。玩家使用初始装备与有限恢复库存，场景可为平地或自然地形；难度未通过模型表现校准。",
+        "initial": "指定敌对雄性食人魔（320生命）保留原生食人魔战锤装备。玩家主手改为原生史诗双手剑Frost Saw（common.items.weapons.sword.frost-1），其余初始装备不变，并配备3瓶小型药水；场景可为平地或自然地形，难度未通过模型表现校准。",
         "challenge": "面对原生食人魔选择站位、攻击窗口与消耗品使用时机，保持存活。",
         "oracle": "食人魔生命周期匹配；服务器归因的玩家Attack伤害；观测目标生命为0或死亡；玩家为最后观测伤害贡献者；同一角色与会话存活。该有限归因规则不等价于未观测到的最后一击断言。"
       },

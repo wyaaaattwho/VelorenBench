@@ -10,6 +10,7 @@ import pytest
 from scripts.rpg_benchmark import navigation_tasks as tasks, scene, suite
 from scripts.rpg_benchmark.renderer_support import admit_selection, support_matrix
 from tests.test_crafting_recovery import observed, action_receipt
+from .test_rpg_b3_upgrade import approved_b3_loadout
 
 
 def sample(tick, seconds, goal, items=None):
@@ -72,7 +73,7 @@ def test_exact_twenty_inputs_preserved():
     new = {row["id"]: row for row in candidate["scenes"]}
     assert len(old) == 20 and len(new) == 29
     assert new.keys() - old.keys() == tasks.TASK_IDS | {"T06", "T07", "T08", "T09", "T10", "T11", "T12"}
-    assert all(new[name] == value for name, value in old.items())
+    assert all(new[name] == approved_b3_loadout(value) for name, value in old.items())
     assert all(candidate[key] == value for key, value in baseline.items() if key not in {"scenes", "version"})
 
 

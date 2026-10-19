@@ -82,7 +82,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -196,7 +196,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -355,7 +355,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -485,7 +485,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -615,7 +615,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -765,7 +765,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -880,7 +880,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -995,7 +995,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -1200,7 +1200,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -1315,7 +1315,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -1430,7 +1430,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -1585,7 +1585,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -1700,7 +1700,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -1815,7 +1815,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -1926,7 +1926,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -2041,7 +2041,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -2156,7 +2156,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -2296,7 +2296,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -2411,7 +2411,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -2526,7 +2526,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -2666,7 +2666,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -2781,7 +2781,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -2896,7 +2896,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -3036,7 +3036,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -3151,7 +3151,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -3266,7 +3266,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -3406,7 +3406,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -3521,7 +3521,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -3636,7 +3636,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -3776,7 +3776,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -3891,7 +3891,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -4006,7 +4006,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -4146,7 +4146,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -4261,7 +4261,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -4376,7 +4376,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -4516,7 +4516,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -4631,7 +4631,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -4746,7 +4746,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -4886,7 +4886,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -5001,7 +5001,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -5116,7 +5116,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -5271,7 +5271,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -5386,7 +5386,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -5501,7 +5501,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -5656,7 +5656,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -5771,7 +5771,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -5886,7 +5886,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -6016,7 +6016,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -6131,7 +6131,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -6246,7 +6246,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -6376,7 +6376,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -6491,7 +6491,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -6606,7 +6606,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -6736,7 +6736,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -6851,7 +6851,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -6966,7 +6966,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -7096,7 +7096,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -7211,7 +7211,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -7235,7 +7235,7 @@
         },
         "observation_mode": "structured",
         "setup_dependencies": {},
-        "task_content_sha256": "a89c9825145bacbe42fdf09f426c4953b59d4b3bf2db760d77e0960d7b3a2d2a",
+        "task_content_sha256": "ed01b8083ae0ba99c1b6135ed07138c09c788525c905d065a74e756e5e1975eb",
         "task_id": "B3",
         "template": "single_creature",
         "terrain": "flat"
@@ -7326,7 +7326,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -7350,7 +7350,7 @@
         },
         "observation_mode": "hybrid",
         "setup_dependencies": {},
-        "task_content_sha256": "a89c9825145bacbe42fdf09f426c4953b59d4b3bf2db760d77e0960d7b3a2d2a",
+        "task_content_sha256": "ed01b8083ae0ba99c1b6135ed07138c09c788525c905d065a74e756e5e1975eb",
         "task_id": "B3",
         "template": "single_creature",
         "terrain": "flat"
@@ -7456,7 +7456,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -7480,7 +7480,7 @@
         },
         "observation_mode": "image",
         "setup_dependencies": {},
-        "task_content_sha256": "a89c9825145bacbe42fdf09f426c4953b59d4b3bf2db760d77e0960d7b3a2d2a",
+        "task_content_sha256": "ed01b8083ae0ba99c1b6135ed07138c09c788525c905d065a74e756e5e1975eb",
         "task_id": "B3",
         "template": "single_creature",
         "terrain": "flat"
@@ -7571,7 +7571,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -7595,7 +7595,7 @@
         },
         "observation_mode": "structured",
         "setup_dependencies": {},
-        "task_content_sha256": "a89c9825145bacbe42fdf09f426c4953b59d4b3bf2db760d77e0960d7b3a2d2a",
+        "task_content_sha256": "ed01b8083ae0ba99c1b6135ed07138c09c788525c905d065a74e756e5e1975eb",
         "task_id": "B3",
         "template": "single_creature",
         "terrain": "natural"
@@ -7686,7 +7686,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -7710,7 +7710,7 @@
         },
         "observation_mode": "hybrid",
         "setup_dependencies": {},
-        "task_content_sha256": "a89c9825145bacbe42fdf09f426c4953b59d4b3bf2db760d77e0960d7b3a2d2a",
+        "task_content_sha256": "ed01b8083ae0ba99c1b6135ed07138c09c788525c905d065a74e756e5e1975eb",
         "task_id": "B3",
         "template": "single_creature",
         "terrain": "natural"
@@ -7816,7 +7816,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -7840,7 +7840,7 @@
         },
         "observation_mode": "image",
         "setup_dependencies": {},
-        "task_content_sha256": "a89c9825145bacbe42fdf09f426c4953b59d4b3bf2db760d77e0960d7b3a2d2a",
+        "task_content_sha256": "ed01b8083ae0ba99c1b6135ed07138c09c788525c905d065a74e756e5e1975eb",
         "task_id": "B3",
         "template": "single_creature",
         "terrain": "natural"
@@ -7966,7 +7966,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -8116,7 +8116,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -8266,7 +8266,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -8416,7 +8416,7 @@
       "key": {
         "action_profile": "visual-motor-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -8566,7 +8566,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -8716,7 +8716,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -8866,7 +8866,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -8966,7 +8966,7 @@
       "key": {
         "action_profile": "visual-motor-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -9116,7 +9116,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -9266,7 +9266,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -9416,7 +9416,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -9566,7 +9566,7 @@
       "key": {
         "action_profile": "visual-motor-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -9716,7 +9716,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -9866,7 +9866,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -10016,7 +10016,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -10166,7 +10166,7 @@
       "key": {
         "action_profile": "visual-motor-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -10316,7 +10316,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -10466,7 +10466,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -10631,7 +10631,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -10781,7 +10781,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -10931,7 +10931,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -11081,7 +11081,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -11231,7 +11231,7 @@
       "key": {
         "action_profile": "visual-motor-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -11380,7 +11380,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -11529,7 +11529,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -11678,7 +11678,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -11807,7 +11807,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -11947,7 +11947,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -12142,7 +12142,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -12282,7 +12282,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -12422,7 +12422,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -12617,7 +12617,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -12743,7 +12743,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -12858,7 +12858,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -12993,7 +12993,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -13138,7 +13138,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -13283,7 +13283,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -13428,7 +13428,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -13573,7 +13573,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -13718,7 +13718,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -13863,7 +13863,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -14003,7 +14003,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -14143,7 +14143,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -14283,7 +14283,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -14413,7 +14413,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -14543,7 +14543,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -14778,7 +14778,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -14922,7 +14922,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -15066,7 +15066,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -15210,7 +15210,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -15325,7 +15325,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -15440,7 +15440,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -15580,7 +15580,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -15694,7 +15694,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -15808,7 +15808,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -15982,7 +15982,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -16096,7 +16096,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -16210,7 +16210,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -16339,7 +16339,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -16453,7 +16453,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -16567,7 +16567,7 @@
       "key": {
         "action_profile": "ordinary-renderer-native-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",
@@ -16696,7 +16696,7 @@
       "key": {
         "action_profile": "visual-ui-v1",
         "backend": "renderer",
-        "harness_code_sha256": "39d4f1511be89f9b37f039683c3e56dc71074880fbf61d15489a283fa306dae7",
+        "harness_code_sha256": "ecff68797b3edd4957e1dab4ae0509b41c7a20fc9310204681371d72e6080451",
         "native_identity": {
           "fixture_helper": {
             "build_receipt_sha256": "279cf6cb1bd480df37988bcea8b5391f94a292924d24ea9ef90f3459ec0c6856",

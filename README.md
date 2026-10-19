@@ -414,7 +414,7 @@ and full-UI Image interfaces under their admitted modes.
 **Required capabilities:** `combat, inventory, movement`<br>
 **Modalities:** Structured · Hybrid · Image (`visual-ui-v1`) — exact native-key admission applies.
 
-**Scenario & initial state.** The designated hostile male Ogre retains its native loadout. The player uses starter gear and finite recovery stock in a flat or natural fixture; difficulty is not model-calibrated.
+**Scenario & initial state.** The designated hostile male Ogre (320 HP) retains its native Ogre hammer loadout. The player starts with the native Epic two-handed Frost Saw (common.items.weapons.sword.frost-1), otherwise unchanged starter equipment, and 3 minor potions in a flat or natural fixture; difficulty is not model-calibrated.
 
 **Agent challenge.** Select positioning, attack opportunities and consumable use against the native Ogre while preserving survival.
 

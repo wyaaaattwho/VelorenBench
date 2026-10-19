@@ -1,4 +1,4 @@
-"""054 authorizes ONLY the stated admission change, not easier task predicates."""
+"""054 admission remains historical; the later approved B3 loadout is explicit."""
 import hashlib
 import asyncio
 import json
@@ -39,10 +39,13 @@ def test_final054_qualification_and_support_agree_without_ability_or_freeze_clai
             assert cell["model_success"] == "not-inferred"
             assert "capability" not in cell["allowed_run_modes"]
 
-def test_all29_raw_definitions_and052_scoring_code_are_byte_preserved():
+def test_approved_b3_catalog_and_setup_keep052_scoring_code_byte_preserved():
     package = Path(suite.__file__).parent
+    # Researcher-approved B3 mainhand/stock upgrade, not a scorer relaxation.
+    # test_generic_release also reconstructs and pins the pre-upgrade catalog.
     expected = {
-        "scenes.json": "a3ebef6fe7120633c23da32cc7610bf65a95b05a079216a4202fde415d24c8be",
+        "scenes.json": "90496995c7ba1a79acf3f8d26ce9cd552e627ad2914fbea21996ba89efffcddf",
+        "combat.py": "ec73ddb25980f2934f6238741c6c4af0f2a274523cb87d54afb15af7596d28ce",
         "contract_evidence.py": "0afe32bb7e966fbce79c4772d8b1e06bd77730d090fe1ead0759cd049e7d4c91",
         "npc_contracts.py": "a991347b287e57fbd4a1ef396cd268a32ec6dba111c547fd9e1708b155654bde"}
     assert all(hashlib.sha256((package / name).read_bytes()).hexdigest() == value

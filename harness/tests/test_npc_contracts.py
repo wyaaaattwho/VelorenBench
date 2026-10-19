@@ -8,6 +8,7 @@ import asyncio
 import pytest
 
 from scripts.rpg_benchmark import contract_evidence as private, npc_contracts, providers, renderer_support, run, suite
+from .test_rpg_b3_upgrade import approved_b3_loadout
 
 
 def test_twenty_definitions_preserved_and_only_three_added():
@@ -17,7 +18,7 @@ def test_twenty_definitions_preserved_and_only_three_added():
     entries = {row["id"]: row for row in actual["scenes"]}
     assert len(entries) == 29
     assert set(entries) - {row["id"] for row in original["scenes"]} == npc_contracts.TASK_IDS | {"T01", "T02", "T06", "T07", "T08", "T09"}
-    assert all(entries[row["id"]] == row for row in original["scenes"])
+    assert all(entries[row["id"]] == approved_b3_loadout(row) for row in original["scenes"])
     for key in original.keys() - {"version", "scenes"}:
         assert actual[key] == original[key]
 
